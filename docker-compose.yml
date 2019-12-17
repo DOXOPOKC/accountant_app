@@ -46,7 +46,7 @@ services:
     container_name: 'node'
     user: ${CURRENT_UID}
     image: node:12.10-alpine
-    command: npm run serve
+    command: npm run dev
     volumes:
       - ./src/frontend:/src/
     working_dir: /src
