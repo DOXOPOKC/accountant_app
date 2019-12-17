@@ -4,7 +4,7 @@
   "version": "2.10.2",
   "private": true,
   "scripts": {
-    "dev": "nuxt-ts",
+    "dev": "npm i && nuxt-ts",
     "build": "nuxt-ts build",
     "start": "nuxt-ts start",
     "generate": "nuxt-ts generate"
