@@ -1,0 +1,86 @@
+version: '3'
+services:
+
+  postgres:
+    env_file: .env
+    container_name: 'postgres'
+    image: postgres
+    volumes: 
+      - db_data:/var/lib/postgresql/data
+    networks: 
+      private_network:
+        ipv4_address: 172.25.0.2
+
+  pg-admin:
+    env_file: .env
+    container_name: 'pgadmin'
+    image: dpage/pgadmin4:latest
+    ports: 
+      - 8088:80
+    networks: 
+      private_network:
+        ipv4_address: 172.25.0.3
+
+  backend:
+    container_name: 'FastAPI'
+    user: ${CURRENT_UID}
+    env_file: .env
+    build: 
+      context: .
+    command: './wait-for-initialization.sh'
+    volumes: 
+      - ./src/backend:/src/
+      - ./wait-for-initialization.sh:/src/wait-for-initialization.sh:ro
+      - ./src/static:/src/static
+      - ./src/media:/src/media
+    depends_on: 
+      - postgres
+    # ports:
+    #   - 8080:8000
+    networks: 
+      private_network:
+        ipv4_address: 172.25.0.4
+    # command: ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000"]
+
+  frontend:
+    container_name: 'node'
+    user: ${CURRENT_UID}
+    image: node:12.10-alpine
+    command: npm run serve
+    volumes:
+      - ./src/frontend:/src/
+    working_dir: /src
+    restart: on-failure
+    depends_on:
+      - backend
+    networks:
+      private_network:
+        ipv4_address: 172.25.0.5
+
+  nginx:
+    container_name: nginx
+    image: nginx:1.17-alpine
+    restart: on-failure
+    ports:
+      - 80:80
+    volumes:
+      - ./src/nginx/dev.conf:/etc/nginx/nginx.conf:ro
+      - ./static:/src/static
+      - ./media:/src/media
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      private_network:
+        ipv4_address: 172.25.0.6
+      # default:
+
+networks: 
+  private_network:
+    ipam: 
+      driver: default
+      config: 
+        - subnet: 172.25.0.0/16
+
+volumes:
+  db_data:
