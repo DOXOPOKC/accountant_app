@@ -3,6 +3,12 @@
   "description": "Nuxt.js TypeScript project",
   "version": "2.10.2",
   "private": true,
+  "config": {
+    "nuxt": {
+      "host": "0.0.0.0",
+      "port": "3000"
+    }
+  },
   "scripts": {
     "dev": "npm i && nuxt-ts",
     "build": "nuxt-ts build",

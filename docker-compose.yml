@@ -48,7 +48,7 @@ services:
     image: node:12.10-alpine
     command: npm run dev
     volumes:
-      - ./src/frontend:/src/
+      - ./src/frontend:/src/frontend
     working_dir: /src
     restart: on-failure
     depends_on:
@@ -65,8 +65,8 @@ services:
       - 80:80
     volumes:
       - ./src/nginx/dev.conf:/etc/nginx/nginx.conf:ro
-      - ./static:/src/static
-      - ./media:/src/media
+      - ./src/static:/src/static
+      - ./src/media:/src/media
     depends_on:
       - backend
       - frontend
