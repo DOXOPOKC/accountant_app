@@ -4,7 +4,7 @@ from pydantic import BaseModel
 class ContragentBase(BaseModel):
     name: str
     inn: str
-    ur_adress: str
+    fuct_adress: str
     klass: str
 
     class Config:
@@ -12,7 +12,7 @@ class ContragentBase(BaseModel):
 
 
 class ContragentGet(ContragentBase):
-    fuct_adress: str = None
+    ur_adress: str = None
     ogrn: str = None
     date: str = None
 
