@@ -49,7 +49,7 @@ services:
     command: npm run dev
     volumes:
       - ./src/frontend:/src/frontend
-    working_dir: /src
+    working_dir: /src/frontend
     restart: on-failure
     depends_on:
       - backend

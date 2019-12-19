@@ -6,7 +6,7 @@ from routes.api_router import router
 from db.base import Session
 
 
-app = FastAPI()
+app = FastAPI(openapi_url="/api/v1/openapi.json")
 
 app.include_router(router)
 

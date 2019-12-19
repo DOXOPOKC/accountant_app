@@ -6,4 +6,4 @@ from .endpoints import contragents
 
 router = APIRouter()
 
-router.include_router(contragents.router, prefix="", tags=["contragents"])
+router.include_router(contragents.router, prefix="/api", tags=["contragents"])

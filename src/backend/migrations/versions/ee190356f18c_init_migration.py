@@ -1,17 +1,17 @@
-"""empty message
+"""init migration
 
-Revision ID: ead2be419aa0
-Revises: 484b3d8c83cd
-Create Date: 2019-12-16 07:22:59.319090
+Revision ID: ee190356f18c
+Revises: 
+Create Date: 2019-12-18 09:01:05.038563
 
 """
 from alembic import op
 import sqlalchemy as sa
-
+from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = 'ead2be419aa0'
-down_revision = '484b3d8c83cd'
+revision = 'ee190356f18c'
+down_revision = None
 branch_labels = None
 depends_on = None
 
@@ -21,12 +21,12 @@ def upgrade():
     op.create_table('contragent',
     sa.Column('id', sa.BigInteger(), autoincrement=True, nullable=False),
     sa.Column('name', sa.String(), nullable=True),
-    sa.Column('inn', sa.String(), nullable=True),
-    sa.Column('ur_adress', sa.String(), nullable=True),
+    sa.Column('inn', sa.Integer(), nullable=True),
     sa.Column('fuct_adress', sa.String(), nullable=True),
-    sa.Column('ogrn', sa.String(), nullable=True),
+    sa.Column('klass', postgresql.ENUM('ur', 'fl', name='klass_enum'), nullable=False),
+    sa.Column('ur_adress', sa.String(), nullable=True),
+    sa.Column('ogrn', sa.Integer(), nullable=True),
     sa.Column('date', sa.Date(), nullable=True),
-    sa.Column('klass', sa.String(), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_contragent_id'), 'contragent', ['id'], unique=False)
