@@ -12,11 +12,11 @@ router = APIRouter()
 
 
 @router.get('/contragents', response_model=List[ContragentGet])
-def get_contragents(db: Session = Depends(get_db)):
-    return db.query(Contragent).all()
+async def get_contragents(db: Session = Depends(get_db)):
+    return await db.query(Contragent).all()
 
 
 @router.post('/contragents')
-def upload_contragents(db: Session = Depends(get_db),
-                       xlsx_file: UploadFile = File()):
-    
+async def upload_contragents(db: Session = Depends(get_db),
+                             xlsx_file: UploadFile = File(default=None)):
+    print(xlsx_file)

@@ -1,11 +1,14 @@
 from pydantic import BaseModel
 
+from models.orm.contragent import KlassType
+from datetime import date
+
 
 class ContragentBase(BaseModel):
     name: str
-    inn: str
+    inn: int
     fuct_adress: str
-    klass: str
+    klass: KlassType
 
     class Config:
         orm_mode = True
@@ -13,8 +16,8 @@ class ContragentBase(BaseModel):
 
 class ContragentGet(ContragentBase):
     ur_adress: str = None
-    ogrn: str = None
-    date: str = None
+    ogrn: int = None
+    reg_date: date = None
 
 
 class ContragentCreate(ContragentBase):
