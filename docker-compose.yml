@@ -1,5 +1,5 @@
-version: '3'
-services:
+version: '3.4'
+services: 
 
   postgres:
     env_file: .env
@@ -22,21 +22,21 @@ services:
         ipv4_address: 172.25.0.3
 
   backend:
-    container_name: 'FastAPI'
-    user: ${CURRENT_UID}
+    container_name: 'birds'
+    # user: ${CURRENT_UID}
     env_file: .env
-    build: 
-      context: .
-    command: './wait-for-initialization.sh'
+    build:
+      context: ./backend
+      args:
+        - DEBUG=True
+      target: deploy
+    command: -p ${POSTGRES_PORT}
     volumes: 
-      - ./src/backend:/src/
-      - ./wait-for-initialization.sh:/src/wait-for-initialization.sh:ro
-      - ./src/static:/src/static
-      - ./src/media:/src/media
+      - ./backend:/app/
+      - ./static:/app/static
+      - ./media:/app/media
     depends_on: 
       - postgres
-    # ports:
-    #   - 8080:8000
     networks: 
       private_network:
         ipv4_address: 172.25.0.4
@@ -48,8 +48,8 @@ services:
     image: node:12.10-alpine
     command: npm run dev
     volumes:
-      - ./src/frontend:/src/frontend
-    working_dir: /src/frontend
+      - ./frontend:/app/frontend
+    working_dir: /app/frontend
     restart: on-failure
     depends_on:
       - backend
@@ -64,16 +64,15 @@ services:
     ports:
       - 80:80
     volumes:
-      - ./src/nginx/dev.conf:/etc/nginx/nginx.conf:ro
-      - ./src/static:/src/static
-      - ./src/media:/src/media
+      - ./nginx/dev.conf:/etc/nginx/nginx.conf:ro
+      - ./static:/app/static
+      - ./media:/app/media
     depends_on:
       - backend
-      - frontend
+      # - frontend
     networks:
       private_network:
         ipv4_address: 172.25.0.6
-      # default:
 
 networks: 
   private_network:

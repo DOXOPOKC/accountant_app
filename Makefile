@@ -7,7 +7,6 @@ CURRENT_UID := $(shell id -u):$(shell id -g)
 
 export CURRENT_UID
 
-MSG := ""
 
 up:
 	docker-compose up -d
@@ -16,6 +15,7 @@ upb:
 down:
 	docker-compose down
 sh:
-	docker exec -it /FastAPI /bin/sh
+	docker exec -it /birds /bin/sh
 migrations:
-	docker exec -it /FastAPI alembic revision --autogenerate -m "$(MSG)"
+	docker exec -it /birds python manage.py makemigrations 
+	docker exec -it /birds python manage.py migrate 
