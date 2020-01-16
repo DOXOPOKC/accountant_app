@@ -1,0 +1,69 @@
+version: '3.4'
+services: 
+
+  postgres:
+    env_file: .env
+    container_name: 'postgres'
+    image: postgres
+    volumes: 
+      - db_data:/var/lib/postgresql/data
+    networks: 
+      private_network:
+        ipv4_address: 172.25.0.2
+
+  pg-admin:
+    env_file: .env
+    container_name: 'pgadmin'
+    image: dpage/pgadmin4:latest
+    ports: 
+      - 8088:80
+    networks: 
+      private_network:
+        ipv4_address: 172.25.0.3
+
+  backend:
+    container_name: 'birds'
+    # user: ${CURRENT_UID}
+    env_file: .env
+    build:
+      context: ./backend
+      args:
+        - DEBUG=True
+      target: deploy
+    command: -p ${POSTGRES_PORT}
+    volumes: 
+      - ./backend:/app/
+      - ./static:/app/static
+      - ./media:/app/media
+    depends_on: 
+      - postgres
+    networks: 
+      private_network:
+        ipv4_address: 172.25.0.4
+
+  nginx:
+    container_name: nginx
+    image: nginx:1.17-alpine
+    restart: on-failure
+    ports:
+      - 80:80
+    volumes:
+      - ./nginx/dev.conf:/etc/nginx/nginx.conf:ro
+      - ./static:/app/static
+      - ./media:/app/media
+    depends_on:
+      - backend
+      # - frontend
+    networks:
+      private_network:
+        ipv4_address: 172.25.0.5
+
+networks: 
+  private_network:
+    ipam: 
+      driver: default
+      config: 
+        - subnet: 172.25.0.0/16
+
+volumes:
+  db_data:
