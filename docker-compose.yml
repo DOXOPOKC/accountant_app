@@ -30,7 +30,7 @@ services:
       args:
         - DEBUG=True
       target: deploy
-    command: -p ${POSTGRES_PORT}
+    # command: -p ${POSTGRES_PORT}
     volumes: 
       - ./backend:/app/
       - ./static:/app/static
@@ -45,20 +45,23 @@ services:
   frontend:
     container_name: 'node'
     user: ${CURRENT_UID}
-    image: node:12.10-alpine
+    build:
+      context: ./frontend
     command: npm run dev
     volumes:
-      - ./frontend:/app/frontend
-    working_dir: /app/frontend
+      - ./frontend:/app/
+    working_dir: /app/
     restart: on-failure
     depends_on:
       - backend
+    # ports:
+    #   - 8080:3000
     networks:
       private_network:
         ipv4_address: 172.25.0.5
 
   nginx:
-    container_name: nginx
+    container_name: 'nginx'
     image: nginx:1.17-alpine
     restart: on-failure
     ports:
