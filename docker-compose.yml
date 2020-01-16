@@ -84,7 +84,7 @@ services:
     entrypoint: python3
     command: ./manage.py qcluster
     depends_on:
-      - birds
+      - backend
       - postgres
     networks:
       private_network:
