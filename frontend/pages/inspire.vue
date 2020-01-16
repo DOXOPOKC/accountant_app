@@ -67,7 +67,7 @@
         v-card-actions
           v-spacer
           v-btn(color="blue darken-1" text @click="contragentDialogState = false") Закрыть
-          v-btn(color="blue darken-1" text @click="upload()") Отправить
+          v-btn(color="blue darken-1" text @click="upload") Отправить
 </template>
 
 <script>
@@ -76,7 +76,7 @@ export default {
     uploaded: false,
     uploadHeaders: {},
     profilePic: null,
-    uploadUrl: 'https://www.mocky.io/v2/5d4fb20b3000005c111099e3',
+    uploadUrl: 'http://localhost/api/contragents/',
     contragentDialogState: false,
     headers: [
       {
