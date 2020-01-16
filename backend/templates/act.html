@@ -1,0 +1,311 @@
+
+{% load template_extra_filters %}
+<!DOCTYPE html>
+<html>
+	<head>
+		<title></title>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+		<style type="text/css">
+			body {
+				color:#000000;
+				border-collapse:collapse;
+				margin: 0;
+        		padding: 0;
+			}
+			th {
+				padding: 10px;
+				font-weight: 500;
+			}
+			td {
+				padding: 10px;
+			}
+			p {
+				margin: 0;
+				padding: 0;
+			}
+			.ft10{font-size:30px;font-family:Times;font-weight: bold;}
+			.ft11{font-size:22px;font-family:Times;}
+			.ft12{font-size:22px;font-family:Times;font-weight: bold;}
+			.ft13{font-size:21px;font-family:Times;}
+			.ft14{font-size:23px;font-family:Times;}
+			.ft15{font-size:25px;font-family:Times;}
+			.ft16{font-size:22px;line-height:30px;font-family:Times;}
+			.ft17{font-size:21px;line-height:26px;font-family:Times;}
+			.ft18{font-size:21px;line-height:30px;font-family:Times;}
+
+			table.unstyledTable {
+				font-family: "Times New Roman", Times, serif;
+				border: 0;
+				width: 100%;
+				text-align: start;
+			}
+			table.unstyledTable td, table.unstyledTable th {
+				border: 0;
+			}
+			table.unstyledTable tbody td {
+				font-size: 20px;
+				color: #000000;
+			}
+			table.unstyledTable table td, table.unstyledTable table th {
+				border: 1px solid #000000;
+			}
+			table.unstyledTable tfoot tr td {
+				border: 0;
+			}
+			table.unstyledTable tr td p {
+				word-break: break-all;
+			}
+		</style>
+	</head>
+	<body>
+		<table
+			class="unstyledTable"
+			cellpadding="0"
+			cellspacing="0"
+		>
+			<tbody>
+				<tr>
+					<td colspan="4"><p class="ft10">Акт № 81654  от {{ curr_date|date:"d E Y"}}г.</p></td>
+				</tr>
+				<tr>
+					<td>
+						<p class="ft12">Исполнитель:</p>
+					</td>
+					<td colspan="3">
+						<p class="ft12">ООО&nbsp;&#34;ЭкоТек&#34;,&nbsp;ИНН&nbsp;4217127183,&nbsp;КПП&nbsp;421701001,&nbsp;654079,&nbsp;Кемеровская&nbsp;область&nbsp;-&nbsp;Кузбасс,&nbsp;<br/>г.Новокузнецк,&nbsp;пр-д&nbsp;Коммунаров,&nbsp;2,&nbsp;тел.:&nbsp;88005505242,&nbsp;р/сч&nbsp;40702810513030000704,&nbsp;в&nbsp;банке&nbsp;<br/>ФИЛИАЛ&nbsp;БАНКА&nbsp;ВТБ&nbsp;(ПАО)&nbsp;В&nbsp;Г.КРАСНОЯРСКЕ,&nbsp;БИК&nbsp;040407777,&nbsp;к/сч&nbsp;30101810200000000777&nbsp;</p>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<p class="ft12">Заказчик:</p>
+					</td>
+					<td colspan="3">
+						<p class="ft12">{{consumer.excell_name}},&nbsp;ИНН&nbsp;{{consumer.inn}},&nbsp;КПП&nbsp;{% if consumer.kpp %}{{consumer.kpp}}{% else %}________________________________________,{% endif %}<br/>{{consumer.legal_address}},&nbsp;р/с&nbsp;________________________________________,&nbsp;в&nbsp;банке&nbsp;________________________________________,&nbsp;БИК&nbsp;________________________________________,&nbsp;к/с________________________________________</p>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<p class="ft12">Основание:</p>
+					</td>
+					<td colspan="3">
+						<p class="ft12">125874-2019/ТКО</p>
+					</td>
+				</tr>
+				<tr>
+					<td colspan="4">
+						<table style="border-collapse:collapse;width: 100%;text-align: center;">
+							<thead>
+								<tr>
+									<th>
+										<p class="ft12">№</p>
+									</th>
+									<th>
+										<p class="ft12">Наименование работ,&nbsp;услуг</p>
+									</th>
+									<th>
+										<p class="ft12">Кол-во</p>
+									</th>
+									<th>
+										<p class="ft12">Ед.</p>
+									</th>
+									<th>
+										<p class="ft12">Цена</p>
+									</th>
+									<th>
+										<p class="ft12">Итого</p>
+									</th>
+								</tr>
+							</thead>
+							<tbody style="border: 0;">
+								<tr>
+									<td>1</td>
+									<td><p style="width: 500px;">Услуги по обращению с твердыми коммунальными отходами по договору №125874-2019/ТКО за {{ curr_date|date:"F Y"}}г.</p></td>
+									<td>{{ V_as_precise }}</td>
+									<td>м3</td>
+									<td>{{ tariff_tax }}</td>
+									<td>{{ summ_tax_precise }}</td>
+								</tr>
+							</tbody>
+							<tfoot>
+								<tr>
+									<td>&nbsp;</td>
+									<td>&nbsp;</td>
+									<td>&nbsp;</td>
+									<td>&nbsp;</td>
+									<td class="ft12" style="text-align: end;">Итого:</td>
+									<td class="ft12">{{ summ_tax_precise }}</td>
+								</tr>
+								<tr style="height: 30px;">
+									<td>&nbsp;</td>
+									<td>&nbsp;</td>
+									<td>&nbsp;</td>
+									<td>&nbsp;</td>
+									<td class="ft12" style="text-align: end;">В&nbsp;том&nbsp;числе&nbsp;НДС</td>
+									<td class="ft12">{{tax_price_precise}}</td>
+								</tr>
+							</tfoot>
+						</table>
+					</td>
+				</tr>
+				<tr>
+					<td colspan="4">
+						<p class="ft12">Всего&nbsp;оказано&nbsp;услуг&nbsp;&nbsp;1,&nbsp;на&nbsp;сумму&nbsp;{{ summ_tax_precise }}&nbsp;руб.</p></td>
+				</tr>
+				<tr>
+					<td colspan="4">
+						<p class="ft12">{{ summ_tax_precise|literal|capfirst }}</p></td>
+				</tr>
+				<tr>
+					<td colspan="4">
+						<p class="ft12">Вышеперечисленные&nbsp;услуги&nbsp;выполнены&nbsp;полностью&nbsp;и&nbsp;в&nbsp;срок.&nbsp;Заказчик&nbsp;претензий&nbsp;по&nbsp;объему,&nbsp;качеству&nbsp;и&nbsp;срокам&nbsp;оказания&nbsp;услуг&nbsp;не&nbsp;имеет.</p>
+					</td>
+				</tr>
+				<tr>
+					<td colspan="3">
+						<p class="ft14"><b>ИСПОЛНИТЕЛЬ</b></p>
+						<p class="ft12"><b>ООО &#34;ЭкоТек&#34;</b></p>
+						<p style="padding: 20px 0 0 0;" class="ft12"><b>____________________________</b></p>
+						<p class="ft18">Гвоздева&nbsp;М.Л.&nbsp;Доверенность<br/>б/н&nbsp;от&nbsp;01.10.2019г.</p>
+					</td>
+					<td colspan="1" style="padding: 0;">
+						<p style="margin: 0 0 40px 0;" class="ft14"><b>ЗАКАЗЧИК</b></p>
+						<p style="margin: 0 0 20px 0;" class="ft13">ИП&nbsp;Капустин&nbsp;Антон&nbsp;Александрович</p>
+						<p style="margin: 0 0 20px 0;" class="ft13">________________________________</p>
+					</td>
+				</tr>
+				<tr>
+					<td style="width: 120px;">&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td style="width: 400px;">&nbsp;</td>
+				</tr>
+			</tbody>
+		</table>
+
+		<p style="white-space:nowrap" class="ft15">--------------------------------------------------------------------------------------------------------------------------------------------------------------------</p>
+
+		<table
+			class="unstyledTable"
+			cellpadding="0"
+			cellspacing="0"
+		>
+			<tbody>
+				<tr>
+					<td colspan="4"><p class="ft10">Акт № 81654  от {{ curr_date|date:"d E Y"}}г.</p></td>
+				</tr>
+				<tr>
+					<td>
+						<p class="ft12">Исполнитель:</p>
+					</td>
+					<td colspan="3">
+						<p class="ft12">ООО&nbsp;&#34;ЭкоТек&#34;,&nbsp;ИНН&nbsp;4217127183,&nbsp;КПП&nbsp;421701001,&nbsp;654079,&nbsp;Кемеровская&nbsp;область&nbsp;-&nbsp;Кузбасс,&nbsp;<br/>г.Новокузнецк,&nbsp;пр-д&nbsp;Коммунаров,&nbsp;2,&nbsp;тел.:&nbsp;88005505242,&nbsp;р/сч&nbsp;40702810513030000704,&nbsp;в&nbsp;банке&nbsp;<br/>ФИЛИАЛ&nbsp;БАНКА&nbsp;ВТБ&nbsp;(ПАО)&nbsp;В&nbsp;Г.КРАСНОЯРСКЕ,&nbsp;БИК&nbsp;040407777,&nbsp;к/сч&nbsp;30101810200000000777&nbsp;</p>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<p class="ft12">Заказчик:</p>
+					</td>
+					<td colspan="3">
+						<p class="ft12">{{consumer.excell_name}},&nbsp;ИНН&nbsp;{{consumer.inn}},&nbsp;КПП&nbsp;{% if consumer.kpp %}{{consumer.kpp}}{% else %}________________________________________,{% endif %}<br/>{{consumer.legal_address}},<br/>&nbsp;р/с&nbsp;________________________________________,&nbsp;в&nbsp;банке&nbsp;<br/>________________________________________,&nbsp;БИК&nbsp;________________________________________,&nbsp;к/с<br/>________________________________________</p>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<p class="ft12">Основание:</p>
+					</td>
+					<td colspan="3">
+						<p class="ft12">125874-2019/ТКО</p>
+					</td>
+				</tr>
+				<tr>
+					<td colspan="4">
+						<table style="border-collapse:collapse;width: 100%;text-align: center;">
+							<thead>
+								<tr>
+									<th>
+										<p class="ft12">№</p>
+									</th>
+									<th>
+										<p class="ft12">Наименование работ,&nbsp;услуг</p>
+									</th>
+									<th>
+										<p class="ft12">Кол-во</p>
+									</th>
+									<th>
+										<p class="ft12">Ед.</p>
+									</th>
+									<th>
+										<p class="ft12">Цена</p>
+									</th>
+									<th>
+										<p class="ft12">Итого</p>
+									</th>
+								</tr>
+							</thead>
+							<tbody style="border: 0;">
+								<tr>
+									<td>1</td>
+									<td><p style="width: 500px;">Услуги по обращению с твердыми коммунальными отходами по договору №125874-2019/ТКО за {{ curr_date|date:"F Y"}}г.</p></td>
+									<td>{{ V_as_precise }}</td>
+									<td>м3</td>
+									<td>{{ tariff_tax }}</td>
+									<td>{{ summ_tax_precise }}</td>
+								</tr>
+							</tbody>
+							<tfoot>
+								<tr>
+									<td>&nbsp;</td>
+									<td>&nbsp;</td>
+									<td>&nbsp;</td>
+									<td>&nbsp;</td>
+									<td class="ft12" style="text-align: end;">Итого:</td>
+									<td class="ft12">{{ summ_tax_precise }}</td>
+								</tr>
+								<tr style="height: 30px;">
+									<td>&nbsp;</td>
+									<td>&nbsp;</td>
+									<td>&nbsp;</td>
+									<td>&nbsp;</td>
+									<td class="ft12" style="text-align: end;">В&nbsp;том&nbsp;числе&nbsp;НДС</td>
+									<td class="ft12">{{tax_price_precise}}</td>
+								</tr>
+							</tfoot>
+						</table>
+					</td>
+				</tr>
+				<tr>
+					<td colspan="4">
+						<p class="ft12">Всего&nbsp;оказано&nbsp;услуг&nbsp;&nbsp;1,&nbsp;на&nbsp;сумму&nbsp;{{ summ_tax_precise }}&nbsp;руб.</p></td>
+				</tr>
+				<tr>
+					<td colspan="4">
+						<p class="ft12">{{ summ_tax_precise|literal|capfirst }}</p></td>
+				</tr>
+				<tr>
+					<td colspan="4">
+						<p class="ft12">Вышеперечисленные&nbsp;услуги&nbsp;выполнены&nbsp;полностью&nbsp;и&nbsp;в&nbsp;срок.&nbsp;Заказчик&nbsp;претензий&nbsp;по&nbsp;объему,&nbsp;качеству&nbsp;и&nbsp;срокам&nbsp;оказания&nbsp;услуг&nbsp;не&nbsp;имеет.</p>
+					</td>
+				</tr>
+				<tr>
+					<td colspan="3">
+						<p class="ft14"><b>ИСПОЛНИТЕЛЬ</b></p>
+						<p class="ft12"><b>ООО &#34;ЭкоТек&#34;</b></p>
+						<p style="padding: 20px 0 0 0;" class="ft12"><b>____________________________</b></p>
+						<p class="ft18">Гвоздева&nbsp;М.Л.&nbsp;Доверенность<br/>б/н&nbsp;от&nbsp;01.10.2019г.</p>
+					</td>
+					<td colspan="1" style="padding: 0;">
+						<p style="margin: 0 0 40px 0;" class="ft14"><b>ЗАКАЗЧИК</b></p>
+						<p style="margin: 0 0 20px 0;" class="ft13">ИП&nbsp;Капустин&nbsp;Антон&nbsp;Александрович</p>
+						<p style="margin: 0 0 20px 0;" class="ft13">________________________________</p>
+					</td>
+				</tr>
+				<tr>
+					<td style="width: 120px;">&nbsp;</td>
+					<td>&nbsp;</td>
+					<td>&nbsp;</td>
+					<td style="width: 400px;">&nbsp;</td>
+				</tr>
+			</tbody>
+		</table>
+	</body>
+</html>
