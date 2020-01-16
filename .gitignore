@@ -105,3 +105,10 @@ dist
 
 *.pyc
 __pycache__/
+
+
+static/*
+media/*
+
+!.gitignore
+!.gitkeep

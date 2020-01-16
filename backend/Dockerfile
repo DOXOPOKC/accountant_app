@@ -5,7 +5,7 @@ RUN mkdir -p /app &&\
   apk add --no-cache  python3 wkhtmltopdf xvfb msttcorefonts-installer postgresql-libs jpeg zlib libc-dev && \
   if [ ! -e /usr/bin/python ]; then ln -sf python3 /usr/bin/python ; fi && \
   apk add --no-cache --virtual .build-deps python3-dev gcc musl-dev postgresql-dev jpeg-dev zlib-dev && \
-  pip3 install --disable-pip-version-check --no-cache-dir pipenv
+  pip3 install --disable-pip-version-check --no-cache-dir pipenv && update-ms-fonts && fc-cache -f
 WORKDIR /app
 COPY Pipfile Pipfile.lock /app/
 
