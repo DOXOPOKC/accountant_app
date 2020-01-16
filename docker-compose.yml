@@ -30,7 +30,6 @@ services:
       args:
         - DEBUG=True
       target: deploy
-    # command: -p ${POSTGRES_PORT}
     volumes: 
       - ./backend:/app/
       - ./static:/app/static
@@ -40,7 +39,6 @@ services:
     networks: 
       private_network:
         ipv4_address: 172.25.0.4
-    # command: ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000"]
 
   frontend:
     container_name: 'node'
@@ -54,8 +52,6 @@ services:
     restart: on-failure
     depends_on:
       - backend
-    # ports:
-    #   - 8080:3000
     networks:
       private_network:
         ipv4_address: 172.25.0.5
@@ -72,10 +68,27 @@ services:
       - ./media:/app/media
     depends_on:
       - backend
-      # - frontend
+      - frontend
     networks:
       private_network:
         ipv4_address: 172.25.0.6
+
+  qcluster:
+    image: python3
+    container_name: 'qcluster'
+    env_file: .env
+    user: ${CURRENT_UID}
+    volumes:
+      - ./:/app/
+    restart: on-failure
+    entrypoint: python3
+    command: ./manage.py qcluster
+    depends_on:
+      - birds
+      - postgres
+    networks:
+      private_network:
+        ipv4_address: 172.25.0.7
 
 networks: 
   private_network:
