@@ -40,6 +40,22 @@ services:
     networks: 
       private_network:
         ipv4_address: 172.25.0.4
+    # command: ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000"]
+
+  frontend:
+    container_name: 'node'
+    user: ${CURRENT_UID}
+    image: node:12.10-alpine
+    command: npm run dev
+    volumes:
+      - ./frontend:/app/frontend
+    working_dir: /app/frontend
+    restart: on-failure
+    depends_on:
+      - backend
+    networks:
+      private_network:
+        ipv4_address: 172.25.0.5
 
   nginx:
     container_name: nginx
@@ -56,7 +72,7 @@ services:
       # - frontend
     networks:
       private_network:
-        ipv4_address: 172.25.0.5
+        ipv4_address: 172.25.0.6
 
 networks: 
   private_network:
