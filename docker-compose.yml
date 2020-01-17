@@ -42,10 +42,9 @@ services:
 
   frontend:
     container_name: 'node'
-    user: ${CURRENT_UID}
+    # user: ${CURRENT_UID}
     build:
       context: ./frontend
-    command: npm run dev
     volumes:
       - ./frontend:/app/
     working_dir: /app/
@@ -79,7 +78,8 @@ services:
     env_file: .env
     user: ${CURRENT_UID}
     volumes:
-      - ./:/app/
+      - ./backend/:/app/
+    working_dir: /app/
     restart: on-failure
     entrypoint: python3
     command: ./manage.py qcluster
