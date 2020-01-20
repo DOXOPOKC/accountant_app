@@ -109,6 +109,7 @@ __pycache__/
 
 static/*
 media/*
+.vscode/*
 
 !.gitignore
 !.gitkeep

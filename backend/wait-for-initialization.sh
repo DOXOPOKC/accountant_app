@@ -34,13 +34,18 @@ python3 manage.py migrate
 >&2 echo "Collect static..."
 python3 manage.py collectstatic --noinput
 
->&2 echo "Collect fonts..."
-update-ms-fonts
-fc-cache -f
+# >&2 echo "Collect fonts..."
+# update-ms-fonts
+# fc-cache -f
 
 
->&2 echo "Starting Gunicorn..."
+if [[ ${DEBUG} == 'TRUE' ]] || [[ ${DEBUG} == 'True' ]] || [[ ${DEBUG} == '1' ]]; then
+    echo >&2 "Starting debug server..."
+    exec python3 manage.py runserver 0.0.0.0:8000
+else
+    echo >&2 "Starting Gunicorn..."
     exec gunicorn birds.wsgi:application \
       -k egg:meinheld#gunicorn_worker \
       --name birds --bind 0.0.0.0:8000 --workers 3 \
       "$@"
+fi
