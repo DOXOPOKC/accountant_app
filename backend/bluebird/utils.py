@@ -95,10 +95,13 @@ def get_data(id: int):
 
 
 def generate_documents(data: List, contagent: Contragent):
-    # generate_unique_contract_number()  # TODO generate unicue contract number
-    # 000001-year/ТКО/01
-    # № ACT 00001/1
+
     for d in data:
+        # unique_number = generate_unique_document_number()
+        # # TODO generate unique document number
+        # 000001-year/ТКО/01
+        # № ACT 00001/1
+        # d[uniq_num_id] = unique_number
         generate_act(d, contagent)
 
 
