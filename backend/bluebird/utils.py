@@ -11,7 +11,6 @@ from bluebird.serializers import ContragentFullSerializer
 from django.http import Http404
 from django.template.loader import render_to_string
 
-from fpdf import FPDF, HTMLMixin
 import pdfkit
 
 from bluebird.dadata import (suggestions_response_from_dict,
@@ -26,7 +25,6 @@ URL = 'https://suggestions.dadata.ru/suggestions/api/4_1/rs/findById/party'
 
 
 def parse_from_file(xlsx_file):
-    # bfrd_rdr = io.BytesIO(xlsx_file)
     xl = openpyxl.load_workbook(xlsx_file)
     sheet = xl.worksheets[0]
     results = []
@@ -99,7 +97,7 @@ def get_data(id: int):
 def generate_documents(data: List, contagent: Contragent):
     # generate_unique_contract_number()  # TODO generate unicue contract number
     # 000001-year/ТКО/01
-    # № ACT 
+    # № ACT 00001/1
     for d in data:
         generate_act(d, contagent)
 
