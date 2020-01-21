@@ -5,7 +5,8 @@ import uuid
 import os
 from typing import List
 
-from bluebird.models import KLASS_TYPES, Contragent
+from bluebird.models import (KLASS_TYPES, Contragent,
+                             DocumentUniqueNumberGenerator)
 from bluebird.serializers import ContragentFullSerializer
 
 from django.http import Http404
@@ -36,11 +37,15 @@ def parse_from_file(xlsx_file):
             if MIN_INNN_LEN > len(str(a)) or len(str(a)) > MAX_INN_LEN:
                 raise Exception(('200', 'Inn is wrong.'))
             else:
+                if d != '' and 0 < d < len(KLASS_TYPES):
+                    klass = KLASS_TYPES[d][0]
+                else:
+                    klass = 0
                 tmp_obj = {
                     'inn': int(a),
                     'physical_address': b,
                     'excell_name': c,
-                    'klass': KLASS_TYPES[d-1][0]
+                    'klass': klass
                 }
                 results.append(tmp_obj)
         else:
@@ -97,11 +102,12 @@ def get_data(id: int):
 def generate_documents(data: List, contagent: Contragent):
 
     for d in data:
-        # unique_number = generate_unique_document_number()
+        unique_number = DocumentUniqueNumberGenerator.create(d['curr_date'],
+                                                             contagent)
         # # TODO generate unique document number
         # 000001-year/ТКО/01
         # № ACT 00001/1
-        # d[uniq_num_id] = unique_number
+        d['uniq_num_id'] = unique_number
         generate_act(d, contagent)
 
 

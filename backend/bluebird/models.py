@@ -5,6 +5,7 @@ from django.db import models
 
 
 KLASS_TYPES = [
+        (0, 'Пусто'),
         (1, 'Юридическое лицо без договора'),
         (2, 'Юридическое лицо с договором'),
         (3, 'ИЖС без договора'),
@@ -18,9 +19,9 @@ class Contragent(models.Model):
     Класс Контрагента.
 
     """
-    klass = models.CharField('Класс контрагента',
-                             max_length=255, choices=KLASS_TYPES,
-                             default=KLASS_TYPES[0][0])
+    klass = models.IntegerField('Класс контрагента',
+                                choices=KLASS_TYPES,
+                                default=0)
     excell_name = models.CharField('Наименование контрагента (из Excell)',
                                    max_length=255)
     dadata_name = models.CharField('Наименование контрагента (из Dadata)',
@@ -52,6 +53,7 @@ class Contragent(models.Model):
                                         max_length=255)
     legal_address = models.CharField('Юридический адресс',
                                      max_length=255, blank=True, null=True)
+    # TODO СВЯЗАТЬ НОРМАТИВ И ОКВЭД?
     norm_value = models.ForeignKey('NormativeCategory',
                                    related_name='normatives',
                                    on_delete=models.CASCADE,
@@ -85,7 +87,11 @@ class NormativeCategory(models.Model):
     """ Класс Категории норматива """
     name = models.CharField('Вид объекта',
                             max_length=255)
-    normative = models.ManyToManyField('Normative', related_name='normatives')
+    normative = models.ManyToManyField('Normative', related_name='normatives',
+                                       verbose_name='Нормативы')
+
+    def __str__(self):
+        return self.name
 
 
 class Normative(models.Model):
@@ -96,6 +102,11 @@ class Normative(models.Model):
                                   null=True, blank=True)
     value = models.FloatField('Значение норматива (мес.)',
                               null=True, blank=True)
+
+    def __str__(self):
+        return (f'Норматив: {self.value}/мес.,'
+                + f' действующий с {self.since_date.strftime("%d.%m.%Y")}'
+                + f' по {self.up_to_date.strftime("%d.%m.%Y")}')
 
 
 class Contract(models.Model):
@@ -153,7 +164,7 @@ class ContractNumberClass(models.Model):
             return self.contract_exist_number
 
     def __str__(self):
-        return self.contract_number()
+        return self.contract_number
 
 
 class DocumentUniqueNumber(models.Model):
@@ -172,6 +183,13 @@ class DocumentUniqueNumberGenerator(models.Model):
                                    blank=True, null=True)
     unique_number = models.OneToOneField(DocumentUniqueNumber,
                                          on_delete=models.CASCADE)
+
+    @classmethod
+    def create(cls, date_when, contragent: Contragent):
+        unique_n = DocumentUniqueNumber.objects.create()
+        return cls.objects.create(date_when=date_when,
+                                  contragent=contragent,
+                                  unique_number=unique_n)
 
     def __str__(self):
         return str(self.unique_number)

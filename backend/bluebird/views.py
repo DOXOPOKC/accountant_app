@@ -29,9 +29,9 @@ class ContragentsView(APIView):
             result = parse_from_file(file)
             group_id = create_unique_id()
             for data_element in result:
-                if data_element['klass'] == 1:
+                if data_element['klass'] == 0:
                     contract_number = ContractNumberClass.create(new=True)
-                    data_element['number_contract'] = contract_number
+                    data_element['number_contract'] = contract_number.pk
                     serializer = ContragentFullSerializer(data=data_element)
                     if serializer.is_valid(True):
                         serializer.save()
