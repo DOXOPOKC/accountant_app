@@ -144,6 +144,13 @@ def get_normative(curr_date, norm_value):
 
 
 def month_year_iter(start_month, start_year, end_month, end_year):
+    """ Функция возвращает итератор дат.
+    Принимает на вход 4 параметра:
+        start_month - начальный месяц
+        start_year - начальный год
+        end_month - конечный месяц
+        end_year - конечный год
+     """
     ym_start = 12*start_year + start_month - 1
     ym_end = 12*end_year + end_month - 1
     for ym in range(ym_start, ym_end):

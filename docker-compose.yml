@@ -30,6 +30,7 @@ services:
       args:
         - DEBUG=True
       target: deploy
+    image: backend_image
     volumes: 
       - ./backend:/app/
       - ./static:/app/static
@@ -73,7 +74,7 @@ services:
         ipv4_address: 172.25.0.6
 
   qcluster:
-    image: birdproject_backend
+    image: backend_image
     container_name: 'qcluster'
     env_file: .env
     user: ${CURRENT_UID}
