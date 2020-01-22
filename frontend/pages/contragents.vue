@@ -62,7 +62,7 @@
                                         :errorText="{ type: 'Некоректный тип файла. Доступно только xlsx', size: 'Размер файла выше 2MB' }"
                                         @select="onSelect($event)"
                                     )
-                    small *Файл должен быть с расширением .xlsx и размером меньше двух мегабайт
+                                    small *Файл должен быть с расширением .xlsx и размером меньше двух мегабайт
                     v-card-actions
                         v-spacer
                         v-btn(color="blue darken-1" text @click="contragentDialogState = false") Закрыть
