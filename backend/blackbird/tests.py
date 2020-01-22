@@ -77,8 +77,6 @@ class ViewTest(TestCase):
                 }
             ]
         self.assertEqual(test_res, res)
-        # print(res)
-        # assert res == test_res
 
     def test_round_function(self):
         """ Тест функции округления. """

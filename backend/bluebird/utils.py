@@ -5,8 +5,7 @@ import uuid
 import os
 from typing import List
 
-from bluebird.models import (KLASS_TYPES, Contragent,
-                             DocumentUniqueNumberGenerator)
+from bluebird.models import (KLASS_TYPES, Contragent, ActUNGen, CountUNGen)
 from bluebird.serializers import ContragentFullSerializer
 
 from django.http import Http404
@@ -102,18 +101,25 @@ def get_data(id: int):
 def generate_documents(data: List, contragent: Contragent):
 
     for d in data:
-        unique_number = DocumentUniqueNumberGenerator.create(d['curr_date'],
-                                                             contragent)
         # # TODO generate unique document number
         # 000001-year/ТКО/01
         # № ACT 00001/1
-        d['uniq_num_id'] = unique_number
-        generate_document(generate_act(d, contragent), 'out.pdf')
+
+        d['uniq_num_id'] = ActUNGen.create(d['curr_date'], contragent)
+        generate_document(generate_act(d, contragent), 'act.pdf')
+
+        d['uniq_num_id'] = CountUNGen.create(d['curr_date'], contragent)
+        generate_document(generate_pay_count(d, contragent), 'count.pdf')
 
 
 def generate_act(data: dict, contragent: Contragent):
     data['consumer'] = contragent
     return render_to_string('act.html', context=data)
+
+
+def generate_pay_count(data: dict, contragent: Contragent):
+    data['consumer'] = contragent
+    return render_to_string('count.html', context=data)
 
 
 def generate_document(text: str, name: str):

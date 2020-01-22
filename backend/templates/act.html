@@ -65,7 +65,7 @@
 		>
 			<tbody>
 				<tr>
-					<td colspan="4"><p class="ft10">Акт № {{uniq_num_id}}  от {{ curr_date|date:"d E Y"}}г.</p></td>
+					<td colspan="4"><p class="ft10">Акт № {{ uniq_num_id }}  от {{ curr_date|date:"d E Y" }}г.</p></td>
 				</tr>
 				<tr>
 					<td>
@@ -80,7 +80,7 @@
 						<p class="ft12">Заказчик:</p>
 					</td>
 					<td colspan="3">
-						<p class="ft12">{{consumer.excell_name}},&nbsp;ИНН&nbsp;{{consumer.inn}},&nbsp;КПП&nbsp;{% if consumer.kpp %}{{consumer.kpp}}{% else %}________________________________________,{% endif %}<br/>{{consumer.legal_address}},&nbsp;р/с&nbsp;{% if consumer.rs %}{{consumer.rs}}{% else %}________________________________________{% endif %},&nbsp;в&nbsp;банке&nbsp;{% if consumer.bank %}{{consumer.bank}}{% else %}________________________________________{% endif %},&nbsp;БИК&nbsp;{% if consumer.bik %}{{consumer.bik}}{% else %}________________________________________{% endif %},&nbsp;к/с&nbsp;{% if consumer.ks %}{{consumer.ks}}{% else %}________________________________________{% endif %}</p>
+						<p class="ft12">{{ consumer.excell_name }},&nbsp;ИНН&nbsp;{{ consumer.inn }},&nbsp;КПП&nbsp;{% if consumer.kpp %}{{ consumer.kpp }}{% else %}________________________________________{% endif %},<br/>{{ consumer.legal_address }},&nbsp;р/с&nbsp;{% if consumer.rs %}{{ consumer.rs }}{% else %}________________________________________{% endif %},&nbsp;в&nbsp;банке&nbsp;{% if consumer.bank %}{{ consumer.bank }}{% else %}________________________________________{% endif %},&nbsp;БИК&nbsp;{% if consumer.bik %}{{ consumer.bik }}{% else %}________________________________________{% endif %},&nbsp;к/с&nbsp;{% if consumer.ks %}{{ consumer.ks }}{% else %}________________________________________{% endif %}</p>
 					</td>
 				</tr>
 				<tr>
@@ -88,7 +88,7 @@
 						<p class="ft12">Основание:</p>
 					</td>
 					<td colspan="3">
-						<p class="ft12">{{consumer.number_contract}}</p>
+						<p class="ft12">{{ consumer.number_contract }}</p>
 					</td>
 				</tr>
 				<tr>
@@ -119,7 +119,7 @@
 							<tbody style="border: 0;">
 								<tr>
 									<td>1</td>
-									<td><p style="width: 500px;">Услуги по обращению с твердыми коммунальными отходами по договору №{{consumer.number_contract}} за {{ curr_date|date:"F Y"}}г.</p></td>
+									<td><p style="width: 500px;">Услуги по обращению с твердыми коммунальными отходами по договору №{{ consumer.number_contract }} за {{ curr_date|date:"F Y" }}г.</p></td>
 									<td>{{ V_as_precise }}</td>
 									<td>м3</td>
 									<td>{{ tariff_tax }}</td>

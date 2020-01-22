@@ -1,7 +1,7 @@
 from django.test import TestCase
 from bluebird.utils import generate_act, generate_document
 from bluebird.models import (Contragent, ContractNumberClass,
-                             DocumentUniqueNumberGenerator)
+                             ActUNGen)
 from datetime import date
 
 
@@ -45,8 +45,7 @@ class GenerationDocsTest(TestCase):
             'tax_price_precise': '370.67',
             'summ_tax_precise': '2224.03'
         }
-        unique_number = DocumentUniqueNumberGenerator.create(
-            calc_result['curr_date'], contragent)
+        unique_number = ActUNGen.create(calc_result['curr_date'], contragent)
         calc_result['uniq_num_id'] = unique_number
         # Конец фикстур
 

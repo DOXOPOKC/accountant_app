@@ -8,7 +8,7 @@ import math
 
 def calculate(*args, **kwargs):
     """
-    Функция принимает на вход словарь с параметрами
+    Функция принимает на вход словарь с параметрами:
         since_date: Дата с начала расчета
         up_to_date: Дата конца расчета
         stat_value: Значение показателя (м2, кол. чел. и т.д.)
@@ -69,7 +69,6 @@ def calculate(*args, **kwargs):
         raise AttributeError()
 
     result = []
-    print(since_date, up_to_date, stat_value, norm_value)
     start_day = since_date.day
 
     for dt in month_year_iter(since_date.month, since_date.year,
@@ -77,7 +76,6 @@ def calculate(*args, **kwargs):
         curr_date = date(day=calendar.monthrange(dt[0], dt[1])[1],
                          month=dt[1],
                          year=dt[0])
-        # print(curr_date)
         norm = get_normative(curr_date, norm_value)
 
         formula_obj_r = get_formula_object(curr_date)
@@ -90,9 +88,6 @@ def calculate(*args, **kwargs):
         a_day_count = m_day_count - start_day
         print(norm, a_day_count)
 
-        # print(eval(formula_rough))
-        # print(eval(formula_precise))
-
         V_as_rough = round_hafz(eval(eval(formula_rough)), 5)
         V_as_precise = round_hafz(eval(eval(formula_precise)), 5)
 
@@ -104,8 +99,6 @@ def calculate(*args, **kwargs):
         summ_rough = round_hafz(V_as_rough * formula_obj_r.get_tariff(), 2)
         tax_price_rough = round_hafz(summ_rough * formula_obj_r.get_tax(), 2)
         summ_tax_rough = round_hafz(summ_rough + tax_price_rough, 2)
-
-        print(summ_precise)
 
         tariff_tax = formula_obj_p.get_tariff() * (1 + formula_obj_p.get_tax())
 
@@ -134,7 +127,6 @@ def get_formula_object(curr_date, rough=True):
     """
     formulas = Formula.objects.filter(is_rough=rough)
     for f in formulas:
-        # print(f.since_date, '|', f.up_to_date, '| is', curr_date)
         if f.since_date <= curr_date <= f.up_to_date:
             return f
 
@@ -170,11 +162,3 @@ def round_hafz(n, decimals=0):
     multiplier = 10 ** decimals
     temp_calc = math.floor(abs(n)*multiplier + 0.5) / multiplier
     return math.copysign(temp_calc, n)
-
-
-if __name__ == '__main__':
-    p = calculate(since_date=date.fromisoformat('2019-01-05'),
-                  up_to_date=date.fromisoformat('2020-01-10'),
-                  stat_value=75,
-                  norm_value=2)
-    print(p)
