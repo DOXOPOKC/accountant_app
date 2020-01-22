@@ -28,7 +28,7 @@ services:
     build:
       context: ./backend
       args:
-        - DEBUG=True
+        - DEBUG=${DEBUG}
       target: deploy
     image: backend_image
     volumes: 
