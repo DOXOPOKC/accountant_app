@@ -1,0 +1,162 @@
+{% load template_extra_filters %}
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+	<head>
+		<title></title>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+		<style type="text/css">
+		<!--
+			th {padding: 10px;font-weight: 500;}
+			td {padding: 10px;}
+			p {margin: 0; padding: 0;}
+			.ft10{font-size:25px;font-family:Times;color:#000000;}
+			.ft11{font-size:17px;font-family:Times;color:#000000;}
+			.ft12{font-size:17px;font-family:Times;color:#000000;}
+			.ft13{font-size:16px;font-family:Times;color:#000000;}
+			.ft14{font-size:19px;font-family:Times;color:#000000;}
+			.ft15{font-size:20px;font-family:Times;color:#000000;}
+			.ft16{font-size:17px;line-height:15px;font-family:Times;color:#000000;}
+			.ft17{font-size:16px;line-height:13px;font-family:Times;color:#000000;}
+			.ft18{font-size:16px;line-height:15px;font-family:Times;color:#000000;}
+		-->
+		</style>
+	</head>
+	<body>
+        <table
+			style="border-collapse:collapse;width:900px;"
+			border="0"
+			class="ft12"
+		>
+			<tr>
+				<td colspan="2">
+					<table class="ft17" border="1" style="width:100%;border-collapse:collapse;text-align: left;">
+						<thead>
+							<tr>
+								<th rowspan="2">ФИЛИАЛ БАНКА& ВТБ (ПАО) В <br /> Г.КРАСНОЯРСКЕ <br /> Банк получателя</th>
+								<th>БИК</th>
+								<th rowspan="2"><span style="display: inline-block;margin: 0 0 20px 0">040407777</span><br /><span>30101810200000000777</span></th>
+							</tr>
+							<tr>
+								<th>Сч. №</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>ИНН 421701001 КПП 421701001 <br> ООО "ЭкоТек" <br> Получатель</td>
+								<td>Сч. №</td>
+								<td>40702810513030000704</td>
+							</tr>
+						</tbody>
+					</table>
+				</td>
+			</tr>
+			<tr style="height: 10px;">
+				<td style="padding: 0 0 0 0;" colspan="2">
+					<p style="white-space:nowrap" class="ft10"><b>Счет&#160;на&#160;оплату&#160;№&#160;{{ uniq_num_id }}&#160;от&#160;{{ curr_date|date:"d E Y"}}г.</b></p>
+					<hr />
+				</td>
+			</tr>
+			<tr>
+				<td style="
+					padding: 0 0 32px 0;
+    				width: 70px;">
+					<p style="white-space:nowrap" class="ft24">Поставщик<br/>(Исполнитель):</p>
+				</td>
+				<td>
+					<p style="white-space:nowrap" class="ft16"><b>ООО &#34;ЭкоТек&#34;, ИНН 4217127183,&#160;КПП&#160;421701001,&#160;654079, Кемеровская&#160;область&#160;- Кузбасс,&#160;<br /> г.Новокузнецк, пр-д&#160;Коммунаров, 2,&#160;тел.:&#160;88005505242</br></p>
+				</td>
+			</tr>
+			<tr>
+				<td style="
+					padding: 0 0 62px 0;
+    				width: 70px;">
+					<p style="white-space:nowrap" class="ft11">Заказчик:</p>
+				</td>
+				<td>
+					<p style="white-space:nowrap" class="ft16"><b>{{ consumer.excell_name }},&#160;ИНН&#160;{{ consumer.inn }},&#160;КПП&#160;{% if consumer.kpp %}{{ consumer.kpp }}{% else %}<br/>________________________________________{% endif %},&#160;{% if consumer.legal_address %}{{ consumer.legal_address }}________________________________________{% endif %},&#160;р/с&#160;{% if consumer.rs %}{{consumer.rs}}{% else %}________________________________________{% endif %},&#160;в&#160;банке&#160;{% if consumer.bank %}{{consumer.bank}}{% else %}<br/>________________________________________{% endif %},&#160;БИК&#160;{% if consumer.bik %}{{consumer.bik}}{% else %}________________________________________{% endif %},&#160;к/с{% if consumer.ks %}{{consumer.ks}}{% else %}<br/>________________________________________{% endif %}</b></p>
+				</td>
+			</tr>
+			<tr style="height: 30px;">
+				<td style="padding: 0;width: 60px;">
+					<p style="white-space:nowrap" class="ft11">Основание:</p>
+				</td>
+				<td style="padding: 0">
+					<p style="white-space:nowrap" class="ft12">{{ consumer.number_contract }}</p>
+				</td>
+			</tr>
+			<tr>
+				<td colspan="2" style="padding: 0">
+					<table style="border-collapse:collapse;width: 100%;" border="4px" class="ft12">
+						<thead>
+							<tr>
+								<th><b>№</b></th>
+								<th><b>Наименование работ, услуг</b></th>
+								<th><b>Кол-во</b></th>
+								<th><b>Ед.</b></th>
+								<th><b>Цена</b></th>
+								<th><b>Итого</b></th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>1</td>
+								<td>Услуги по обращению с твердыми коммунальными отходами по договору {{ consumer.number_contract }} за {{ curr_date|date:"F Y" }}г.</td>
+								<td>{{ V_as_precise }}</td>
+								<td>м3</td>
+								<td>{{ tariff_tax }}</td>
+								<td>{{ summ_tax_precise }}</td>
+							</tr>
+						</tbody>  
+					</table>
+				</td>
+			</tr>
+			<tr style="height: 10px;">
+				<td style="text-align: end;padding: 0 25px 0 0;" colspan="2">
+					<p style="white-space:nowrap" class="ft12"><b>Итого:&nbsp&nbsp&nbsp&nbsp&nbsp{{ summ_tax_precise }}</b></p>
+				</td>
+			</tr>
+			<tr style="height: 10px;">
+				<td style="text-align: end;padding: 0 30px 0 0;" colspan="2">
+					<p style="white-space:nowrap" class="ft12"><b>В&nbsp;том&nbsp;числе&nbsp;НДС&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{tax_price_precise}}</b></p>
+				</td>
+			</tr>
+			<tr style="height: 10px;">
+				<td style="text-align: end;padding: 0 30px 0 0;" colspan="2">
+					<p style="white-space:nowrap" class="ft12"><b>Всего&nbsp;к&nbsp;оплате&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ summ_tax_precise }}</b></p>
+				</td>
+			</tr>
+			<tr style="height: 10px;">
+				<td style="padding: 0 0 0 0;" colspan="2">
+					<p style="white-space:nowrap" class="ft13">Всего&#160;оказано&#160;услуг&#160;&#160;1,&#160;на&#160;сумму&#160;{{tax_price_precise}}&#160;руб.</p>
+				</td>
+			</tr>
+			<tr style="height: 10px;">
+				<td style="padding: 0 0 0 0;" colspan="2">
+					<p style="white-space:nowrap" class="ft12"><b>{{ summ_tax_precise|literal|capfirst }}</b></p>
+				</td>
+			</tr>
+			<tr style="height: 10px;">
+				<td style="padding: 10px 0;" colspan="2">
+					<p style="white-space:nowrap" class="ft13">Оплата данного счета означает&#160;согласие&#160;с условиями&#160;поставки&#160;товара&#160;(услуг)</p>
+				</td>
+			</tr>
+			<tr style="height: 10px;">
+				<td style="padding: 10px 0;" colspan="2">
+					<hr />
+				</td>
+			</tr>
+			<tr style="height: 10px;">
+				<td style="padding: 0;">
+					<p style="white-space:nowrap" class="ft14">Руководитель</p>
+					<p style="padding: 20px 0 0 0;white-space:nowrap" class="ft12"><b>____________________________</b></p>
+					<p style="padding: 0 0 0 0;white-space:nowrap" class="ft18">Гвоздева&#160;М.Л.&#160;Доверенность<br/>б/н&#160;от&#160;01.10.2019г.</p>
+				</td>
+				<td style="padding: 0 0 0 500px;">
+					<p style="white-space:nowrap;padding: 0 90px 0 0;" class="ft14">Бухгалтер</p>
+					<p style="padding: 20px 0 0 0;white-space:nowrap" class="ft12"><b>____________________________</b></p>
+					<p style="white-space:nowrap" class="ft18">Гвоздева&#160;М.Л.&#160;Доверенность<br/>б/н&#160;от&#160;01.10.2019г.</p>
+				</td>
+			</tr>
+		</table>
+    </body>
+</html>
