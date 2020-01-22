@@ -80,7 +80,7 @@
 						<p class="ft12">Заказчик:</p>
 					</td>
 					<td colspan="3">
-						<p class="ft12">{{consumer.excell_name}},&nbsp;ИНН&nbsp;{{consumer.inn}},&nbsp;КПП&nbsp;{% if consumer.kpp %}{{consumer.kpp}}{% else %}________________________________________,{% endif %}<br/>{{consumer.legal_address}},&nbsp;р/с&nbsp;________________________________________,&nbsp;в&nbsp;банке&nbsp;________________________________________,&nbsp;БИК&nbsp;________________________________________,&nbsp;к/с________________________________________</p>
+						<p class="ft12">{{consumer.excell_name}},&nbsp;ИНН&nbsp;{{consumer.inn}},&nbsp;КПП&nbsp;{% if consumer.kpp %}{{consumer.kpp}}{% else %}________________________________________,{% endif %}<br/>{{consumer.legal_address}},&nbsp;р/с&nbsp;{% if consumer.rs %}{{consumer.rs}}{% else %}________________________________________{% endif %},&nbsp;в&nbsp;банке&nbsp;{% if consumer.bank %}{{consumer.bank}}{% else %}________________________________________{% endif %},&nbsp;БИК&nbsp;{% if consumer.bik %}{{consumer.bik}}{% else %}________________________________________{% endif %},&nbsp;к/с&nbsp;{% if consumer.ks %}{{consumer.ks}}{% else %}________________________________________{% endif %}</p>
 					</td>
 				</tr>
 				<tr>
@@ -191,7 +191,7 @@
 		>
 			<tbody>
 				<tr>
-					<td colspan="4"><p class="ft10">Акт № 81654  от {{ curr_date|date:"d E Y"}}г.</p></td>
+					<td colspan="4"><p class="ft10">Акт № {{uniq_num_id}}  от {{ curr_date|date:"d E Y"}}г.</p></td>
 				</tr>
 				<tr>
 					<td>
@@ -206,7 +206,7 @@
 						<p class="ft12">Заказчик:</p>
 					</td>
 					<td colspan="3">
-						<p class="ft12">{{consumer.excell_name}},&nbsp;ИНН&nbsp;{{consumer.inn}},&nbsp;КПП&nbsp;{% if consumer.kpp %}{{consumer.kpp}}{% else %}________________________________________,{% endif %}<br/>{{consumer.legal_address}},<br/>&nbsp;р/с&nbsp;________________________________________,&nbsp;в&nbsp;банке&nbsp;<br/>________________________________________,&nbsp;БИК&nbsp;________________________________________,&nbsp;к/с<br/>________________________________________</p>
+						<p class="ft12">{{consumer.excell_name}},&nbsp;ИНН&nbsp;{{consumer.inn}},&nbsp;КПП&nbsp;{% if consumer.kpp %}{{consumer.kpp}}{% else %}________________________________________,{% endif %}<br/>{{consumer.legal_address}},&nbsp;р/с&nbsp;{% if consumer.rs %}{{consumer.rs}}{% else %}________________________________________{% endif %},&nbsp;в&nbsp;банке&nbsp;{% if consumer.bank %}{{consumer.bank}}{% else %}________________________________________{% endif %},&nbsp;БИК&nbsp;{% if consumer.bik %}{{consumer.bik}}{% else %}________________________________________{% endif %},&nbsp;к/с&nbsp;{% if consumer.ks %}{{consumer.ks}}{% else %}________________________________________{% endif %}</p>
 					</td>
 				</tr>
 				<tr>
