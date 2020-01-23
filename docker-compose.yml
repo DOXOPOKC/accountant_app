@@ -23,7 +23,7 @@ services:
 
   backend:
     container_name: 'birds'
-    user: ${CURRENT_UID}
+    # user: ${CURRENT_UID}
     env_file: .env
     build:
       context: ./backend
@@ -44,7 +44,7 @@ services:
 
   frontend:
     container_name: 'node'
-    user: ${CURRENT_UID}
+    # user: ${CURRENT_UID}
     build:
       context: ./frontend
     command: npm run dev
@@ -72,7 +72,7 @@ services:
       - ./media:/app/media
     depends_on:
       - backend
-      # - frontend
+      - frontend
     networks:
       private_network:
         ipv4_address: 172.25.0.6
