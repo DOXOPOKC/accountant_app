@@ -5,7 +5,7 @@ import uuid
 import os
 from typing import List
 
-from bluebird.models import KLASS_TYPES, Contragent
+from bluebird.models import (KLASS_TYPES, Contragent, ActUNGen, CountUNGen)
 from bluebird.serializers import ContragentFullSerializer
 
 from django.http import Http404
@@ -36,11 +36,15 @@ def parse_from_file(xlsx_file):
             if MIN_INNN_LEN > len(str(a)) or len(str(a)) > MAX_INN_LEN:
                 raise Exception(('200', 'Inn is wrong.'))
             else:
+                if d != '' and 0 < d < len(KLASS_TYPES):
+                    klass = KLASS_TYPES[d][0]
+                else:
+                    klass = 0
                 tmp_obj = {
                     'inn': int(a),
                     'physical_address': b,
                     'excell_name': c,
-                    'klass': KLASS_TYPES[d-1][0]
+                    'klass': klass
                 }
                 results.append(tmp_obj)
         else:
@@ -94,18 +98,29 @@ def get_data(id: int):
                 'status': "No suggestions. Check, DADATA is availiable?"}
 
 
-def generate_documents(data: List, contagent: Contragent):
-    # generate_unique_contract_number()  # TODO generate unicue contract number
-    # 000001-year/ТКО/01
-    # № ACT 00001/1
+def generate_documents(data: List, contragent: Contragent):
+
     for d in data:
-        generate_act(d, contagent)
+
+        d['uniq_num_id'] = ActUNGen.create(d['curr_date'], contragent)
+        generate_document(generate_act(d, contragent), 'act.pdf')
+
+        d['uniq_num_id'] = CountUNGen.create(d['curr_date'], contragent)
+        generate_document(generate_pay_count(d, contragent), 'count.pdf')
 
 
-def generate_act(data: dict, contagent: Contragent):
-    data['consumer'] = contagent
-    text = render_to_string('act.html', context=data)
-    pdfkit.from_string(text + '', 'out.pdf')
+def generate_act(data: dict, contragent: Contragent):
+    data['consumer'] = contragent
+    return render_to_string('act.html', context=data)
+
+
+def generate_pay_count(data: dict, contragent: Contragent):
+    data['consumer'] = contragent
+    return render_to_string('count.html', context=data)
+
+
+def generate_document(text: str, name: str):
+    pdfkit.from_string(text, name)
 
 
 def create_unique_id():

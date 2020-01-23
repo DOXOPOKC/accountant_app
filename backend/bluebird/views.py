@@ -5,7 +5,7 @@ from rest_framework.parsers import (FileUploadParser, MultiPartParser)
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from bluebird.models import Contragent
+from bluebird.models import Contragent, ContractNumberClass
 from bluebird.serializers import (ContragentShortSerializer,
                                   ContragentFullSerializer,
                                   TaskSerializer)
@@ -30,6 +30,8 @@ class ContragentsView(APIView):
             group_id = create_unique_id()
             for data_element in result:
                 if data_element['klass'] == 1:
+                    contract_number = ContractNumberClass.create(new=True)
+                    data_element['number_contract'] = contract_number.pk
                     serializer = ContragentFullSerializer(data=data_element)
                     if serializer.is_valid(True):
                         serializer.save()

@@ -26,3 +26,8 @@ class Formula(models.Model):
 
     def get_tariff(self):
         return self.tariff
+
+    def __str__(self):
+        return ('Формула расчета. '
+                + f'Действует с {self.since_date.strftime("%d.%m.%Y")} '
+                + f'по {self.up_to_date.strftime("%d.%m.%Y")}.')
