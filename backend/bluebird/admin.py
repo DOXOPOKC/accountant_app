@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import (KLASS_TYPES, Contragent, NormativeCategory, Normative,
-                     Contract, ContractNumberClass, DocumentUniqueNumber,
-                     DocumentUniqueNumberGenerator)
+                     Contract, ContractNumberClass, CountUNGen, ActUNGen,
+                     ActUN, CountUN)
 
 
 class ContragentAdmin(admin.ModelAdmin):
@@ -27,5 +27,7 @@ admin.site.register(NormativeCategory, NormativeCategoryAdmin)
 admin.site.register(Normative, NormativeAdmin)
 admin.site.register(Contract)
 admin.site.register(ContractNumberClass)
-admin.site.register(DocumentUniqueNumber)
-admin.site.register(DocumentUniqueNumberGenerator)
+admin.site.register(ActUN)
+admin.site.register(ActUNGen)
+admin.site.register(CountUN)
+admin.site.register(CountUNGen)

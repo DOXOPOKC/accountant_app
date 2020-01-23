@@ -173,6 +173,9 @@ class DocumentUniqueNumber(models.Model):
     def __str__(self):
         return f'{self.pk:05}/1'
 
+    class Meta:
+        abstract = True
+
 
 class DocumentUniqueNumberGenerator(models.Model):
     """ Модель прокси для соединения уникального номера и контрагента.
@@ -193,3 +196,35 @@ class DocumentUniqueNumberGenerator(models.Model):
 
     def __str__(self):
         return str(self.unique_number)
+
+    class Meta:
+        abstract = True
+
+
+class ActUN(DocumentUniqueNumber):
+    class Meta:
+        abstract = False
+
+
+class ActUNGen(DocumentUniqueNumberGenerator):
+    unique_number = models.OneToOneField(ActUN, on_delete=models.CASCADE)
+    @classmethod
+    def create(cls, date_when, contragent: Contragent):
+        unique_n = ActUN.objects.create()
+        return cls.objects.create(date_when=date_when,
+                                  contragent=contragent,
+                                  unique_number=unique_n)
+
+
+class CountUN(DocumentUniqueNumber):
+    pass
+
+
+class CountUNGen(DocumentUniqueNumberGenerator):
+    unique_number = models.OneToOneField(CountUN, on_delete=models.CASCADE)
+    @classmethod
+    def create(cls, date_when, contragent: Contragent):
+        unique_n = CountUN.objects.create()
+        return cls.objects.create(date_when=date_when,
+                                  contragent=contragent,
+                                  unique_number=unique_n)
