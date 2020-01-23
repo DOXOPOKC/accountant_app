@@ -101,9 +101,6 @@ def get_data(id: int):
 def generate_documents(data: List, contragent: Contragent):
 
     for d in data:
-        # # TODO generate unique document number
-        # 000001-year/ТКО/01
-        # № ACT 00001/1
 
         d['uniq_num_id'] = ActUNGen.create(d['curr_date'], contragent)
         generate_document(generate_act(d, contragent), 'act.pdf')

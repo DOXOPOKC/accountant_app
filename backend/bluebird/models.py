@@ -26,8 +26,7 @@ class Contragent(models.Model):
                                    max_length=255)
     dadata_name = models.CharField('Наименование контрагента (из Dadata)',
                                    max_length=255, blank=True, null=True)
-    debt = models.FloatField('Сумма задолжности',
-                             default=0.00)
+    debt = models.FloatField('Сумма задолжности', default=0.00)
     inn = models.BigIntegerField('ИНН контрагента', blank=True, null=True)
     ogrn = models.BigIntegerField('ОГРН контрагента', blank=True, null=True)
     kpp = models.BigIntegerField('КПП контрагента', blank=True, null=True)
@@ -60,19 +59,19 @@ class Contragent(models.Model):
                                    blank=True, null=True)
     stat_value = models.FloatField('Показатель', blank=True, null=True)
     contract_accept_date = models.DateField(
-                            'Дата заключения договора',
+                            'Дата начала оказания услуг',
                             default=datetime.date.fromisoformat('2018-07-01'),
                             blank=True, null=True
                     )
-    current_date = models.DateField('Текущая дата',
+    current_date = models.DateField('Конечная дата оказания услуг',
                                     auto_now_add=True, blank=True,
                                     null=True)
     number_contract = models.OneToOneField('ContractNumberClass',
                                            on_delete=models.CASCADE,
                                            max_length=255,
                                            blank=True, null=True)
-    current_contract_date = models.DateTimeField('Дата заключения договора',
-                                                 blank=True, null=True)
+    current_contract_date = models.DateField('Дата заключения договора',
+                                             blank=True, null=True)
     signed_user = models.ForeignKey(User, blank=True, null=True,
                                     on_delete=models.CASCADE,
                                     related_name='signed')
