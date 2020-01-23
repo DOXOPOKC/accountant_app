@@ -73,7 +73,7 @@
 					<p style="white-space:nowrap" class="ft11">Заказчик:</p>
 				</td>
 				<td>
-					<p style="white-space:nowrap" class="ft16"><b>{{ consumer.excell_name }},&#160;ИНН&#160;{{ consumer.inn }},&#160;КПП&#160;{% if consumer.kpp %}{{ consumer.kpp }}{% else %}<br/>________________________________________{% endif %},&#160;{% if consumer.legal_address %}{{ consumer.legal_address }}________________________________________{% endif %},&#160;р/с&#160;{% if consumer.rs %}{{consumer.rs}}{% else %}________________________________________{% endif %},&#160;в&#160;банке&#160;{% if consumer.bank %}{{consumer.bank}}{% else %}<br/>________________________________________{% endif %},&#160;БИК&#160;{% if consumer.bik %}{{consumer.bik}}{% else %}________________________________________{% endif %},&#160;к/с{% if consumer.ks %}{{consumer.ks}}{% else %}<br/>________________________________________{% endif %}</b></p>
+					<p style="white-space:nowrap" class="ft16"><b>{{ consumer.excell_name }},&#160;ИНН&#160;{{ consumer.inn }},&#160;КПП&#160;{% if consumer.kpp %}{{ consumer.kpp }}{% else %}________________________________________{% endif %},<br/>&#160;{% if consumer.legal_address %}{{ consumer.legal_address }}{% else %}________________________________________{% endif %},&#160;р/с&#160;{% if consumer.rs %}{{consumer.rs}}{% else %}________________________________________{% endif %},<br/>&#160;в&#160;банке&#160;{% if consumer.bank %}{{consumer.bank}}{% else %}________________________________________{% endif %},&#160;БИК&#160;{% if consumer.bik %}{{consumer.bik}}{% else %}________________________________________{% endif %},<br/>&#160;к/с{% if consumer.ks %}{{consumer.ks}}{% else %}<br/>________________________________________{% endif %}</b></p>
 				</td>
 			</tr>
 			<tr style="height: 30px;">
@@ -117,17 +117,17 @@
 			</tr>
 			<tr style="height: 10px;">
 				<td style="text-align: end;padding: 0 30px 0 0;" colspan="2">
-					<p style="white-space:nowrap" class="ft12"><b>В&nbsp;том&nbsp;числе&nbsp;НДС&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{tax_price_precise}}</b></p>
+					<p style="white-space:nowrap" class="ft12"><b>В&nbsp;том&nbsp;числе&nbsp;НДС:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ tax_price_precise }}</b></p>
 				</td>
 			</tr>
 			<tr style="height: 10px;">
 				<td style="text-align: end;padding: 0 30px 0 0;" colspan="2">
-					<p style="white-space:nowrap" class="ft12"><b>Всего&nbsp;к&nbsp;оплате&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ summ_tax_precise }}</b></p>
+					<p style="white-space:nowrap" class="ft12"><b>Всего&nbsp;к&nbsp;оплате:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ summ_tax_precise }}</b></p>
 				</td>
 			</tr>
 			<tr style="height: 10px;">
 				<td style="padding: 0 0 0 0;" colspan="2">
-					<p style="white-space:nowrap" class="ft13">Всего&#160;оказано&#160;услуг&#160;&#160;1,&#160;на&#160;сумму&#160;{{tax_price_precise}}&#160;руб.</p>
+					<p style="white-space:nowrap" class="ft13">Всего&#160;оказано&#160;услуг&#160;&#160;1,&#160;на&#160;сумму&#160;{{ summ_tax_precise }}&#160;руб.</p>
 				</td>
 			</tr>
 			<tr style="height: 10px;">
