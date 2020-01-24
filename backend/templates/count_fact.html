@@ -1,0 +1,122 @@
+{% load template_extra_filters %}
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+	<head>
+		<title></title>
+
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+		<br/>
+		<style type="text/css">
+		<!--
+			p {margin: 0; padding: 0;}	.ft10{font-size:7px;font-family:Times;color:#000000;}
+			.ft11{font-size:10px;font-family:Times;color:#000000;}
+			.ft12{font-size:19px;font-family:Times;color:#000000;}
+			.ft13{font-size:11px;font-family:Times;color:#000000;}
+			.ft14{font-size:13px;font-family:Times;color:#000000;}
+			.ft15{font-size:10px;font-family:Times;color:#000000;}
+			.ft16{font-size:10px;line-height:15px;font-family:Times;color:#000000;}
+			.ft17{font-size:10px;line-height:13px;font-family:Times;color:#000000;}
+		-->
+		</style>
+	</head>
+	<body>
+		<div id="page1-div" style="position:relative;width:1263px;height:892px;">
+			<p style="position:absolute;top:86px;left:760px;white-space:nowrap" class="ft10">Приложение&#160;№&#160;1&#160;к&#160;постановлению&#160;Правительства&#160;Российской&#160;Федерации&#160;от&#160;26&#160;декабря&#160;2011&#160;г.&#160;№&#160;1137</p>
+			<p style="position:absolute;top:97px;left:760px;white-space:nowrap" class="ft10">(в&#160;редакции&#160;постановления&#160;Правительства&#160;Российской&#160;Федерации&#160;от&#160;19&#160;августа&#160;2017&#160;г.&#160;№&#160;981)</p>
+			<p style="position:absolute;top:92px;left:1177px;white-space:nowrap" class="ft11">&#160;</p>
+			<p style="position:absolute;top:107px;left:50px;white-space:nowrap" class="ft12"><b>Счет-фактура&#160;№&#160;{{ uniq_num_id }}&#160;&#160;&#160;от&#160;{{ curr_date|date:"d E Y" }}&#160;г.</b></p>
+			<p style="position:absolute;top:152px;left:50px;white-space:nowrap" class="ft12"><b>Исправление&#160;№&#160;--&#160;от&#160;--</b></p>
+			<p style="position:absolute;top:175px;left:50px;white-space:nowrap" class="ft16">Продавец:&#160;ООО&#160;&#34;ЭкоТек&#34;<br/>Адрес:&#160;654079,&#160;Кемеровская&#160;область&#160;</p>
+			<p style="position:absolute;top:189px;left:261px;white-space:nowrap" class="ft13"><b>-&#160;</b></p>
+			<p style="position:absolute;top:191px;left:270px;white-space:nowrap" class="ft11">Кузбасс,&#160;г.Новокузнецк,&#160;пр-д&#160;Коммунаров,&#160;2</p>
+			<p style="position:absolute;top:205px;left:50px;white-space:nowrap" class="ft17">
+				ИНН/КПП&#160;продавца:&#160;4217127183/421701001<br/>
+				Грузоотправитель&#160;и&#160;его&#160;адрес:&#160;--<br/>
+				Грузополучатель&#160;и&#160;его&#160;адрес:&#160;--<br/>
+				К&#160;платежно-расчетному&#160;документу&#160;№&#160;&#160;&#160;&#160;от&#160;<br/>
+				Покупатель:&#160;{{ consumer.excell_name }}<br/>
+				Адрес:&#160;Кемеровская&#160;область&#160;-&#160;Кузбасс,&#160;г&#160;Прокопьевск,&#160;пр-кт&#160;Шахтеров,&#160;д&#160;8<br/>
+				ИНН/КПП&#160;покупателя:&#160;{{ consumer.inn }}/{% if consumer.kpp %}{{ consumer.kpp }}{% else %}________________________________________{% endif %}&#160;<br/>
+				Валюта:&#160;наименование,&#160;код&#160;Российский&#160;рубль,&#160;643<br/>
+				Идентификатор&#160;государственного&#160;контракта,&#160;договора&#160;(соглашения)&#160;(при&#160;наличии):&#160;
+			</p>
+			<table class="ft17" border="1" style="width: 900px; border-collapse: collapse; text-align: center;position:absolute;top:378px;left:55px;">
+				<tr>
+					<th rowspan="2">Наименование товара (описание выполненных работ оказанных услуг), имущественного права</th>
+					<th rowspan="2">Код вида товара</th>
+					<th colspan="2">Единица измерения</th>
+					
+					<th rowspan="2">Количество (объем)</th>
+					<th rowspan="2">Цена (тариф) за единицу измерения</th>
+					<th rowspan="2">Стоимость(товаров (работ, услуг), имущественных прав без налога - всего</th>
+					<th rowspan="2">В том числе сумма акциза</th>
+					<th rowspan="2">Налоговая ставка</th>
+					<th rowspan="2">Сумма налога, предъявляе мая покупателю</th>
+					<th rowspan="2">Стоимость товаров (работ, услуг), имущественных прав с налогом - всего</th>
+					<th colspan="2">Страна происхождения товара</th>
+					
+					<th rowspan="2">Регистрационный номер таможенной декларации</th>
+				</tr>
+				<tr>
+					<th>Код</th>
+					<th>Условное обозначение (национальное)</th>
+					<th>Цифровой код</th>
+					<th>Краткое наименование</th>
+				</tr>
+				<tr>
+					<td>1</td>
+					<td>1а</td>
+					<td>2</td>
+					<td>2а</td>
+					<td>3</td>
+					<td>4</td>
+					<td>5</td>
+					<td>6</td>
+					<td>7</td>
+					<td>8</td>
+					<td>9</td>
+					<td>10</td>
+					<td>10а</td>
+					<td>11</td>
+				</tr>
+				<tr>
+					<td>Услуги по обращению с твердыми коммунальными отходами по договору №{{ consumer.number_contract }} за {{ curr_date|date:"F Y" }}г.</td>
+					<td>--</td>
+					<td>113</td>
+					<td>м3</td>
+					<td>{{ V_as_precise }}</td>
+					<td>{{ tariff }}</td>
+					<td>{{ summ_precise }}</td>
+					<td>без акциза</td>
+					<td>{{ tax|percentage }}</td>
+					<td>{{ tax_price_precise }}</td>
+					<td>{{ summ_tax_precise }}</td>
+					<td>--</td>
+					<td>--</td>
+					<td>--</td>
+				</tr>
+				<tr>
+					<td colspan="6"><b>Всего к оплате</b></td>
+					<td>{{ summ_precise }}</td>
+					<td colspan="2"><b>X</b></td>
+					<td>{{ tax_price_precise }}</td>
+					<td>{{ summ_tax_precise }}</td>
+				</tr>
+			</table>
+			
+			<p style="position:absolute;top:615px;left:50px;white-space:nowrap" class="ft17">Руководитель&#160;организации<br/>или&#160;иное&#160;уполномоченное&#160;лицо</p>
+			<p style="position:absolute;top:599px;left:351px;white-space:nowrap" class="ft16">Гвоздева&#160;М.Л.&#160;<br/>Доверенность&#160;б/н&#160;<br/>от&#160;01.10.2019г.</p>
+			<p style="position:absolute;top:602px;left:536px;white-space:nowrap" class="ft17">Главный&#160;бухгалтер<br/>или&#160;иное&#160;<br/>уполномоченное&#160;лицо</p>
+			<p style="position:absolute;top:599px;left:730px;white-space:nowrap" class="ft16">Гвоздева&#160;М.Л.&#160;<br/>Доверенность&#160;б/н&#160;от&#160;<br/>01.10.2019г.</p>
+			<p style="position:absolute;top:644px;left:279px;white-space:nowrap;width:50px;text-align:center;border-top:1px solid black" class="ft10">(подпись)</p>
+			<p style="position:absolute;top:644px;left:350px;white-space:nowrap;width:100px;text-align:center;border-top:1px solid black" class="ft10">(ф.и.о.)</p>
+			<p style="position:absolute;top:644px;left:650px;white-space:nowrap;width:50px;text-align:center;border-top:1px solid black" class="ft10">(подпись)</p>
+			<p style="position:absolute;top:644px;left:720px;white-space:nowrap;width:100px;text-align:center;border-top:1px solid black;" class="ft10">(ф.и.о.)</p>
+			<p style="position:absolute;top:686px;left:50px;white-space:nowrap" class="ft17">Индивидуальный&#160;предприниматель<br/>или&#160;иное&#160;уполномоченное&#160;лицо</p>
+			<p style="position:absolute;top:715px;left:279px;white-space:nowrap;width:50px;text-align:center;border-top:1px solid black" class="ft10">(подпись)</p>
+			<p style="position:absolute;top:715px;left:350px;white-space:nowrap;width:100px;text-align:center;border-top:1px solid black" class="ft10">(ф.и.о.)</p>
+			<p style="position:absolute;top:715px;left:575px;white-space:nowrap;width:200px;text-align:center;border-top:1px solid black;" class="ft10">(реквизиты&#160;свидетельства&#160;о&#160;государственной&#160;</p>
+			<p style="position:absolute;top:725px;left:602px;white-space:nowrap" class="ft10">регистрации&#160;индивидуального&#160;предпринимателя)</p>
+		</div>
+	</body>
+</html>

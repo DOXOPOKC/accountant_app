@@ -13,3 +13,11 @@ def literal(value):
     return decimal2text(decimal.Decimal(value),
                         int_units=((u'рубль', u'рубля', u'рублей'), 'm'),
                         exp_units=((u'копейка', u'копейки', u'копеек'), 'f'))
+
+
+@register.filter(name='percentage')
+def percentage(value, arg: int = 1):
+    if arg:
+        return f'{(value/arg)*100}%'
+    else:
+        return f'{value}%'

@@ -227,3 +227,17 @@ class CountUNGen(DocumentUniqueNumberGenerator):
         return cls.objects.create(date_when=date_when,
                                   contragent=contragent,
                                   unique_number=unique_n)
+
+
+class CountFactUN(DocumentUniqueNumber):
+    pass
+
+
+class CountFactUNGen(DocumentUniqueNumberGenerator):
+    unique_number = models.OneToOneField(CountFactUN, on_delete=models.CASCADE)
+    @classmethod
+    def create(cls, date_when, contragent: Contragent):
+        unique_n = CountFactUN.objects.create()
+        return cls.objects.create(date_when=date_when,
+                                  contragent=contragent,
+                                  unique_number=unique_n)

@@ -119,8 +119,13 @@ def generate_pay_count(data: dict, contragent: Contragent):
     return render_to_string('count.html', context=data)
 
 
-def generate_document(text: str, name: str):
-    pdfkit.from_string(text, name)
+def generate_count_fact(data: dict, contragent: Contragent):
+    data['consumer'] = contragent
+    return render_to_string('count_fact.html', context=data)
+
+
+def generate_document(text: str, name: str, **kwargs):
+    pdfkit.from_string(text, name, **kwargs)
 
 
 def create_unique_id():

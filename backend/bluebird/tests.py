@@ -1,7 +1,8 @@
 from django.test import TestCase
-from bluebird.utils import generate_act, generate_document, generate_pay_count
+from bluebird.utils import (generate_act, generate_document,
+                            generate_pay_count, generate_count_fact)
 from bluebird.models import (Contragent, ContractNumberClass,
-                             ActUNGen, CountUNGen)
+                             ActUNGen, CountUNGen, CountFactUNGen)
 from datetime import date
 
 
@@ -65,6 +66,16 @@ class GenerationDocsTest(TestCase):
         self.calc_result['uniq_num_id'] = unique_number
         res = generate_pay_count(self.calc_result, self.contragent)
         generate_document(res, 'test_count.pdf')
+
+    def test_generate_count_fact(self):
+        unique_number = CountFactUNGen.create(self.calc_result['curr_date'],
+                                              self.contragent)
+        self.calc_result['uniq_num_id'] = unique_number
+        res = generate_count_fact(self.calc_result, self.contragent)
+        options = {
+            'orientation': 'Landscape'
+        }
+        generate_document(res, 'test_count_fact.pdf',  options=options)
 
     def test_generate_count_list(self):
         """ Тест генерации счета фактуры. """
