@@ -5,13 +5,15 @@ import uuid
 import os
 from typing import List
 
-from bluebird.models import (KLASS_TYPES, Contragent, ActUNGen, CountUNGen)
+from bluebird.models import (KLASS_TYPES, Contragent, ActUNGen, CountUNGen,
+                             CountFactUNGen)
 from bluebird.serializers import ContragentFullSerializer
 
 from django.http import Http404
 from django.template.loader import render_to_string
 
 import pdfkit
+from docxtpl import DocxTemplate
 
 from bluebird.dadata import (suggestions_response_from_dict,
                              Result_response_from_suggestion)
@@ -99,6 +101,7 @@ def get_data(id: int):
 
 
 def generate_documents(data: List, contragent: Contragent):
+    """ Функция пакетной генерации документов."""
 
     for d in data:
 
@@ -107,6 +110,11 @@ def generate_documents(data: List, contragent: Contragent):
 
         d['uniq_num_id'] = CountUNGen.create(d['curr_date'], contragent)
         generate_document(generate_pay_count(d, contragent), 'count.pdf')
+
+        d['uniq_num_id'] = CountFactUNGen.create(d['curr_date'], contragent)
+        text = generate_count_fact(d, contragent)
+        generate_document(text, 'count_fact.pdf',
+                          options={'orientation': 'Landscape'})
 
 
 def generate_act(data: dict, contragent: Contragent):
@@ -122,6 +130,13 @@ def generate_pay_count(data: dict, contragent: Contragent):
 def generate_count_fact(data: dict, contragent: Contragent):
     data['consumer'] = contragent
     return render_to_string('count_fact.html', context=data)
+
+
+def generate_contract(data: dict, contragent: Contragent):
+    doc = DocxTemplate('templates/docx/ul.docx')
+    data['consumer'] = contragent
+    doc.render(data)
+    doc.save("generated_doc.docx")
 
 
 def generate_document(text: str, name: str, **kwargs):

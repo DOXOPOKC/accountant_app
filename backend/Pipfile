@@ -50,6 +50,10 @@ et_xmlfile = "*"
 Jinja2 = "*"
 MarkupSafe = "*"
 "ruamel.yaml" = "*"
+docxtpl = "*"
+pymorphy2 = "*"
+pymorphy2-dicts-ru = "*"
+lxml = "*"
 
 [requires]
 python_version = "3.8.1"

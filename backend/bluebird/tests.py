@@ -1,6 +1,7 @@
 from django.test import TestCase
 from bluebird.utils import (generate_act, generate_document,
-                            generate_pay_count, generate_count_fact)
+                            generate_pay_count, generate_count_fact,
+                            generate_contract)
 from bluebird.models import (Contragent, ContractNumberClass,
                              ActUNGen, CountUNGen, CountFactUNGen)
 from datetime import date
@@ -19,6 +20,7 @@ class GenerationDocsTest(TestCase):
         cls.contragent = Contragent.objects.create(
                 klass=1,
                 excell_name='ИП Лупа и Пупа',
+                dadata_name='ИП Лупа И. Пупа',
                 inn=422553212,
                 kpp=422880055,
                 rs='880005553575',
@@ -80,3 +82,7 @@ class GenerationDocsTest(TestCase):
     def test_generate_count_list(self):
         """ Тест генерации счета фактуры. """
         pass
+
+    def test_generate_contract(self):
+        """ Генерация договора """
+        generate_contract(self.calc_result, self.contragent)
