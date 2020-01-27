@@ -3,7 +3,8 @@ from bluebird.utils import (generate_act, generate_document,
                             generate_pay_count, generate_count_fact,
                             generate_contract)
 from bluebird.models import (Contragent, ContractNumberClass,
-                             ActUNGen, CountUNGen, CountFactUNGen)
+                             ActUNGen, CountUNGen, CountFactUNGen,
+                             NormativeCategory, Normative)
 from datetime import date
 
 
@@ -17,6 +18,13 @@ class GenerationDocsTest(TestCase):
     @classmethod
     def setUpTestData(cls):
         # Добавляем фикстуры
+        norm = Normative.objects.create(
+            since_date=date.fromisoformat('2018-09-01'),
+            up_to_date=date.fromisoformat('2020-02-29'),
+            value=0.0266
+        )
+        norm_cat = NormativeCategory.objects.create(name='аптека')
+        norm_cat.normative.set([norm.pk, ])
         cls.contragent = Contragent.objects.create(
                 klass=1,
                 excell_name='ИП Лупа и Пупа',
@@ -33,10 +41,14 @@ class GenerationDocsTest(TestCase):
                 legal_address='КЕМЕРОСКАЯ ОБЛАСТЬ, г. КЕМЕРОВО, ул. Ленина д.\
                      15',
                 number_contract=ContractNumberClass.create(new=True),
-                current_date=date.fromisoformat('2019-05-21')
+                current_date=date.fromisoformat('2019-05-21'),
+                norm_value=norm_cat,
+                director_status='исполнительный директор',
+                director_name='Пупа Адольф Фронтедович',
             )
         cls.calc_result = {
             'curr_date': date.fromisoformat('2019-05-31'),
+            'norm': norm.value,
             'V_as_rough': '5.32',
             'summ_rough': '2209.77',
             'tax_price_rough': '441.95',

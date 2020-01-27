@@ -9,6 +9,10 @@ from bluebird.models import (KLASS_TYPES, Contragent, ActUNGen, CountUNGen,
                              CountFactUNGen)
 from bluebird.serializers import ContragentFullSerializer
 
+from bluebird.templatetags.template_extra_filters import (gent_case_filter,
+                                                          pretty_date_filter)
+import jinja2
+
 from django.http import Http404
 from django.template.loader import render_to_string
 
@@ -114,34 +118,48 @@ def generate_documents(data: List, contragent: Contragent):
         d['uniq_num_id'] = CountFactUNGen.create(d['curr_date'], contragent)
         text = generate_count_fact(d, contragent)
         generate_document(text, 'count_fact.pdf',
-                          options={'orientation': 'Landscape'})
+                          options={'orientation': 'Landscape',
+                                   'page-size': 'A4',
+                                   'margin-top': '0.75in',
+                                   'margin-right': '0.75in',
+                                   'margin-bottom': '0.75in',
+                                   'margin-left': '0.75in'})
 
 
 def generate_act(data: dict, contragent: Contragent):
+    """ Функция генерации Акта """
     data['consumer'] = contragent
     return render_to_string('act.html', context=data)
 
 
 def generate_pay_count(data: dict, contragent: Contragent):
+    """ Функция генерации счета на оплату """
     data['consumer'] = contragent
     return render_to_string('count.html', context=data)
 
 
 def generate_count_fact(data: dict, contragent: Contragent):
+    """ Функция генерации счета фактуры """
     data['consumer'] = contragent
     return render_to_string('count_fact.html', context=data)
 
 
 def generate_contract(data: dict, contragent: Contragent):
+    """ Функция генерации контракта """
     doc = DocxTemplate('templates/docx/ul.docx')
+    jinja_env = jinja2.Environment()
+    jinja_env.filters['gent_case_filter'] = gent_case_filter
+    jinja_env.filters['pretty_date_filter'] = pretty_date_filter
     data['consumer'] = contragent
-    doc.render(data)
+    doc.render(data, jinja_env)
     doc.save("generated_doc.docx")
 
 
 def generate_document(text: str, name: str, **kwargs):
+    """ Функция генерации  PDF документа из заданного HTML текста """
     pdfkit.from_string(text, name, **kwargs)
 
 
 def create_unique_id():
+    """ Функция генерации уникального uuid """
     return str(uuid.uuid4())

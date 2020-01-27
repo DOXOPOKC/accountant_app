@@ -105,6 +105,7 @@ def calculate(*args, **kwargs):
         result.append(
             {
                 'curr_date': curr_date,
+                'norm': norm,
                 'V_as_rough': str(V_as_rough),
                 'summ_rough': str(summ_rough),
                 'tax_price_rough': str(tax_price_rough),

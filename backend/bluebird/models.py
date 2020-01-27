@@ -13,6 +13,12 @@ KLASS_TYPES = [
         (5, 'Физическое лицо'),
     ]
 
+NORM_TYPE = [
+    (0, '1 м2 общей площади'),
+    (1, '1 место'),
+    (2, '1 человек'),
+]
+
 
 class Contragent(models.Model):
     """
@@ -86,11 +92,17 @@ class NormativeCategory(models.Model):
     """ Класс Категории норматива """
     name = models.CharField('Вид объекта',
                             max_length=255)
+    norm_type = models.IntegerField('Показатель расчета', default=0,
+                                    choices=NORM_TYPE, blank=True, null=True)
     normative = models.ManyToManyField('Normative', related_name='normatives',
                                        verbose_name='Нормативы')
 
     def __str__(self):
         return self.name
+
+    @property
+    def print_norm_type(self):
+        return NORM_TYPE[self.norm_type][1]
 
 
 class Normative(models.Model):
