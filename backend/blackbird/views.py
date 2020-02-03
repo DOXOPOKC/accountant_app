@@ -136,8 +136,8 @@ def get_normative(curr_date, norm_value):
     """ Функция возвращает значение норматива на переданную дату.
     Параметр `pk` первичный ключ норматива.
     """
-    norm = NormativeCategory.objects.get(pk=norm_value)
-    norm_vals = norm.normative.all()
+    # norm = NormativeCategory.objects.get(pk=norm_value)
+    norm_vals = norm_value.normative.all()
     for n in norm_vals:
         if n.since_date <= curr_date <= n.up_to_date:
             return n.value

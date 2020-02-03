@@ -1,10 +1,10 @@
 from django.test import TestCase
 from bluebird.utils import (generate_act, generate_document,
-                            generate_pay_count, generate_count_fact,
+                            generate_count, generate_count_fact,
                             generate_contract)
 from bluebird.models import (Contragent, ContractNumberClass,
-                             ActUNGen, CountUNGen, CountFactUNGen,
-                             NormativeCategory, Normative)
+                             NormativeCategory, Normative,
+                             CountFactUniqueNumber)
 from datetime import date
 
 
@@ -46,6 +46,7 @@ class GenerationDocsTest(TestCase):
                 director_status='исполнительный директор',
                 director_name='Пупа Адольф Фронтедович',
             )
+        cls.contragent.create_package_and_folder()
         cls.calc_result = {
             'curr_date': date.fromisoformat('2019-05-31'),
             'norm': norm.value,
@@ -65,31 +66,20 @@ class GenerationDocsTest(TestCase):
 
     def test_creation_act(self):
         """ Тест генерации акта. """
-        unique_number = ActUNGen.create(self.calc_result['curr_date'],
-                                        self.contragent)
-        self.calc_result['uniq_num_id'] = unique_number
         res = generate_act(self.calc_result, self.contragent)
-        generate_document(res, 'test_act.pdf')
+
         self.assertTrue(res)
         # self.assertEqual(res, self.ACT)
 
     def test_generate_pay_count(self):
         """ Тест генерации счета на оплату. """
-        unique_number = CountUNGen.create(self.calc_result['curr_date'],
-                                          self.contragent)
-        self.calc_result['uniq_num_id'] = unique_number
-        res = generate_pay_count(self.calc_result, self.contragent)
-        generate_document(res, 'test_count.pdf')
+        res = generate_count(self.calc_result, self.contragent)
+
+        self.assertTrue(res)
 
     def test_generate_count_fact(self):
-        unique_number = CountFactUNGen.create(self.calc_result['curr_date'],
-                                              self.contragent)
-        self.calc_result['uniq_num_id'] = unique_number
         res = generate_count_fact(self.calc_result, self.contragent)
-        options = {
-            'orientation': 'Landscape'
-        }
-        generate_document(res, 'test_count_fact.pdf',  options=options)
+        self.assertTrue(res)
 
     def test_generate_count_list(self):
         """ Тест генерации счета фактуры. """

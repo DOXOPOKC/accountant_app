@@ -5,8 +5,10 @@ import uuid
 import os
 from typing import List
 
-from bluebird.models import (KLASS_TYPES, Contragent, ActUNGen, CountUNGen,
-                             CountFactUNGen)
+from bluebird.models import (KLASS_TYPES, Contragent, ActUniqueNumber,
+                             CountUniqueNumber, CountFactUniqueNumber,
+                             DocumentsPackage, ActFile, CountFile,
+                             CountFactFile)
 from bluebird.serializers import ContragentFullSerializer
 
 from bluebird.templatetags.template_extra_filters import (gent_case_filter,
@@ -104,55 +106,144 @@ def get_data(id: int):
                 'status': "No suggestions. Check, DADATA is availiable?"}
 
 
-def generate_documents(data: List, contragent: Contragent):
+def generate_documents(data: List, package: DocumentsPackage,
+                       recreate: bool = False):
     """ Функция пакетной генерации документов."""
-
+    package.contragent.create_package_and_folder()
+    generate_contract(package)
     for d in data:
 
-        d['uniq_num_id'] = ActUNGen.create(d['curr_date'], contragent)
-        generate_document(generate_act(d, contragent), 'act.pdf')
+        generate_act(d, package, recreate)
+        generate_count(d, package, recreate)
 
-        d['uniq_num_id'] = CountUNGen.create(d['curr_date'], contragent)
-        generate_document(generate_pay_count(d, contragent), 'count.pdf')
-
-        d['uniq_num_id'] = CountFactUNGen.create(d['curr_date'], contragent)
-        text = generate_count_fact(d, contragent)
-        generate_document(text, 'count_fact.pdf',
-                          options={'orientation': 'Landscape',
-                                   'page-size': 'A4',
-                                   'margin-top': '0.75in',
-                                   'margin-right': '0.75in',
-                                   'margin-bottom': '0.75in',
-                                   'margin-left': '0.75in'})
+        generate_count_fact(d, package, recreate)
 
 
-def generate_act(data: dict, contragent: Contragent):
+def generate_act(data: dict, package: DocumentsPackage,
+                 recreate: bool = False):
     """ Функция генерации Акта """
-    data['consumer'] = contragent
-    return render_to_string('act.html', context=data)
+    data['consumer'] = package.contragent
+    curr_date = data['curr_date']
+    if recreate:
+        # Если пересоздаем акты
+        acts = package.act_files.filter(creation_date=curr_date)
+        if len(acts):
+            # Если длинна результата не 0. Т.е. мы нашли акт на нужную дату.
+            act = acts[0]
+            unique_num = act.act_unique_number
+            file_path = act.file_path
+            os.remove(file_path)
+            act.delete()
+        else:
+            # Если длинна результата 0. Т.е. актов нет. Например мы
+            # выставили новую дату, на которую нет актов.
+            unique_num = ActUniqueNumber.create()
+    else:
+        # Если мы создаем акт с нуля.
+        unique_num = ActUniqueNumber.create()
+    tmp_name = unique_num.number.replace('/', '-')
+    file_name = f'Акт №{tmp_name} от {curr_date}.pdf'
+    file_path = os.path.join(ActFile.get_files_path(package), file_name)
+    data['uniq_num_id'] = unique_num
+    text = render_to_string('act.html', context=data)
+    generate_document(text, file_path)
+    act = ActFile.objects.create(file_name=file_name,
+                                 file_path=file_path,
+                                 content_object=package,
+                                 creation_date=curr_date,
+                                 act_unique_number=unique_num)
+    return act
 
 
-def generate_pay_count(data: dict, contragent: Contragent):
+def generate_count(data: dict, package: DocumentsPackage,
+                   recreate: bool = False):
     """ Функция генерации счета на оплату """
-    data['consumer'] = contragent
-    return render_to_string('count.html', context=data)
+    data['consumer'] = package.contragent
+    curr_date = data['curr_date']
+    if recreate:
+        # Если пересоздаем счета
+        counts = package.count_files.filter(creation_date=curr_date)
+        if len(counts):
+            # Если длинна результата не 0. Т.е. мы нашли счет на нужную дату.
+            count = counts[0]
+            unique_num = count.count_unique_number
+            file_path = count.file_path
+            os.remove(file_path)
+            count.delete()
+        else:
+            unique_num = CountUniqueNumber.create()
+    else:
+        # Если мы создаем счет с нуля.
+        unique_num = CountUniqueNumber.create()
+    tmp_name = unique_num.number.replace('/', '-')
+    file_name = f'Счет №{tmp_name} от {curr_date}.pdf'
+    file_path = os.path.join(CountFile.get_files_path(package), file_name)
+    data['uniq_num_id'] = unique_num
+    text = render_to_string('count.html', context=data)
+    generate_document(text, file_path)
+    count = CountFile.objects.create(file_name=file_name,
+                                     file_path=file_path,
+                                     content_object=package,
+                                     creation_date=curr_date,
+                                     count_unique_number=unique_num)
+    return count
 
 
-def generate_count_fact(data: dict, contragent: Contragent):
+def generate_count_fact(data: dict, package: DocumentsPackage,
+                        recreate: bool = False):
     """ Функция генерации счета фактуры """
-    data['consumer'] = contragent
-    return render_to_string('count_fact.html', context=data)
+    data['consumer'] = package.contragent
+    curr_date = data['curr_date']
+    if recreate:
+        # Если пересоздаем счета фактуры
+        counts_f = package.count_fact_files.filter(creation_date=curr_date)
+        if len(counts_f):
+            # Если длинна результата не 0. Т.е. мы нашли счет фактуру на
+            # нужную дату.
+            count_f = counts_f[0]
+            unique_num = count_f.count_fact_unique_number
+            file_path = count_f.file_path
+            os.remove(file_path)
+            count_f.delete()
+        else:
+            unique_num = CountFactUniqueNumber.create()
+    else:
+        # Если мы создаем счет фактуру с нуля.
+        unique_num = CountFactUniqueNumber.create()
+    tmp_name = unique_num.number.replace('/', '-')
+    file_name = f'Счет фактура №{tmp_name} от {curr_date}.pdf'
+    file_path = os.path.join(CountFactFile.get_files_path(package), file_name)
+    data['uniq_num_id'] = unique_num
+    text = render_to_string('count_fact.html', context=data)
+    options = {'orientation': 'Landscape',
+               'page-size': 'A4',
+               'margin-top': '0.75in',
+               'margin-right': '0.75in',
+               'margin-bottom': '0.75in',
+               'margin-left': '0.75in'}
+    generate_document(text, file_path, options=options)
+    count_fact = CountFactFile.objects.create(
+        file_name=file_name, file_path=file_path, content_object=package,
+        creation_date=curr_date, count_fact_unique_number=unique_num)
+    return count_fact
 
 
-def generate_contract(data: dict, contragent: Contragent):
+def generate_contract(package: DocumentsPackage):
     """ Функция генерации контракта """
     doc = DocxTemplate('templates/docx/ul.docx')
     jinja_env = jinja2.Environment()
     jinja_env.filters['gent_case_filter'] = gent_case_filter
     jinja_env.filters['pretty_date_filter'] = pretty_date_filter
-    data['consumer'] = contragent
+    data = {'consumer': package.contragent, }
     doc.render(data, jinja_env)
-    doc.save("generated_doc.docx")
+    tmp_name = str(package.contragent.number_contract).replace('/', '-')
+    tmp_path = os.path.join(
+        package.get_save_path(),
+        f'Договор №{tmp_name}.docx')
+    doc.save(tmp_path)
+    if os.path.isfile(tmp_path):
+        package.contract = tmp_path
+        package.save()
 
 
 def generate_document(text: str, name: str, **kwargs):
