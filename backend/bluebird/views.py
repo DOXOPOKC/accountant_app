@@ -12,7 +12,8 @@ from bluebird.serializers import (ContragentShortSerializer,
                                   TaskSerializer, PackageShortSerializer,
                                   PackageFullSerializer, OtherFileSerializer)
 from bluebird.utils import (parse_from_file, get_data, get_object,
-                            generate_documents, create_unique_id)
+                            generate_documents, create_unique_id,
+                            calc_create_gen_async)
 
 from blackbird.views import calculate
 
@@ -76,25 +77,15 @@ class PackagesView(APIView):
             return Response(status=status.HTTP_409_CONFLICT)
         contragent = Contragent.objects.get(pk=pk)
         serializer = PackageShortSerializer(data={'contragent': contragent.pk})
-        try:
-            r = calculate(since_date=contragent.contract_accept_date,
-                          up_to_date=contragent.current_date,
-                          stat_value=contragent.stat_value,
-                          norm_value=contragent.norm_value)
-        except AttributeError:
-            return Response('Calculation error',
-                            status=status.HTTP_400_BAD_REQUEST)
         if serializer.is_valid():
             serializer.save()
             pack = DocumentsPackage.objects.get(contragent__pk=pk,
                                                 is_active=True)
-            print(pack)
             pack.initialize_sub_folders()
             # Превратить все это в вызов асинхронной функции как в POST
             # контрагента
-
-            generate_documents(r, pack)
-            return Response(status=status.HTTP_200_OK)
+            task_id = async_task('calc_create_gen_async', contragent, pack)
+            return Response(task_id, status=status.HTTP_200_OK)
             # Конец блока
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -115,16 +106,18 @@ class PackageView(APIView):
             contragent = package.contragent
             # Превратить все это в вызов асинхронной функции как в POST
             # контрагента
-            try:
-                r = calculate(since_date=contragent.contract_accept_date,
-                              up_to_date=contragent.current_date,
-                              stat_value=contragent.stat_value,
-                              norm_value=contragent.norm_value)
-            except AttributeError:
-                return Response('Calculation error',
-                                status=status.HTTP_400_BAD_REQUEST)
-            generate_documents(r, package, True)
-            return Response(status=status.HTTP_200_OK)
+            task_id = async_task('calc_create_gen_async', contragent, package,
+                                 True)
+            # try:
+            #     r = calculate(since_date=contragent.contract_accept_date,
+            #                   up_to_date=contragent.current_date,
+            #                   stat_value=contragent.stat_value,
+            #                   norm_value=contragent.norm_value)
+            # except AttributeError:
+            #     return Response('Calculation error',
+            #                     status=status.HTTP_400_BAD_REQUEST)
+            # generate_documents(r, package, True)
+            return Response(task_id, status=status.HTTP_200_OK)
             # Конец блока
         return Response(status=status.HTTP_400_BAD_REQUEST)
 

@@ -1,29 +1,32 @@
-import openpyxl
-import requests
 import json
-import uuid
 import os
+import uuid
 from typing import List
 
-from bluebird.models import (KLASS_TYPES, Contragent, ActUniqueNumber,
-                             CountUniqueNumber, CountFactUniqueNumber,
-                             DocumentsPackage, ActFile, CountFile,
-                             CountFactFile)
-from bluebird.serializers import ContragentFullSerializer
-
-from bluebird.templatetags.template_extra_filters import (gent_case_filter,
-                                                          pretty_date_filter)
 import jinja2
-
+import openpyxl
+import pdfkit
+import requests
 from django.http import Http404
 from django.template.loader import render_to_string
-
-import pdfkit
+from django_q.tasks import async_task, fetch
 from docxtpl import DocxTemplate
 
-from bluebird.dadata import (suggestions_response_from_dict,
-                             Result_response_from_suggestion)
-
+from bluebird.dadata import (Result_response_from_suggestion,
+                             suggestions_response_from_dict)
+from bluebird.models import (
+    KLASS_TYPES,
+    ActFile,
+    ActUniqueNumber,
+    Contragent,
+    CountFactFile,
+    CountFactUniqueNumber,
+    CountFile,
+    CountUniqueNumber,
+    DocumentsPackage)
+from bluebird.serializers import ContragentFullSerializer
+from bluebird.templatetags.template_extra_filters import (gent_case_filter,
+                                                          pretty_date_filter)
 
 MIN_INNN_LEN = 10
 MAX_INN_LEN = 12
@@ -254,3 +257,16 @@ def generate_document(text: str, name: str, **kwargs):
 def create_unique_id():
     """ Функция генерации уникального uuid """
     return str(uuid.uuid4())
+
+
+def calc_create_gen_async(contragent, pack, recreate: bool = False):
+    kw_dict = {
+        'since_date': contragent.contract_accept_date,
+        'up_to_date': contragent.current_date,
+        'stat_value': contragent.stat_value,
+        'norm_value': contragent.norm_value,
+    }
+    calc_func = async_task('calculate', kwargs=kw_dict)
+    res = fetch(calc_func, wait=-1)
+    if res.success:
+        async_task('generate_documents', res.result, pack, recreate)
