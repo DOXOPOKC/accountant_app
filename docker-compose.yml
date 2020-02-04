@@ -23,7 +23,7 @@ services:
 
   backend:
     container_name: 'birds'
-    user: ${CURRENT_UID}
+    # user: ${CURRENT_UID}
     env_file: .env
     build:
       context: ./backend

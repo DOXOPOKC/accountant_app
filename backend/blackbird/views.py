@@ -3,15 +3,12 @@ from bluebird.models import NormativeCategory
 
 from datetime import date
 import calendar
-from decimal import getcontext, Decimal
-
-
-getcontext().prec = 5
+import math
 
 
 def calculate(*args, **kwargs):
     """
-    Функция принимает на вход словарь с параметрами
+    Функция принимает на вход словарь с параметрами:
         since_date: Дата с начала расчета
         up_to_date: Дата конца расчета
         stat_value: Значение показателя (м2, кол. чел. и т.д.)
@@ -62,7 +59,7 @@ def calculate(*args, **kwargs):
     since_date = kwargs.get('since_date', None)
     up_to_date = kwargs.get('up_to_date', None)
     stat_value = kwargs.get('stat_value', None)
-    norm_value = Decimal(kwargs.get('norm_value', None))
+    norm_value = kwargs.get('norm_value', None)
 
     # Что делать с активными днями и днями невывоза?
     # Что еще добавить сюда?
@@ -72,7 +69,6 @@ def calculate(*args, **kwargs):
         raise AttributeError()
 
     result = []
-    print(since_date, up_to_date, stat_value, norm_value)
     start_day = since_date.day
 
     for dt in month_year_iter(since_date.month, since_date.year,
@@ -80,8 +76,7 @@ def calculate(*args, **kwargs):
         curr_date = date(day=calendar.monthrange(dt[0], dt[1])[1],
                          month=dt[1],
                          year=dt[0])
-        # print(curr_date)
-        norm = Decimal(get_normative(curr_date, norm_value))
+        norm = get_normative(curr_date, norm_value)
 
         formula_obj_r = get_formula_object(curr_date)
         formula_rough = formula_obj_r.get_formula()
@@ -93,37 +88,35 @@ def calculate(*args, **kwargs):
         a_day_count = m_day_count - start_day
         print(norm, a_day_count)
 
-        print(eval(formula_rough))
-        print(eval(formula_precise))
+        V_as_rough = round_hafz(eval(eval(formula_rough)), 5)
+        V_as_precise = round_hafz(eval(eval(formula_precise)), 5)
 
-        V_as_rough = Decimal(eval(eval(formula_rough)))
-        V_as_precise = Decimal(eval(eval(formula_precise)))
+        summ_precise = round_hafz(V_as_precise * formula_obj_p.get_tariff(), 2)
+        tax_price_precise = round_hafz(summ_precise * formula_obj_p.get_tax(),
+                                       2)
+        summ_tax_precise = round_hafz(summ_precise + tax_price_precise, 2)
 
-        summ_precise = V_as_precise * Decimal(formula_obj_p.get_tariff())
-        tax_price_precise = summ_precise * Decimal(formula_obj_p.get_tax())
-        summ_tax_precise = summ_precise + Decimal(tax_price_precise)
+        summ_rough = round_hafz(V_as_rough * formula_obj_r.get_tariff(), 2)
+        tax_price_rough = round_hafz(summ_rough * formula_obj_r.get_tax(), 2)
+        summ_tax_rough = round_hafz(summ_rough + tax_price_rough, 2)
 
-        summ_rough = V_as_rough * Decimal(formula_obj_r.get_tariff())
-        tax_price_rough = summ_rough * Decimal(formula_obj_r.get_tax())
-        summ_tax_rough = summ_rough + Decimal(tax_price_rough)
-
-        tariff_tax = Decimal(formula_obj_p.get_tariff()
-                             * (1 + formula_obj_p.get_tax()))
+        tariff_tax = formula_obj_p.get_tariff() * (1 + formula_obj_p.get_tax())
 
         result.append(
             {
                 'curr_date': curr_date,
-                'V_as_rough': round(V_as_rough, 5),
-                'summ_rough': str(round(summ_rough, 2)),
-                'tax_price_rough': str(round(tax_price_rough, 2)),
-                'summ_tax_rough': str(round(summ_tax_rough, 2)),
+                'norm': norm,
+                'V_as_rough': str(V_as_rough),
+                'summ_rough': str(summ_rough),
+                'tax_price_rough': str(tax_price_rough),
+                'summ_tax_rough': str(summ_tax_rough),
                 'tax': formula_obj_p.get_tax(),
                 'tariff': formula_obj_p.get_tariff(),
-                'tariff_tax': str(round(tariff_tax, 2)),
-                'V_as_precise': str(round(V_as_precise, 5)),
-                'summ_precise': str(round(summ_precise, 2)),
-                'tax_price_precise': str(round(tax_price_precise, 2)),
-                'summ_tax_precise': str(round(summ_tax_precise, 2))
+                'tariff_tax': str(round_hafz(tariff_tax, 2)),
+                'V_as_precise': str(V_as_precise),
+                'summ_precise': str(summ_precise),
+                'tax_price_precise': str(tax_price_precise),
+                'summ_tax_precise': str(summ_tax_precise)
             })
         start_day = 0
     return result
@@ -135,7 +128,6 @@ def get_formula_object(curr_date, rough=True):
     """
     formulas = Formula.objects.filter(is_rough=rough)
     for f in formulas:
-        # print(f.since_date, '|', f.up_to_date, '| is', curr_date)
         if f.since_date <= curr_date <= f.up_to_date:
             return f
 
@@ -144,11 +136,11 @@ def get_normative(curr_date, norm_value):
     """ Функция возвращает значение норматива на переданную дату.
     Параметр `pk` первичный ключ норматива.
     """
-    norm = NormativeCategory.objects.get(pk=norm_value)
-    norm_vals = norm.normative.all()
+    # norm = NormativeCategory.objects.get(pk=norm_value)
+    norm_vals = norm_value.normative.all()
     for n in norm_vals:
         if n.since_date <= curr_date <= n.up_to_date:
-            return Decimal(n.value)
+            return n.value
 
 
 def month_year_iter(start_month, start_year, end_month, end_year):
@@ -166,9 +158,8 @@ def month_year_iter(start_month, start_year, end_month, end_year):
         yield y, m + 1
 
 
-if __name__ == '__main__':
-    p = calculate(since_date=date.fromisoformat('2019-01-05'),
-                  up_to_date=date.fromisoformat('2020-01-10'),
-                  stat_value=75,
-                  norm_value=2)
-    print(p)
+def round_hafz(n, decimals=0):
+    """ Функция правильного округления. 12.345 => 12.35 -12.567 => -12.57 """
+    multiplier = 10 ** decimals
+    temp_calc = math.floor(abs(n)*multiplier + 0.5) / multiplier
+    return math.copysign(temp_calc, n)

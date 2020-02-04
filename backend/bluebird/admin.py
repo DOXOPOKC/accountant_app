@@ -1,7 +1,9 @@
 from django.contrib import admin
 from .models import (KLASS_TYPES, Contragent, NormativeCategory, Normative,
-                     Contract, ContractNumberClass, DocumentUniqueNumber,
-                     DocumentUniqueNumberGenerator)
+                     Contract, ContractNumberClass, DocumentsPackage, ActFile,
+                     OtherFile)
+
+from django.contrib.contenttypes.admin import GenericTabularInline
 
 
 class ContragentAdmin(admin.ModelAdmin):
@@ -22,10 +24,27 @@ class NormativeAdmin(admin.ModelAdmin):
     list_display = ('__str__',)
 
 
+class ActInLine(GenericTabularInline):
+    model = ActFile
+    extra = 1
+    ct_fk_field = 'object_id'
+    ct_field = 'content_type'
+
+
+class OtherFileInLine(GenericTabularInline):
+    model = OtherFile
+    extra = 1
+    ct_fk_field = 'object_id'
+    ct_field = 'content_type'
+
+
+class DocumentsPackageAdmin(admin.ModelAdmin):
+    inlines = [ActInLine, OtherFileInLine, ]
+
+
 admin.site.register(Contragent, ContragentAdmin)
 admin.site.register(NormativeCategory, NormativeCategoryAdmin)
 admin.site.register(Normative, NormativeAdmin)
 admin.site.register(Contract)
 admin.site.register(ContractNumberClass)
-admin.site.register(DocumentUniqueNumber)
-admin.site.register(DocumentUniqueNumberGenerator)
+admin.site.register(DocumentsPackage, DocumentsPackageAdmin)
