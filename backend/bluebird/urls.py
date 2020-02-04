@@ -10,7 +10,7 @@ urlpatterns = [
          views.PackageView.as_view()),
     path('contragents/<int:pk>/packages/<int:package_id>/other-files',
          views.OtherFilesView.as_view()),
-    path('contragents/<int:pk>/packages/<int:package_id/other-files/\
+    path('contragents/<int:pk>/packages/<int:package_id>/other-files/\
 <int:file_id>',
          views.OtherFileView.as_view()),
 
