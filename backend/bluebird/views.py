@@ -76,6 +76,14 @@ class PackagesView(APIView):
             return Response(status=status.HTTP_409_CONFLICT)
         contragent = Contragent.objects.get(pk=pk)
         serializer = PackageShortSerializer(data={'contragent': contragent.pk})
+        try:
+            r = calculate(since_date=contragent.contract_accept_date,
+                          up_to_date=contragent.current_date,
+                          stat_value=contragent.stat_value,
+                          norm_value=contragent.norm_value)
+        except AttributeError:
+            return Response('Calculation error',
+                            status=status.HTTP_400_BAD_REQUEST)
         if serializer.is_valid():
             serializer.save()
             pack = DocumentsPackage.objects.get(contragent__pk=pk,
@@ -84,10 +92,7 @@ class PackagesView(APIView):
             pack.initialize_sub_folders()
             # Превратить все это в вызов асинхронной функции как в POST
             # контрагента
-            r = calculate(since_date=contragent.contract_accept_date,
-                          up_to_date=contragent.current_date,
-                          stat_value=contragent.stat_value,
-                          norm_value=contragent.norm_value)
+
             generate_documents(r, pack)
             return Response(status=status.HTTP_200_OK)
             # Конец блока
@@ -107,13 +112,17 @@ class PackageView(APIView):
     def put(self, request, pk, package_id):
         package = get_object(package_id, DocumentsPackage)
         if package.is_active:
-            contragent = Contragent.objects.get(pk=pk)
+            contragent = package.contragent
             # Превратить все это в вызов асинхронной функции как в POST
             # контрагента
-            r = calculate(since_date=contragent.contract_accept_date,
-                          up_to_date=contragent.current_date,
-                          stat_value=contragent.stat_value,
-                          norm_value=contragent.norm_value)
+            try:
+                r = calculate(since_date=contragent.contract_accept_date,
+                              up_to_date=contragent.current_date,
+                              stat_value=contragent.stat_value,
+                              norm_value=contragent.norm_value)
+            except AttributeError:
+                return Response('Calculation error',
+                                status=status.HTTP_400_BAD_REQUEST)
             generate_documents(r, package, True)
             return Response(status=status.HTTP_200_OK)
             # Конец блока

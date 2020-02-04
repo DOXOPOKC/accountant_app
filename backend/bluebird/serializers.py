@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import (Contragent, DocumentsPackage, OtherFile)
+from .models import (Contragent, DocumentsPackage, OtherFile, ActFile,
+                     CountFile, CountFactFile)
 
 from django_q.models import Task
 
@@ -32,25 +33,42 @@ class ContragentFullSerializer(serializers.ModelSerializer):
                         }
 
 
-class PackageFullSerializer(serializers.ModelSerializer):
+class ActFileListSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Contragent
+        model = ActFile
+        fields = '__all__'
+
+
+class CountFileListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CountFile
+        fields = '__all__'
+
+
+class CountFactFileListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CountFactFile
+        fields = '__all__'
+
+
+class OtherFileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OtherFile
+        fields = '__all__'
+
+
+class PackageFullSerializer(serializers.ModelSerializer):
+    act_files = ActFileListSerializer(many=True)
+    count_files = CountFileListSerializer(many=True)
+    count_fact_files = CountFactFileListSerializer(many=True)
+    files = OtherFileSerializer(many=True)
+
+    class Meta:
+        model = DocumentsPackage
         fields = '__all__'
 
 
 class TaskSerializer(serializers.ModelSerializer):
     class Meta:
         model = Task
-        fields = '__all__'
-
-
-# class OtherFileListSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = OtherFile
-#         fields = '__all__'
-
-
-class OtherFileSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = OtherFile
         fields = '__all__'
