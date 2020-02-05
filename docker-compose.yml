@@ -77,9 +77,10 @@ services:
     image: backend_image
     container_name: 'qcluster'
     env_file: .env
-    user: ${CURRENT_UID}
+    # user: ${CURRENT_UID}
     volumes:
       - ./backend/:/app/
+      - ./media:/app/media
     working_dir: /app/
     restart: on-failure
     entrypoint: python3

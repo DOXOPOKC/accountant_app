@@ -1,12 +1,12 @@
 from blackbird.models import Formula
-from bluebird.models import NormativeCategory
+# from bluebird.models import NormativeCategory
 
 from datetime import date
 import calendar
 import math
 
 
-def calculate(*args, **kwargs):
+def calculate(since_date, up_to_date, stat_value, norm_value, *args, **kwargs):
     """
     Функция принимает на вход словарь с параметрами:
         since_date: Дата с начала расчета
@@ -56,10 +56,11 @@ def calculate(*args, **kwargs):
         tax_price_precise: Точный НДС по объему
         summ_tax_precise: Точная сумма с НДС
     """
-    since_date = kwargs.get('since_date', None)
-    up_to_date = kwargs.get('up_to_date', None)
-    stat_value = kwargs.get('stat_value', None)
-    norm_value = kwargs.get('norm_value', None)
+    # print(kwargs)
+    # since_date = kwargs.get('since_date', None)
+    # up_to_date = kwargs.get('up_to_date', None)
+    # stat_value = kwargs.get('stat_value', None)
+    # norm_value = kwargs.get('norm_value', None)
 
     # Что делать с активными днями и днями невывоза?
     # Что еще добавить сюда?
@@ -105,6 +106,7 @@ def calculate(*args, **kwargs):
         result.append(
             {
                 'curr_date': curr_date,
+                'norm': norm,
                 'V_as_rough': str(V_as_rough),
                 'summ_rough': str(summ_rough),
                 'tax_price_rough': str(tax_price_rough),
@@ -135,8 +137,8 @@ def get_normative(curr_date, norm_value):
     """ Функция возвращает значение норматива на переданную дату.
     Параметр `pk` первичный ключ норматива.
     """
-    norm = NormativeCategory.objects.get(pk=norm_value)
-    norm_vals = norm.normative.all()
+    # norm = NormativeCategory.objects.get(pk=norm_value)
+    norm_vals = norm_value.normative.all()
     for n in norm_vals:
         if n.since_date <= curr_date <= n.up_to_date:
             return n.value
