@@ -97,10 +97,6 @@ class Contragent(models.Model):
         self.check_and_create_parent_folder()
         if not os.path.isdir(self.get_str_as_path()):
             os.mkdir(self.get_str_as_path(), mode=0o777)
-        # package = DocumentsPackage.objects.get_or_create(contragent=self,
-        #                                                  is_active=True)
-        # package = DocumentsPackage.objects.create(contragent=self)
-        # package.initialize_sub_folders()
 
     def check_and_create_parent_folder(self):
         if not os.path.isdir(os.path.join(settings.MEDIA_ROOT,
