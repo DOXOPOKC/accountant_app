@@ -28,6 +28,7 @@ export default {
   ** Plugins to load before mounting the App
   */
   plugins: [
+    '~/plugins/vee-validate',
     '~/plugins/vue-file-agent'
   ],
   /*
@@ -86,6 +87,7 @@ export default {
   ** Build configuration
   */
   build: {
+    transpile: ['vee-validate/dist/rules'],
     /*
     ** You can extend webpack config here
     */

@@ -7,7 +7,7 @@
                     mini-variant
                     mini-variant-width="64"
                     color="primary"
-                    class="elevation-0"
+                    class="elevation-0 pt-2"
                 )
                     v-list-item
                         v-list-item-avatar
@@ -59,24 +59,24 @@
 
 <script>
 export default {
-    data: () => ({
-        links: ['Home', 'Contacts', 'Settings'],
-        clipped: false,
-        drawer: true,
-        fixed: false,
-        items: [
-            {
-                icon: 'mdi-apps',
-                title: 'Welcome',
-                to: '/'
-            },
-            {
-                icon: 'mdi-chart-bubble',
-                title: 'Contragents',
-                to: '/contragents'
-            }
-        ]
-    })
+  data: () => ({
+    links: ['Home', 'Contacts', 'Settings'],
+    clipped: false,
+    drawer: true,
+    fixed: false,
+    items: [
+      {
+        icon: 'mdi-apps',
+        title: 'Welcome',
+        to: '/'
+      },
+      {
+        icon: 'mdi-chart-bubble',
+        title: 'Contragents',
+        to: '/contragents'
+      }
+    ]
+  })
 }
 </script>
 
