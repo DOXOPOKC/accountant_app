@@ -44,6 +44,7 @@
                   td {{ item.klass }}
                   td {{ item.inn }}
                   td {{ item.debt }}
+                  td {{ item.debt }}
       v-dialog(v-model="contragentDialogState" persistent max-width="600px")
         v-card(outlined)
           v-card-title
@@ -110,7 +111,8 @@ export default {
         value: 'klass'
       },
       { text: 'ИНН', value: 'inn' },
-      { text: 'Задолжность', value: 'debt' }
+      { text: 'Задолжность', value: 'debt' },
+      { text: 'Статус' }
       // Дата последнего платежа
       // Ответственное лицо
     ]
@@ -123,10 +125,10 @@ export default {
   methods: {
     ...mapActions([types.FETCH_CONTRAGENTS]),
     upload () {
-      const self = this
-      this.$refs.profilePicRef.upload(this.uploadUrl, this.uploadHeaders, [this.profilePic]).then(function () {
-        self.uploaded = true
-        setTimeout(function () {
+      this.$refs.profilePicRef.upload(this.uploadUrl, this.uploadHeaders, [this.profilePic]).then(() => {
+        console.log(this)
+        this.uploaded = true
+        setTimeout(() => {
           // self.profilePic.progress(0);
         }, 500)
       })

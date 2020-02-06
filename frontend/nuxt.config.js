@@ -75,13 +75,7 @@ export default {
   */
   vuetify: {
     customVariables: ['~/assets/variables.scss'],
-    theme: {
-      themes: {
-        light: {
-          primary: '#2E7D32'
-        }
-      }
-    }
+    optionsPath: '~/plugins/vuetify.options.js'
   },
   /*
   ** Build configuration
@@ -91,7 +85,6 @@ export default {
     /*
     ** You can extend webpack config here
     */
-    extend (config, ctx) {
-    }
+    extend (config, ctx) {}
   }
 }
