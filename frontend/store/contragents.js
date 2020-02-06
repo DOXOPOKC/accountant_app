@@ -1,3 +1,6 @@
+import Repository from '~/repositories/RepositoryFactory'
+const contragentRepository = Repository.get('contragents')
+
 export const types = {
   SET_CONTRAGENTS: 'SET_CONTRAGENTS',
   FETCH_CONTRAGENTS: 'FETCH_CONTRAGENTS',
@@ -12,11 +15,11 @@ export const state = () => ({
 })
 
 export const mutations = {
-  [types.SET_CONTRAGENT] (state, contragent) {
-    state.detail = contragent
-  },
   [types.SET_CONTRAGENTS] (state, contragents) {
     state.list = contragents
+  },
+  [types.SET_CONTRAGENT] (state, contragent) {
+    state.detail = contragent
   }
 }
 
@@ -30,13 +33,13 @@ export const actions = {
   // remove (state, { todo }) {
   //     state.list.splice(state.list.indexOf(todo), 1)
   // },
-  async [types.FETCH_CONTRAGENT] (store, id) {
-    const data = await this.$axios.$get(`/api/contragents/${id}`)
-    store.commit(types.SET_CONTRAGENT, data)
+  async [types.FETCH_CONTRAGENT] ({ commit }, id) {
+    const { data } = await contragentRepository.getContragent(id)
+    commit(types.SET_CONTRAGENT, data)
   },
-  async [types.FETCH_CONTRAGENTS] (store) {
-    const data = await this.$axios.$get('http://localhost/api/contragents/')
-    store.commit(types.SET_CONTRAGENTS, data)
+  async [types.FETCH_CONTRAGENTS] ({ commit }) {
+    const { data } = await contragentRepository.get()
+    commit(types.SET_CONTRAGENTS, data)
   }
   // Возвращает список пакетов с документами конкретного контрагента
   // async [types.FETCH_CONTRAGENTS] (store, id) {
@@ -65,8 +68,4 @@ export const actions = {
   // }
 }
 
-export const getters = {
-  // loadedPosts (state) {
-  //     return state.loadedPosts
-  // }
-}
+export const getters = {}

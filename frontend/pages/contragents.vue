@@ -76,7 +76,7 @@
 
 <script>
 import { mapState, mapActions } from 'vuex'
-import { types } from '~/store/contragents.js'
+import { types } from '~/store/contragents'
 
 // const classTypes = [
 //     { 0: '' },
@@ -122,12 +122,6 @@ export default {
   },
   methods: {
     ...mapActions([types.FETCH_CONTRAGENTS]),
-    removePic () {
-      const profilePic = this.profilePic
-      this.$refs.profilePicRef.deleteUpload(this.uploadUrl, this.uploadHeaders, [profilePic])
-      this.profilePic = null
-      this.uploaded = false
-    },
     upload () {
       const self = this
       this.$refs.profilePicRef.upload(this.uploadUrl, this.uploadHeaders, [this.profilePic]).then(function () {

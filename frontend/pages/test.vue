@@ -1,36 +1,90 @@
 <template lang="pug">
-  div
-    VueSuggestions(
-      :model.sync="city"
-      :coordinates.sync="coordinates"
-      :placeholder="'Начните вводить'"
-      :options="suggestionOptions"
-      class="form-control"
+  v-row(
+    class="fill-height"
+    justify="center"
+    align="start"
+    no-gutters
+  )
+    v-col(
+      xs12
+      sm8
+      md6
     )
+      v-card(
+        flat
+        exact
+      )
+        v-card-title(class="headline font-weight-light px-10")
+          | Контрагент № {{ contragent.id }}
+        v-card-text
+          ValidationObserver(
+            ref="form"
+            v-slot="{ passes }"
+          )
+            form(@submit.prevent="passes(onSubmit)")
+              v-expansion-panels(
+                :value="panels"
+                accordion
+                multiple
+                hover
+                flat
+                tile
+              )
+                v-expansion-panel(
+                  v-for="(item, i) in contragentInfo"
+                  :key="i"
+                )
+                  v-expansion-panel-header {{ Object.keys(item)[0] }}
+                  v-expansion-panel-content
+                    ValidationProvider(
+                      rules="required"
+                      v-slot="{ errors }"
+                    )
+                      v-text-field(
+                        v-if="Object.values(item)"
+                        :label="Object.values(item)[0]"
+                        :error-messages="errors"
+                      )
+        v-card-actions(class="px-10 py-6")
+          v-btn(
+            color="primary"
+            @click=""
+          )
+            | Перегенерировать
+          v-btn(
+            color="primary"
+            @click=""
+          )
+            | Сгенерировать пакет
+          v-spacer
+          v-btn(
+            color="primary"
+            @click=""
+          )
+            | Сохранить
 </template>
 
 <script>
-import VueSuggestions from 'vue-suggestions'
+import { mapState, mapActions } from 'vuex'
+import { ValidationProvider, ValidationObserver } from 'vee-validate'
+import { types } from '~/store/contragents'
 
 export default {
-  components: { VueSuggestions },
-  data: () => ({
-    city: 'Новокузнецк',
-    coordinates: {
-      latitude: '',
-      longitude: ''
-    },
-    suggestionOptions: {
-      // @see https://confluence.hflabs.ru/pages/viewpage.action?pageId=207454318
-      token: '519fbd1afac8c2380f617046c95a6789a39fa021',
-      type: 'ADDRESS',
-      scrollOnFocus: false,
-      triggerSelectOnBlur: false,
-      triggerSelectOnEnter: false,
-      addon: 'none',
-      // @see https://confluence.hflabs.ru/pages/viewpage.action?pageId=207454320
-      onSelect (suggestion) {}
-    }
-  })
+  components: {
+    ValidationProvider,
+    ValidationObserver
+  },
+  async asyncData ({ $axios, store, params }) {
+    await store.dispatch(`contragents/${types.FETCH_CONTRAGENT}`, params.id)
+  },
+  data: () => ({}),
+  computed: {
+    ...mapState({
+      contragent: state => state.contragents.detail
+    })
+  },
+  methods: {
+    ...mapActions([])
+  }
 }
 </script>

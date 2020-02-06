@@ -1,4 +1,4 @@
-import client from './clients/axiosClient'
+import client from './clients/AxiosClient'
 
 const resource = '/api/contragents'
 
@@ -6,7 +6,7 @@ export default {
   get () {
     return client.get(`${resource}`)
   },
-  getPost (id) {
+  getContragent (id) {
     return client.get(`${resource}/${id}`)
   },
   create (payload) {

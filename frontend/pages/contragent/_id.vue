@@ -65,9 +65,9 @@
 </template>
 
 <script>
-import { mapState, mapActions } from 'vuex'
+import { mapState } from 'vuex'
 import { ValidationProvider, ValidationObserver } from 'vee-validate'
-import { types } from '~/store/contragents.js'
+import { types } from '~/store/contragents'
 
 export default {
   components: {
@@ -95,8 +95,6 @@ export default {
       return [...Array(this.contragentInfo.length).keys()]
     }
   },
-  methods: {
-    ...mapActions([])
-  }
+  methods: {}
 }
 </script>
