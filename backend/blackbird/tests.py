@@ -8,9 +8,8 @@ from .models import Formula
 
 class ViewTest(TestCase):
 
-    def test_calculate(self):
-        """ Тестируем считающую функцию """
-
+    @classmethod
+    def setUpTestData(cls):
         # Фикстуры для временной тестовой базы
         Formula.objects.create(since_date=date.fromisoformat('2018-09-01'),
                                up_to_date=date.fromisoformat('2020-02-29'),
@@ -34,6 +33,9 @@ class ViewTest(TestCase):
         norm_cat = NormativeCategory.objects.create(name='аптека')
         norm_cat.normative.set([norm.pk, ])
         # Конец фикстур
+
+    def test_calculate(self):
+        """ Тестируем считающую функцию """
 
         date_from = date.fromisoformat('2019-05-05')
         date_to = date.fromisoformat('2019-07-02')
