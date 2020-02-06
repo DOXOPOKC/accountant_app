@@ -1,28 +1,35 @@
-import openpyxl
-import requests
 import json
-import uuid
 import os
+import uuid
 from typing import List
 
-from bluebird.models import (KLASS_TYPES, Contragent, ActUniqueNumber,
-                             CountUniqueNumber, CountFactUniqueNumber,
-                             DocumentsPackage, ActFile, CountFile,
-                             CountFactFile)
-from bluebird.serializers import ContragentFullSerializer
-
-from bluebird.templatetags.template_extra_filters import (gent_case_filter,
-                                                          pretty_date_filter)
 import jinja2
-
+import openpyxl
+import pdfkit
+import requests
 from django.http import Http404
 from django.template.loader import render_to_string
-
-import pdfkit
+from django_q.tasks import async_task, fetch, result
 from docxtpl import DocxTemplate
 
-from bluebird.dadata import (suggestions_response_from_dict,
-                             Result_response_from_suggestion)
+
+from bluebird.dadata import (Result_response_from_suggestion,
+                             suggestions_response_from_dict)
+from bluebird.models import (
+    KLASS_TYPES,
+    ActFile,
+    ActUniqueNumber,
+    Contragent,
+    CountFactFile,
+    CountFactUniqueNumber,
+    CountFile,
+    CountUniqueNumber,
+    DocumentsPackage)
+from bluebird.serializers import ContragentFullSerializer
+from bluebird.templatetags.template_extra_filters import (gent_case_filter,
+                                                          pretty_date_filter)
+
+from blackbird.views import calculate
 
 
 MIN_INNN_LEN = 10
@@ -110,6 +117,7 @@ def generate_documents(data: List, package: DocumentsPackage,
                        recreate: bool = False):
     """ Функция пакетной генерации документов."""
     package.contragent.create_package_and_folder()
+    package.initialize_sub_folders()
     generate_contract(package)
     for d in data:
 
@@ -131,8 +139,9 @@ def generate_act(data: dict, package: DocumentsPackage,
             # Если длинна результата не 0. Т.е. мы нашли акт на нужную дату.
             act = acts[0]
             unique_num = act.act_unique_number
-            file_path = act.file_path
-            os.remove(file_path)
+            file_path = str_add_app(act.file_path)
+            if os.path.exists(file_path):
+                os.remove(file_path)
             act.delete()
         else:
             # Если длинна результата 0. Т.е. актов нет. Например мы
@@ -148,7 +157,7 @@ def generate_act(data: dict, package: DocumentsPackage,
     text = render_to_string('act.html', context=data)
     generate_document(text, file_path)
     act = ActFile.objects.create(file_name=file_name,
-                                 file_path=file_path,
+                                 file_path=str_remove_app(file_path),
                                  content_object=package,
                                  creation_date=curr_date,
                                  act_unique_number=unique_num)
@@ -167,8 +176,9 @@ def generate_count(data: dict, package: DocumentsPackage,
             # Если длинна результата не 0. Т.е. мы нашли счет на нужную дату.
             count = counts[0]
             unique_num = count.count_unique_number
-            file_path = count.file_path
-            os.remove(file_path)
+            file_path = str_add_app(count.file_path)
+            if os.path.exists(file_path):
+                os.remove(file_path)
             count.delete()
         else:
             unique_num = CountUniqueNumber.create()
@@ -182,7 +192,7 @@ def generate_count(data: dict, package: DocumentsPackage,
     text = render_to_string('count.html', context=data)
     generate_document(text, file_path)
     count = CountFile.objects.create(file_name=file_name,
-                                     file_path=file_path,
+                                     file_path=str_remove_app(file_path),
                                      content_object=package,
                                      creation_date=curr_date,
                                      count_unique_number=unique_num)
@@ -202,8 +212,9 @@ def generate_count_fact(data: dict, package: DocumentsPackage,
             # нужную дату.
             count_f = counts_f[0]
             unique_num = count_f.count_fact_unique_number
-            file_path = count_f.file_path
-            os.remove(file_path)
+            file_path = str_add_app(count_f.file_path)
+            if os.path.exists(file_path):
+                os.remove(file_path)
             count_f.delete()
         else:
             unique_num = CountFactUniqueNumber.create()
@@ -223,8 +234,11 @@ def generate_count_fact(data: dict, package: DocumentsPackage,
                'margin-left': '0.75in'}
     generate_document(text, file_path, options=options)
     count_fact = CountFactFile.objects.create(
-        file_name=file_name, file_path=file_path, content_object=package,
-        creation_date=curr_date, count_fact_unique_number=unique_num)
+        file_name=file_name,
+        file_path=str_remove_app(file_path),
+        content_object=package,
+        creation_date=curr_date,
+        count_fact_unique_number=unique_num)
     return count_fact
 
 
@@ -240,9 +254,11 @@ def generate_contract(package: DocumentsPackage):
     tmp_path = os.path.join(
         package.get_save_path(),
         f'Договор №{tmp_name}.docx')
+    if os.path.exists(tmp_path):
+        os.remove(tmp_path)
     doc.save(tmp_path)
     if os.path.isfile(tmp_path):
-        package.contract = tmp_path
+        package.contract = str_remove_app(tmp_path)
         package.save()
 
 
@@ -254,3 +270,22 @@ def generate_document(text: str, name: str, **kwargs):
 def create_unique_id():
     """ Функция генерации уникального uuid """
     return str(uuid.uuid4())
+
+
+def str_remove_app(string: str):
+    return string.replace('/app', '')
+
+
+def str_add_app(string: str):
+    return string.replace('/media/', '/app/media/')
+
+
+def calc_create_gen_async(contragent, pack, recreate: bool = False):
+    calc_func = async_task(calculate, contragent.contract_accept_date,
+                           contragent.current_date, contragent.stat_value,
+                           contragent.norm_value)
+    res = fetch(calc_func, wait=-1)
+    gen_func = async_task(generate_documents, result(calc_func),
+                          pack, recreate)
+    is_gen = fetch(gen_func, wait=-1)
+    return [res.success, is_gen.success]

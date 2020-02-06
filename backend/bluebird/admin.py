@@ -10,9 +10,13 @@ class ContragentAdmin(admin.ModelAdmin):
     sets = ('pk', 'excell_name', 'inn', 'display_contragent')
     list_display = sets
     list_display_links = sets
+    readonly_fields = ['get_package', ]
 
     def display_contragent(self, obj):
         return (f'{KLASS_TYPES[int(obj.klass)][1]}')
+
+    def get_package(self, obj):
+        return DocumentsPackage.objects.filter(contragent__id=obj.pk)
 
 
 class NormativeCategoryAdmin(admin.ModelAdmin):

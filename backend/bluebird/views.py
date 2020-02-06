@@ -1,4 +1,4 @@
-from django.conf import settings
+# from django.conf import settings
 from django_q.tasks import async_task, fetch_group
 from rest_framework import status
 from rest_framework.parsers import (FileUploadParser, MultiPartParser)
@@ -12,9 +12,9 @@ from bluebird.serializers import (ContragentShortSerializer,
                                   TaskSerializer, PackageShortSerializer,
                                   PackageFullSerializer, OtherFileSerializer)
 from bluebird.utils import (parse_from_file, get_data, get_object,
-                            generate_documents, create_unique_id)
+                            create_unique_id, calc_create_gen_async)
 
-from blackbird.views import calculate
+# 
 
 
 class ContragentsView(APIView):
@@ -38,8 +38,7 @@ class ContragentsView(APIView):
                     if serializer.is_valid(True):
                         serializer.save()
                         async_task(get_data, int(serializer['id'].value),
-                                   group=group_id,
-                                   sync=settings.DEBUG)
+                                   group=group_id)
                 else:
                     continue  # TODO add another variants
             return Response(group_id, status=status.HTTP_201_CREATED)
@@ -76,25 +75,17 @@ class PackagesView(APIView):
             return Response(status=status.HTTP_409_CONFLICT)
         contragent = Contragent.objects.get(pk=pk)
         serializer = PackageShortSerializer(data={'contragent': contragent.pk})
-        try:
-            r = calculate(since_date=contragent.contract_accept_date,
-                          up_to_date=contragent.current_date,
-                          stat_value=contragent.stat_value,
-                          norm_value=contragent.norm_value)
-        except AttributeError:
-            return Response('Calculation error',
-                            status=status.HTTP_400_BAD_REQUEST)
         if serializer.is_valid():
             serializer.save()
             pack = DocumentsPackage.objects.get(contragent__pk=pk,
                                                 is_active=True)
-            print(pack)
             pack.initialize_sub_folders()
             # Превратить все это в вызов асинхронной функции как в POST
             # контрагента
-
-            generate_documents(r, pack)
-            return Response(status=status.HTTP_200_OK)
+            group_id = create_unique_id()
+            async_task(calc_create_gen_async, contragent, pack,
+                       group=group_id)
+            return Response(group_id, status=status.HTTP_200_OK)
             # Конец блока
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -107,7 +98,7 @@ class PackageView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request, pk, package_id):
-        pass
+        return Response(status=status.HTTP_501_NOT_IMPLEMENTED)
 
     def put(self, request, pk, package_id):
         package = get_object(package_id, DocumentsPackage)
@@ -115,16 +106,19 @@ class PackageView(APIView):
             contragent = package.contragent
             # Превратить все это в вызов асинхронной функции как в POST
             # контрагента
-            try:
-                r = calculate(since_date=contragent.contract_accept_date,
-                              up_to_date=contragent.current_date,
-                              stat_value=contragent.stat_value,
-                              norm_value=contragent.norm_value)
-            except AttributeError:
-                return Response('Calculation error',
-                                status=status.HTTP_400_BAD_REQUEST)
-            generate_documents(r, package, True)
-            return Response(status=status.HTTP_200_OK)
+            group_id = create_unique_id()
+            async_task(calc_create_gen_async, contragent, package, True,
+                       group=group_id)
+            # try:
+            #     r = calculate(since_date=contragent.contract_accept_date,
+            #                   up_to_date=contragent.current_date,
+            #                   stat_value=contragent.stat_value,
+            #                   norm_value=contragent.norm_value)
+            # except AttributeError:
+            #     return Response('Calculation error',
+            #                     status=status.HTTP_400_BAD_REQUEST)
+            # generate_documents(r, package, True)
+            return Response(group_id, status=status.HTTP_200_OK)
             # Конец блока
         return Response(status=status.HTTP_400_BAD_REQUEST)
 

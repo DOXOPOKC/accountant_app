@@ -1,12 +1,12 @@
 from blackbird.models import Formula
-from bluebird.models import NormativeCategory
+# from bluebird.models import NormativeCategory
 
 from datetime import date
 import calendar
 import math
 
 
-def calculate(*args, **kwargs):
+def calculate(since_date, up_to_date, stat_value, norm_value, *args, **kwargs):
     """
     Функция принимает на вход словарь с параметрами:
         since_date: Дата с начала расчета
@@ -56,10 +56,11 @@ def calculate(*args, **kwargs):
         tax_price_precise: Точный НДС по объему
         summ_tax_precise: Точная сумма с НДС
     """
-    since_date = kwargs.get('since_date', None)
-    up_to_date = kwargs.get('up_to_date', None)
-    stat_value = kwargs.get('stat_value', None)
-    norm_value = kwargs.get('norm_value', None)
+    # print(kwargs)
+    # since_date = kwargs.get('since_date', None)
+    # up_to_date = kwargs.get('up_to_date', None)
+    # stat_value = kwargs.get('stat_value', None)
+    # norm_value = kwargs.get('norm_value', None)
 
     # Что делать с активными днями и днями невывоза?
     # Что еще добавить сюда?
