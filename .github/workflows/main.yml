@@ -1,0 +1,23 @@
+name: clrn stage CI
+
+on:
+  push:
+    branches:
+      - dev
+  
+jobs:
+  deploy:
+    runs-on: self-hosted
+    steps:
+    - uses: actions/checkout@v2
+    - name: Create .env
+      run: cp /opt/containers/accountant_app/.env ./.env
+    - name: Create volumes
+      run: |
+        docker volume create db_data
+    - name: Fix docker-compose.yml
+      run: |
+        rm ./docker-compose.yml
+        cp /opt/containers/accountant_app/docker-compose.yml ./docker-compose.yml
+    - name: Make upb
+      run: make upb
