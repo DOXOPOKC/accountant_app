@@ -3,7 +3,7 @@ name: clrn stage CI
 on:
   push:
     branches:
-      - dev
+      - master
   
 jobs:
   deploy:
@@ -13,7 +13,6 @@ jobs:
     - name: Create .env
       run: cp /var/local/jud-module/.env ./.env
     - name: Create volumes
-      run: |
-        docker volume create db_data
+      run: docker volume create db_data
     - name: Make upb
       run: make upb
