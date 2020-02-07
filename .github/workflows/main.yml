@@ -3,7 +3,7 @@ name: clrn stage CI
 on:
   push:
     branches:
-      - master
+      - dev
   
 jobs:
   deploy:
