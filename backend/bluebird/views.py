@@ -5,11 +5,12 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from bluebird.models import (Contragent, ContractNumberClass, DocumentsPackage,
-                             OtherFile)
+                             OtherFile, NormativeCategory)
 from bluebird.serializers import (ContragentShortSerializer,
                                   ContragentFullSerializer,
                                   TaskSerializer, PackageShortSerializer,
-                                  PackageFullSerializer, OtherFileSerializer)
+                                  PackageFullSerializer, OtherFileSerializer,
+                                  NormSerializer)
 from bluebird.utils import (parse_from_file, get_data, get_object,
                             create_unique_id, calc_create_gen_async)
 
@@ -121,6 +122,13 @@ class TasksView(APIView):
     def get(self, request, group_id):
         results = fetch_group(group_id, failures=True)
         serializer = TaskSerializer(results, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class NormsView(APIView):
+    def get(self, request):
+        results = NormativeCategory.objects.all()
+        serializer = NormSerializer(results, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
