@@ -1,6 +1,7 @@
 FROM alpine:3.11.2 AS build
 ARG DEBUG
 ENV PYTHONUNBUFFERED 1
+ENV PYTHONDONTWRITEBYTECODE 1
 RUN mkdir -p /app &&\
   apk add --no-cache  python3 g++ gcc cabal ghc libxslt-dev wkhtmltopdf xvfb msttcorefonts-installer postgresql-libs jpeg zlib libc-dev && \
   if [ ! -e /usr/bin/python ]; then ln -sf python3 /usr/bin/python ; fi && \
@@ -56,6 +57,7 @@ RUN if [[ "$DEBUG" == "TRUE" ]] || [[ "$DEBUG" == "True" ]] || [[ "$DEBUG" == "1
 FROM scratch AS deploy
 ARG DEBUG
 ENV PYTHONUNBUFFERED 1
+ENV PYTHONDONTWRITEBYTECODE 1
 ENV DEBUG ${DEBUG}
 EXPOSE 8000
 COPY --from=build / /
