@@ -38,7 +38,7 @@
                 ) Добавить контрагента
             template(v-slot:body="{ items }")
               tbody
-                router-link(tag="tr" :to="'contragent/' + item.id" v-for="item in items" :key="item.name")
+                router-link(tag="tr" :to="'contragent/' + item.id + '/'" v-for="item in items" :key="item.name")
                   td {{ item.excell_name }}
                   td {{ item.physical_address }}
                   td {{ item.klass }}
@@ -111,6 +111,7 @@ export default {
       },
       { text: 'ИНН', value: 'inn' },
       { text: 'Задолжность', value: 'debt' }
+      // { text: 'Действия' }
       // Дата последнего платежа
       // Ответственное лицо
     ]
@@ -123,13 +124,14 @@ export default {
   methods: {
     ...mapActions([types.FETCH_CONTRAGENTS]),
     upload () {
-      const self = this
-      this.$refs.profilePicRef.upload(this.uploadUrl, this.uploadHeaders, [this.profilePic]).then(function () {
-        self.uploaded = true
-        setTimeout(function () {
-          // self.profilePic.progress(0);
-        }, 500)
-      })
+      this.$refs.profilePicRef.upload(this.uploadUrl, this.uploadHeaders, [this.profilePic])
+        .then((response) => {
+          this.uploaded = true
+          setTimeout(() => {
+            this.$store.commit('tasks/SET_TASK', response[0].data)
+            this.$store.dispatch('tasks/FETCH_TASKS')
+          }, 5000)
+        })
     },
     onSelect (filesData) {
       this.uploaded = false

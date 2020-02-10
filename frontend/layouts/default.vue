@@ -50,11 +50,6 @@
         v-content
             v-container(fluid fill-height pa-0 align-start)
                 nuxt
-        //- v-footer(
-        //-   fixed
-        //-   app
-        //- )
-        //-   span &copy; 2019
 </template>
 
 <script>
@@ -65,11 +60,6 @@ export default {
     drawer: true,
     fixed: false,
     items: [
-      {
-        icon: 'mdi-apps',
-        title: 'Welcome',
-        to: '/'
-      },
       {
         icon: 'mdi-chart-bubble',
         title: 'Contragents',

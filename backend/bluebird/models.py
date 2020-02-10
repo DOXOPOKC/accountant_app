@@ -109,6 +109,9 @@ class Contragent(models.Model):
                                          KLASS_TYPES[self.klass][1]),
                             f'{self.pk} {self.excell_name}')
 
+    def __str__(self):
+        return f'{self.excell_name}'
+
 
 class AbstractFileModel(models.Model):
     file_name = models.CharField('Название файла', max_length=255,
@@ -208,8 +211,9 @@ class DocumentsPackage(models.Model):
                                    related_name='contragents',
                                    related_query_name='contragent',
                                    null=True, blank=True)
-    name_uuid = models.CharField(max_length=255, default=uuid.uuid4,
-                                 null=True, blank=True, editable=False)
+    name_uuid = models.CharField('Идентификатор пакета', max_length=255,
+                                 default=uuid.uuid4, null=True, blank=True,
+                                 editable=False)
     is_active = models.BooleanField('Активный пакет', default=True)
     creation_date = models.DateField('Дата создания пакета', auto_now_add=True)
     # Единичные документы
@@ -224,6 +228,9 @@ class DocumentsPackage(models.Model):
     count_files = GenericRelation(CountFile)
     count_fact_files = GenericRelation(CountFactFile)
     files = GenericRelation(OtherFile)
+
+    def __str__(self):
+        return f'Пакет {self.name_uuid}'
 
     def get_save_path(self):
         if self.contragent:

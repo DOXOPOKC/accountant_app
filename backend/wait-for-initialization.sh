@@ -34,7 +34,7 @@ python3 manage.py migrate
 >&2 echo "Collect static..."
 python3 manage.py collectstatic --noinput
 
-# >&2 echo "Collect fonts..."
+>&2 echo "Pandoc..."
 # update-ms-fonts
 # fc-cache -f
 
