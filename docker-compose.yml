@@ -44,6 +44,7 @@ services:
   frontend:
     container_name: 'node'
     # user: ${CURRENT_UID}
+    env_file: .env
     build:
       context: ./frontend
     volumes:

@@ -16,6 +16,13 @@
       )
         v-card-title(class="headline font-weight-light px-10")
           | Контрагент № {{ contragent.id }}
+          v-spacer
+          v-btn(
+            outlined
+            class="text-capitalize"
+            color="primary"
+            :to="'/contragent/' + $route.params.id + '/packages/'"
+          ) Посмотреть пакеты
         v-card-text
           ValidationObserver(
             ref="form"
@@ -41,7 +48,7 @@
                       v-slot="{ errors }"
                     )
                       v-text-field(
-                        v-if="Object.values(item)"
+                        v-model="contragent[item]"
                         :label="Object.values(item)[0]"
                         :error-messages="errors"
                       )
@@ -49,25 +56,25 @@
           v-btn(
             color="primary"
             @click=""
+            to="put /contragents/{id}/packages/{package_id}"
           )
             | Перегенерировать
           v-btn(
             color="primary"
-            @click=""
+            @click="GENERATE_PACKAGE"
           )
             | Сгенерировать пакет
           v-spacer
           v-btn(
             color="primary"
-            @click=""
+            @click="UPDATE_CONTRAGENT"
           )
             | Сохранить
 </template>
 
 <script>
-import { mapState } from 'vuex'
+import { mapState, mapActions } from 'vuex'
 import { ValidationProvider, ValidationObserver } from 'vee-validate'
-import { types } from '~/store/contragents'
 
 export default {
   components: {
@@ -75,7 +82,7 @@ export default {
     ValidationObserver
   },
   async asyncData ({ $axios, store, params }) {
-    await store.dispatch(`contragents/${types.FETCH_CONTRAGENT}`, params.id)
+    await store.dispatch('contragents/FETCH_CONTRAGENT', params.id)
   },
   data: () => ({}),
   computed: {
@@ -88,13 +95,25 @@ export default {
           return test
         })
         return result
-      },
-      contragent: state => state.contragents.detail
+      }
     }),
+    contragent: {
+      get () {
+        return this.$store.state.contragents.detail
+      },
+      set (newValue) {
+        // this.$stote.commit('contragents/' + types.SET_CONTRAGENT, newValue)
+      }
+    },
     panels () {
       return [...Array(this.contragentInfo.length).keys()]
     }
   },
-  methods: {}
+  methods: {
+    ...mapActions({
+      UPDATE_CONTRAGENT: 'contragents/UPDATE_CONTRAGENT',
+      GENERATE_PACKAGE: 'packages/GENERATE_PACKAGE'
+    })
+  }
 }
 </script>
