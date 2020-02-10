@@ -52,7 +52,7 @@ def parse_from_file(xlsx_file):
     for row in sheet.iter_rows(min_row=3, max_row=42, min_col=2, max_col=5,
                                values_only=True):
         a, b, c, d = row
-        # print('|', a, '|', b, '|', c, '|', d, '|')
+        print('|', a, '|', b, '|', c, '|', d, '|')
         if a is not None:
             if MIN_INNN_LEN > len(str(a)) or len(str(a)) > MAX_INN_LEN:
                 raise Exception(('200', 'Inn is wrong.'))
