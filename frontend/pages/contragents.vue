@@ -38,7 +38,7 @@
                 ) Добавить контрагента
             template(v-slot:body="{ items }")
               tbody
-                router-link(tag="tr" :to="'contragent/' + item.id" v-for="item in items" :key="item.name")
+                router-link(tag="tr" :to="'contragent/' + item.id + '/'" v-for="item in items" :key="item.name")
                   td {{ item.excell_name }}
                   td {{ item.physical_address }}
                   td {{ item.klass }}
@@ -111,6 +111,7 @@ export default {
       },
       { text: 'ИНН', value: 'inn' },
       { text: 'Задолжность', value: 'debt' }
+      // { text: 'Действия' }
       // Дата последнего платежа
       // Ответственное лицо
     ]

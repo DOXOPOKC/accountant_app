@@ -7,7 +7,7 @@ export default {
   },
   // Содержимое пакета
   getPackage (contragentId, packageId) {
-    return client.get(`/api/contragents/${contragentId}/packages${packageId}`)
+    return client.get(`/api/contragents/${contragentId}/packages/${packageId}`)
   },
   // Генерация пакета (создание нового)
   create (contragentId, payload) {

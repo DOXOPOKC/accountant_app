@@ -7,7 +7,8 @@ export const types = {
   FETCH_CONTRAGENTS: 'FETCH_CONTRAGENTS',
 
   SET_CONTRAGENT: 'SET_CONTRAGENT',
-  FETCH_CONTRAGENT: 'FETCH_CONTRAGENT'
+  FETCH_CONTRAGENT: 'FETCH_CONTRAGENT',
+  CREATE_CONTRAGENT: 'UPDATE_CONTRAGENT'
 }
 
 export const state = () => ({
@@ -16,11 +17,11 @@ export const state = () => ({
 })
 
 export const mutations = {
-  [types.SET_CONTRAGENTS] (state, contragents) {
-    state.list = contragents
-  },
   [types.SET_CONTRAGENT] (state, contragent) {
     state.detail = contragent
+  },
+  [types.SET_CONTRAGENTS] (state, contragents) {
+    state.list = contragents
   }
 }
 
@@ -32,6 +33,10 @@ export const actions = {
   async [types.FETCH_CONTRAGENTS] ({ commit }) {
     const { data } = await contragentRepository.get()
     commit(types.SET_CONTRAGENTS, data)
+  },
+  async [types.UPDATE_CONTRAGENT] ({ state, commit }) {
+    const { data } = await contragentRepository.update(state.detail, state.detail.id)
+    commit(types.SET_CONTRAGENT, data)
   }
 }
 
