@@ -45,3 +45,19 @@ def pretty_date_filter(date_value):
     months = ('января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля',
               'августа', 'сентября', 'октября', 'ноября', 'декабря')
     return f'"{date_value.day}" {months[date_value.month-1]} {date_value.year}'
+
+
+def datv_case_filter(value: str):
+    morph = pymorphy2.MorphAnalyzer()
+    normalizer_val = value.strip()
+    word_list = normalizer_val.split(' ')
+    res = list()
+    for word in word_list:
+        parsed_phrase = morph.parse(word)[0]
+        gent_form = parsed_phrase.inflect({'datv'})[0]
+        res.append(gent_form)
+    return str(' '.join(res)).title()
+
+
+def cap_first(value: str):
+    return value.capitalize()
