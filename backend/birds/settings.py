@@ -41,12 +41,14 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'rest_framework',
-    'drf_yasg',
     'django_q',
 
     'bluebird',
     'blackbird',
 ]
+
+if DEBUG:
+    INSTALLED_APPS += ['drf_yasg',]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -151,7 +153,7 @@ Q_CLUSTER = {
     'name': 'DjangORM',
     'workers': 4,
     'timeout': 30,
-    'retry': 10,
+    'retry': 5,
     'queue_limit': 50,
     'bulk': 10,
     'orm': 'default'
