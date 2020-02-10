@@ -1,4 +1,3 @@
-# from django.conf import settings
 from django_q.tasks import async_task, fetch_group
 from rest_framework import status
 from rest_framework.parsers import (FileUploadParser, MultiPartParser)
@@ -14,10 +13,9 @@ from bluebird.serializers import (ContragentShortSerializer,
 from bluebird.utils import (parse_from_file, get_data, get_object,
                             create_unique_id, calc_create_gen_async)
 
-# 
-
 
 class ContragentsView(APIView):
+    """ Вью для списка контрагентов """
     parser_class = [FileUploadParser, MultiPartParser]
 
     def get(self, request):
@@ -47,7 +45,7 @@ class ContragentsView(APIView):
 
 
 class ContragentView(APIView):
-
+    """ Вью для одного конкретного контрагента """
     def get(self, request, pk):
         obj = get_object(pk, Contragent)
         serializer = ContragentFullSerializer(obj)
@@ -63,7 +61,7 @@ class ContragentView(APIView):
 
 
 class PackagesView(APIView):
-
+    """ Вью списка пакетов документов """
     def get(self, request, pk):
         packages = DocumentsPackage.objects.filter(contragent__pk=pk)
         serializer = PackageShortSerializer(packages, many=True)
@@ -80,18 +78,17 @@ class PackagesView(APIView):
             pack = DocumentsPackage.objects.get(contragent__pk=pk,
                                                 is_active=True)
             pack.initialize_sub_folders()
-            # Превратить все это в вызов асинхронной функции как в POST
-            # контрагента
+
             group_id = create_unique_id()
             async_task(calc_create_gen_async, contragent, pack,
                        group=group_id)
             return Response(group_id, status=status.HTTP_200_OK)
-            # Конец блока
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class PackageView(APIView):
-
+    """ Вью конкретного пакета """
     def get(self, request, pk, package_id):
         package = get_object(package_id, DocumentsPackage)
         serializer = PackageFullSerializer(package)
@@ -104,22 +101,12 @@ class PackageView(APIView):
         package = get_object(package_id, DocumentsPackage)
         if package.is_active:
             contragent = package.contragent
-            # Превратить все это в вызов асинхронной функции как в POST
-            # контрагента
+
             group_id = create_unique_id()
             async_task(calc_create_gen_async, contragent, package, True,
                        group=group_id)
-            # try:
-            #     r = calculate(since_date=contragent.contract_accept_date,
-            #                   up_to_date=contragent.current_date,
-            #                   stat_value=contragent.stat_value,
-            #                   norm_value=contragent.norm_value)
-            # except AttributeError:
-            #     return Response('Calculation error',
-            #                     status=status.HTTP_400_BAD_REQUEST)
-            # generate_documents(r, package, True)
             return Response(group_id, status=status.HTTP_200_OK)
-            # Конец блока
+
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk, package_id):
@@ -130,6 +117,7 @@ class PackageView(APIView):
 
 
 class TasksView(APIView):
+    """ Вью результата выполнения группы задач """
     def get(self, request, group_id):
         results = fetch_group(group_id, failures=True)
         serializer = TaskSerializer(results, many=True)
@@ -137,6 +125,7 @@ class TasksView(APIView):
 
 
 class OtherFilesView(APIView):
+    """ Вью списка прочих документов """
     def get(self, request, package_id):
         results = OtherFile.objects.filter(content_object__id=package_id)
         serializer = OtherFileSerializer(results, many=True)
@@ -151,6 +140,7 @@ class OtherFilesView(APIView):
 
 
 class OtherFileView(APIView):
+    """ Вью конкретного документа из прочих """
     def get(self, request, file_id):
         result = get_object(file_id, OtherFile)
         serializer = OtherFileSerializer(result)

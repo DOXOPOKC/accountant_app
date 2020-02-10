@@ -2,7 +2,7 @@ FROM alpine:3.11.2 AS build
 ARG DEBUG
 ENV PYTHONUNBUFFERED 1
 RUN mkdir -p /app &&\
-  apk add --no-cache  python3 g++ gcc libxslt-dev wkhtmltopdf xvfb msttcorefonts-installer postgresql-libs jpeg zlib libc-dev && \
+  apk add --no-cache  python3 g++ gcc cabal ghc libxslt-dev wkhtmltopdf xvfb msttcorefonts-installer postgresql-libs jpeg zlib libc-dev && \
   if [ ! -e /usr/bin/python ]; then ln -sf python3 /usr/bin/python ; fi && \
   apk add --no-cache --virtual .build-deps python3-dev gcc musl-dev postgresql-dev jpeg-dev zlib-dev && \
   pip3 install --disable-pip-version-check --no-cache-dir pipenv && update-ms-fonts && fc-cache -f
@@ -11,6 +11,13 @@ COPY Pipfile Pipfile.lock /app/
 
 RUN if [[ "$DEBUG" == "TRUE" ]] || [[ "$DEBUG" == "True" ]] || [[ "$DEBUG" == "1" ]]; then \
   echo "Install with DEV packages"; \
+  cabal update \
+  && cabal install Cabal cabal-install pandoc \
+  && mv /root/.cabal/bin/cabal /usr/local/bin/cabal \
+  && mv /root/.cabal/bin/jira-wiki-markup /usr/local/bin/jira-wiki-markup \
+  && mv /root/.cabal/bin/aeson-pretty /usr/local/bin/aeson-pretty \
+  && mv /root/.cabal/bin/pandoc /usr/local/bin/pandoc;\
+  pandoc --help; \
   pipenv install --system --deploy --ignore-pipfile --dev; \
   pip3 uninstall pipenv virtualenv virtualenv-clone pip -y; \
   else \

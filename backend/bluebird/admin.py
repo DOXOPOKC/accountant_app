@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.shortcuts import reverse
+from django.utils.html import mark_safe
 from .models import (KLASS_TYPES, Contragent, NormativeCategory, Normative,
                      Contract, ContractNumberClass, DocumentsPackage, ActFile,
                      OtherFile)
@@ -16,7 +18,19 @@ class ContragentAdmin(admin.ModelAdmin):
         return (f'{KLASS_TYPES[int(obj.klass)][1]}')
 
     def get_package(self, obj):
-        return DocumentsPackage.objects.filter(contragent__id=obj.pk)
+        style_active = ['active', '']
+        display_text = ", ".join([
+            '<a style="' + style_active[child.is_active]
+            + '" href={}>{}</a>'.format(
+                    reverse('admin:{}_{}_change'.format(
+                        child._meta.app_label,
+                        child._meta.model_name),
+                            args=(child.pk,)), f'Пакет {child.name_uuid}')
+            for child in DocumentsPackage.objects.filter(contragent__id=obj.pk)
+        ])
+        if display_text:
+            return mark_safe(display_text)
+        return "-"
 
 
 class NormativeCategoryAdmin(admin.ModelAdmin):
@@ -43,7 +57,14 @@ class OtherFileInLine(GenericTabularInline):
 
 
 class DocumentsPackageAdmin(admin.ModelAdmin):
+    sets = ('pk', 'name_uuid', 'contragent_name', 'is_active',
+            'creation_date')
+    list_display = sets
+    list_display_links = sets
     inlines = [ActInLine, OtherFileInLine, ]
+
+    def contragent_name(self, obj):
+        return str(obj.contragent.excell_name)
 
 
 admin.site.register(Contragent, ContragentAdmin)
