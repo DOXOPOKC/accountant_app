@@ -26,10 +26,16 @@ from bluebird.models import (
     CountUniqueNumber,
     DocumentsPackage)
 from bluebird.serializers import ContragentFullSerializer
-from bluebird.templatetags.template_extra_filters import (gent_case_filter,
-                                                          pretty_date_filter)
+from bluebird.templatetags.template_extra_filters import (
+    gent_case_filter,
+    pretty_date_filter,
+    datv_case_filter,
+    cap_first,
+    literal)
 
 from blackbird.views import calculate
+
+# import pypandoc
 
 
 MIN_INNN_LEN = 10
@@ -46,7 +52,7 @@ def parse_from_file(xlsx_file):
     for row in sheet.iter_rows(min_row=3, max_row=42, min_col=2, max_col=5,
                                values_only=True):
         a, b, c, d = row
-        # print('|', a, '|', b, '|', c, '|', d, '|')
+        print('|', a, '|', b, '|', c, '|', d, '|')
         if a is not None:
             if MIN_INNN_LEN > len(str(a)) or len(str(a)) > MAX_INN_LEN:
                 raise Exception(('200', 'Inn is wrong.'))
@@ -118,7 +124,10 @@ def generate_documents(data: List, package: DocumentsPackage,
     """ Функция пакетной генерации документов."""
     package.contragent.create_package_and_folder()
     package.initialize_sub_folders()
+    total = count_total(data)
     generate_contract(package)
+    generate_notes(total, package)
+    generate_act_count(data, package, total, recreate)
     for d in data:
 
         generate_act(d, package, recreate)
@@ -244,7 +253,7 @@ def generate_count_fact(data: dict, package: DocumentsPackage,
 
 def generate_contract(package: DocumentsPackage):
     """ Функция генерации контракта """
-    doc = DocxTemplate('templates/docx/ul.docx')
+    doc = DocxTemplate('templates/docx/contracts/ul.docx')
     jinja_env = jinja2.Environment()
     jinja_env.filters['gent_case_filter'] = gent_case_filter
     jinja_env.filters['pretty_date_filter'] = pretty_date_filter
@@ -259,7 +268,47 @@ def generate_contract(package: DocumentsPackage):
     doc.save(tmp_path)
     if os.path.isfile(tmp_path):
         package.contract = str_remove_app(tmp_path)
-        package.save()
+        package.save(force_update=True)
+
+
+def generate_notes(total, package: DocumentsPackage):
+    """ Функция генерации претензии """
+    doc = DocxTemplate('templates/docx/notes/ul_note.docx')
+    jinja_env = jinja2.Environment()
+    jinja_env.filters['datv_case_filter'] = datv_case_filter
+    jinja_env.filters['pretty_date_filter'] = pretty_date_filter
+    jinja_env.filters['capfirst'] = cap_first
+    jinja_env.filters['literal'] = literal
+    data = {'consumer': package.contragent, 'total': total}
+    doc.render(data, jinja_env)
+    tmp_path = os.path.join(
+        package.get_save_path(),
+        f'Претензия.docx')
+    if os.path.exists(tmp_path):
+        os.remove(tmp_path)
+    doc.save(tmp_path)
+    if os.path.isfile(tmp_path):
+        package.court_note = str_remove_app(tmp_path)
+        package.save(force_update=True)
+
+
+def generate_act_count(data: dict, package: DocumentsPackage, total: float,
+                       recreate: bool = False):
+    jinja_env = jinja2.Environment(
+        loader=jinja2.FileSystemLoader('./'),
+        autoescape=jinja2.select_autoescape(['html', 'xml'])
+    )
+    jinja_env.filters['datv_case_filter'] = datv_case_filter
+    jinja_env.filters['pretty_date_filter'] = pretty_date_filter
+    jinja_env.filters['capfirst'] = cap_first
+    jinja_env.filters['literal'] = literal
+    template = jinja_env.get_template('templates/act_count.html')
+    results = template.render({'data': data, 'consumer': package.contragent,
+                               'total': total})
+    tmp_path = os.path.join(package.get_save_path(), 'Акт сверки.pdf')
+    if recreate and os.path.exists(tmp_path):
+        os.remove(tmp_path)
+    generate_document(results, tmp_path)
 
 
 def generate_document(text: str, name: str, **kwargs):
@@ -280,12 +329,19 @@ def str_add_app(string: str):
     return string.replace('/media/', '/app/media/')
 
 
+def count_total(data: List):
+    res = 0
+    for data_piece in data:
+        res += float(data_piece['summ_tax_precise'])
+    return res
+
+
 def calc_create_gen_async(contragent, pack, recreate: bool = False):
-    calc_func = async_task(calculate, contragent.contract_accept_date,
-                           contragent.current_date, contragent.stat_value,
-                           contragent.norm_value)
-    res = fetch(calc_func, wait=-1)
-    gen_func = async_task(generate_documents, result(calc_func),
-                          pack, recreate)
-    is_gen = fetch(gen_func, wait=-1)
-    return [res.success, is_gen.success]
+    async_task(calculate, contragent.contract_accept_date,
+               contragent.current_date, contragent.stat_value,
+               contragent.norm_value, pack, recreate, hook=gen_async)
+
+
+def gen_async(task):
+    if task.success:
+        async_task(generate_documents, task.result, task.args[4], task.args[5])

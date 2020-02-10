@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import (Contragent, DocumentsPackage, OtherFile, ActFile,
-                     CountFile, CountFactFile)
+                     CountFile, CountFactFile, NormativeCategory)
 
 from django_q.models import Task
 
@@ -72,3 +72,9 @@ class TaskSerializer(serializers.ModelSerializer):
     class Meta:
         model = Task
         fields = '__all__'
+
+
+class NormSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NormativeCategory
+        fields = ['id', 'name']

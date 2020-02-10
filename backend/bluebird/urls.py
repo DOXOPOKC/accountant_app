@@ -15,4 +15,5 @@ urlpatterns = [
          views.OtherFileView.as_view()),
 
     path('tasks/<str:group_id>', views.TasksView.as_view()),
+    path('norms/', views.NormsView.as_view()),
 ]
