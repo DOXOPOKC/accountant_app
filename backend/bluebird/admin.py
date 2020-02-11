@@ -3,7 +3,7 @@ from django.shortcuts import reverse
 from django.utils.html import mark_safe
 from .models import (KLASS_TYPES, Contragent, NormativeCategory, Normative,
                      Contract, ContractNumberClass, DocumentsPackage, ActFile,
-                     OtherFile)
+                     OtherFile, CountFile, CountFactFile)
 
 from django.contrib.contenttypes.admin import GenericTabularInline
 
@@ -49,6 +49,20 @@ class ActInLine(GenericTabularInline):
     ct_field = 'content_type'
 
 
+class CountInLine(GenericTabularInline):
+    model = CountFile
+    extra = 1
+    ct_fk_field = 'object_id'
+    ct_field = 'content_type'
+
+
+class CountFactInLine(GenericTabularInline):
+    model = CountFactFile
+    extra = 1
+    ct_fk_field = 'object_id'
+    ct_field = 'content_type'
+
+
 class OtherFileInLine(GenericTabularInline):
     model = OtherFile
     extra = 1
@@ -61,7 +75,7 @@ class DocumentsPackageAdmin(admin.ModelAdmin):
             'creation_date')
     list_display = sets
     list_display_links = sets
-    inlines = [ActInLine, OtherFileInLine, ]
+    inlines = [ActInLine, CountInLine, CountFactInLine, OtherFileInLine, ]
 
     def contragent_name(self, obj):
         return str(obj.contragent.excell_name)

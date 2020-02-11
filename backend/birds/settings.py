@@ -16,7 +16,6 @@ import os
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
@@ -27,8 +26,9 @@ SECRET_KEY = os.environ.get('SECRET_KEY',
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', True)
 
-ALLOWED_HOSTS = [*]
+ALLOWED_HOSTS = ['*', 'jud-module.lf.ru']
 
+DATA_UPLOAD_MAX_NUMBER_FIELDS = None
 
 # Application definition
 
@@ -42,13 +42,11 @@ INSTALLED_APPS = [
 
     'rest_framework',
     'django_q',
-
+    'drf_yasg',
     'bluebird',
     'blackbird',
 ]
 
-if DEBUG:
-    INSTALLED_APPS += ['drf_yasg',]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -59,6 +57,12 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ]
+}
 
 ROOT_URLCONF = 'birds.urls'
 
