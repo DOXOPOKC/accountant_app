@@ -28,7 +28,7 @@ services:
     build:
       context: ./backend
       args:
-        - DEBUG=${DEBUG}
+        - DEBUG=False
       target: deploy
     image: backend_image
     volumes: 
@@ -43,6 +43,7 @@ services:
 
   nginx:
     container_name: 'nginx'
+    env_file: .env
     build:
       context: .
       dockerfile: nginx/Dockerfile

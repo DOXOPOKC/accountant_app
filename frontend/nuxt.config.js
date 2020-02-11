@@ -3,7 +3,7 @@ require('dotenv').config()
 console.log(process.env)
 
 export default {
-  mode: 'spa',
+  mode: 'universal',
   /*
   ** Headers of the page
   */
