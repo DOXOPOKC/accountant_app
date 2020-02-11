@@ -1,13 +1,25 @@
 <template lang="pug">
     v-app
-        v-navigation-drawer(app v-model="drawer" fixed clipped class="elevation-2")
+        v-navigation-drawer(
+          app
+          v-model="drawer"
+          fixed
+          clipped
+          class="elevation-2"
+          mini-variant
+          mini-variant-width="64"
+          hide-overlay
+          dark
+        )
             v-row(class="fill-height" no-gutters)
+              v-col(cols="12")
                 v-navigation-drawer(
                     v-model="drawer"
                     mini-variant
                     mini-variant-width="64"
                     color="primary"
                     class="elevation-0 pt-2"
+                    hide-overlay
                 )
                     v-list-item
                         v-list-item-avatar
@@ -23,18 +35,21 @@
                             :to="item.to"
                             router
                             exact
+                            flat
+                            class="py-3"
                         )
-                            v-list-item-action
-                                v-icon(dark) {{ item.icon }}
-                            v-list-item-content
-                                v-list-item-title(v-text="item.title")
-                v-list(class="grow" color="grey lighten-3")
-                    v-list-item(
-                        v-for="link in links"
-                        :key="link"
-                        link
-                    )
-                        v-list-item-title(v-text="link")
+                              v-tooltip(right dark)
+                                template(v-slot:activator="{ on }")
+                                  v-icon(v-on="on") {{ item.icon }}
+                                span {{ item.title }}
+              //- v-col(cols="9")
+              //-   v-list(class="grow" color="grey lighten-3")
+              //-       v-list-item(
+              //-           v-for="link in links"
+              //-           :key="link"
+              //-           link
+              //-       )
+              //-           v-list-item-title(v-text="link")
         v-app-bar(
             class="elevation-2"
             clipped-left
@@ -62,8 +77,8 @@ export default {
     items: [
       {
         icon: 'mdi-chart-bubble',
-        title: 'Contragents',
-        to: '/contragents'
+        title: 'Контрагенты',
+        to: '/'
       }
     ]
   })
