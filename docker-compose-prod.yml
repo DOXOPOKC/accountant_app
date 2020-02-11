@@ -41,35 +41,20 @@ services:
       private_network:
         ipv4_address: 172.25.0.4
 
-  frontend:
-    container_name: 'node'
-    user: ${CURRENT_UID}
-    env_file: .env
-    build:
-      context: ./frontend
-    volumes:
-      - ./frontend:/app/
-    working_dir: /app/
-    restart: on-failure
-    depends_on:
-      - backend
-    networks:
-      private_network:
-        ipv4_address: 172.25.0.5
-
   nginx:
     container_name: 'nginx'
-    image: nginx:1.17-alpine
+    build:
+      context: .
+      dockerfile: nginx/Dockerfile
     restart: on-failure
     ports:
       - 80:80
     volumes:
-      - ./nginx/dev.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/prod.conf:/etc/nginx/nginx.conf:ro
       - ./static:/app/static
       - ./media:/app/media
     depends_on:
       - backend
-      - frontend
     networks:
       private_network:
         ipv4_address: 172.25.0.6
