@@ -19,7 +19,7 @@ export const state = () => ({
 
 export const mutations = {
   [types.SET_CONTRAGENT] (state, contragent) {
-    state.detail = contragent
+    state.detail = Object.assign({}, state.detail, contragent)
   },
   [types.SET_CONTRAGENTS] (state, contragents) {
     state.list = contragents

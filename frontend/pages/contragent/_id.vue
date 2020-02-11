@@ -24,190 +24,115 @@
             :to="'/contragent/' + $route.params.id + '/packages/'"
           ) Посмотреть пакеты
         v-card-text
-          ValidationObserver(
-            ref="form"
-            v-slot="{ passes }"
+          v-text-field(
+            v-model="klass"
           )
-            form(@submit.prevent="passes(onSubmit)")
-              v-expansion-panels(
-                :value="panels"
-                accordion
-                multiple
-                hover
-                flat
-                tile
-              )
-                v-expansion-panel(
-                  v-for="(item, i) in contragentInfo"
-                  :key="i"
-                )
-                  v-expansion-panel-header {{ Object.keys(item)[0] }}
-                  v-expansion-panel-content
-                    //- ValidationProvider(
-                    //-   rules="required"
-                    //-   v-slot="{ errors }"
-                    //- )
-                    v-text-field(
-                      v-if="klass"
-                      v-model="klass"
-                      :label="Object.values(item)[0]"
-                    )
-                    v-text-field(
-                      v-else-if="excell_name"
-                      v-model="excell_name"
-                      :label="Object.values(item)[0]"
-                    )
-                    v-text-field(
-                      v-else-if="dadata_name"
-                      v-model="dadata_name"
-                      :label="Object.values(item)[0]"
-                    )
-                    v-text-field(
-                      v-else-if="debt"
-                      v-model="debt"
-                      :label="Object.values(item)[0]"
-                    )
-                    v-text-field(
-                      v-else-if="inn"
-                      v-model="inn"
-                      :label="Object.values(item)[0]"
-                    )
-                    v-text-field(
-                      v-else-if="ogrn"
-                      v-model="ogrn"
-                      :label="Object.values(item)[0]"
-                    )
-                    v-text-field(
-                      v-else-if="kpp"
-                      v-model="kpp"
-                      :label="Object.values(item)[0]"
-                    )
-                    v-text-field(
-                      v-else-if="rs"
-                      v-model="rs"
-                      :label="Object.values(item)[0]"
-                    )
-                    v-text-field(
-                      v-else-if="ks"
-                      v-model="ks"
-                      :label="Object.values(item)[0]"
-                    )
-                    v-text-field(
-                      v-else-if="bank"
-                      v-model="bank"
-                      :label="Object.values(item)[0]"
-                    )
-                    v-text-field(
-                      v-else-if="bik"
-                      v-model="bik"
-                      :label="Object.values(item)[0]"
-                    )
-                    v-text-field(
-                      v-else-if="opf"
-                      v-model="opf"
-                      :label="Object.values(item)[0]"
-                    )
-                    v-text-field(
-                      v-else-if="director_status"
-                      v-model="director_status"
-                      :label="Object.values(item)[0]"
-                    )
-                    v-text-field(
-                      v-else-if="director_name"
-                      v-model="director_name"
-                      :label="Object.values(item)[0]"
+          v-text-field(
+            v-model="excell_name"
+          )
+          v-text-field(
+            v-model="dadata_name"
 
-                    )
-                    v-text-field(
-                      v-else-if="creation_date"
-                      v-model="creation_date"
-                      :label="Object.values(item)[0]"
+          )
+          v-text-field(
+            v-model="debt"
 
-                    )
-                    v-text-field(
-                      v-else-if="is_func"
-                      v-model="is_func"
-                      :label="Object.values(item)[0]"
+          )
+          v-text-field(
+            v-model="inn"
 
-                    )
-                    v-text-field(
-                      v-else-if="okved"
-                      v-model="okved"
-                      :label="Object.values(item)[0]"
+          )
+          v-text-field(
+            v-model="ogrn"
 
-                    )
-                    v-text-field(
-                      v-else-if="physical_address"
-                      v-model="physical_address"
-                      :label="Object.values(item)[0]"
+          )
+          v-text-field(
+            v-model="kpp"
 
-                    )
-                    v-text-field(
-                      v-else-if="legal_address"
-                      v-model="legal_address"
-                      :label="Object.values(item)[0]"
+          )
+          v-text-field(
+            v-model="rs"
 
-                    )
-                    v-text-field(
-                      v-else-if="stat_value"
-                      v-model="stat_value"
-                      :label="Object.values(item)[0]"
+          )
+          v-text-field(
+            v-model="ks"
 
-                    )
-                    v-text-field(
-                      v-else-if="contract_accept_date"
-                      v-model="contract_accept_date"
-                      :label="Object.values(item)[0]"
+          )
+          v-text-field(
+            v-model="bank"
 
-                    )
-                    v-text-field(
-                      v-else-if="current_date"
-                      v-model="current_date"
-                      :label="Object.values(item)[0]"
+          )
+          v-text-field(
+            v-model="bik"
 
-                    )
-                    v-text-field(
-                      v-else-if="current_contract_date"
-                      v-model="current_contract_date"
-                      :label="Object.values(item)[0]"
+          )
+          v-text-field(
+            v-model="opf"
 
-                    )
-                    v-text-field(
-                      v-else-if="platform"
-                      v-model="platform"
-                      :label="Object.values(item)[0]"
+          )
+          v-text-field(
+            v-model="director_status"
 
-                    )
-                    v-text-field(
-                      v-else-if="norm_value"
-                      v-model="norm_value"
-                      :label="Object.values(item)[0]"
+          )
+          v-text-field(
+            v-model="director_name"
 
-                    )
-                    v-text-field(
-                      v-else-if="number_contract"
-                      v-model="number_contract"
-                      :label="Object.values(item)[0]"
+          )
+          v-text-field(
+            v-model="creation_date"
 
-                    )
-                    v-text-field(
-                      v-else-if="signed_user"
-                      v-model="signed_user"
-                      :label="Object.values(item)[0]"
+          )
+          v-text-field(
+            v-model="is_func"
 
-                    )
-                    v-text-field(
-                      v-else-if="current_user"
-                      v-model="current_user"
-                      :label="Object.values(item)[0]"
+          )
+          v-text-field(
+            v-model="okved"
 
-                    )
-                    v-text-field(
-                      v-else
-                      v-model="test"
-                      :label="Object.values(item)[0]"
+          )
+          v-text-field(
+            v-model="physical_address"
 
-                    )
+          )
+          v-text-field(
+            v-model="legal_address"
+
+          )
+          v-text-field(
+            v-model="stat_value"
+
+          )
+          v-text-field(
+            v-model="contract_accept_date"
+
+          )
+          v-text-field(
+            v-model="current_date"
+
+          )
+          v-text-field(
+            v-model="current_contract_date"
+
+          )
+          v-text-field(
+            v-model="platform"
+
+          )
+          v-text-field(
+            v-model="norm_value"
+
+          )
+          v-text-field(
+            v-model="number_contract"
+
+          )
+          v-text-field(
+            v-model="signed_user"
+
+          )
+          v-text-field(
+            v-model="current_user"
+          )
         v-card-actions(class="px-10 py-6")
           //- v-btn(
           //-   color="primary"
@@ -215,6 +140,7 @@
           //-   to="put /contragents/{id}/packages/{package_id}"
           //- )
           //-   | Перегенерировать
+          | {{ contragent }}
           v-btn(
             color="primary"
             @click="GENERATE_PACKAGE"
@@ -247,36 +173,7 @@ export default {
     await store.dispatch('contragents/FETCH_CONTRAGENT', params.id)
   },
   data: () => ({
-    test: null,
-    id: 1,
-    klass: 1,
-    excell_name: 'СТРОИТЕЛЬНАЯ КОМПАНИЯ ПГС',
-    dadata_name: 'ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ ',
-    debt: 0,
-    inn: 4214032864,
-    ogrn: 1114214000119,
-    kpp: 421401001,
-    rs: null,
-    ks: null,
-    bank: null,
-    bik: null,
-    opf: null,
-    director_status: 'директор',
-    director_name: 'Чамин Роман Иванович',
-    creation_date: '2011-02-17',
-    is_func: true,
-    okved: '41.20',
-    physical_address: '652873, ОБЛАСТЬ КЕМЕРОВСКАЯ ОБЛАСТЬ - КУЗБАСС, ГОРОД МЕЖДУРЕЧЕНСК, ПРОЕЗД ГОРЬКОГО, ДОМ 4Б',
-    legal_address: '652873, ОБЛАСТЬ КЕМЕРОВСКАЯ ОБЛАСТЬ - КУЗБАСС, ГОРОД МЕЖДУРЕЧЕНСК, ПРОЕЗД ГОРЬКОГО, ДОМ 4Б',
-    stat_value: 100,
-    contract_accept_date: '2018-07-01',
-    current_date: '2020-02-11',
-    current_contract_date: '2020-02-11',
-    platform: null,
-    norm_value: 44,
-    number_contract: 1,
-    signed_user: null,
-    current_user: null
+    test: 1488
   }),
   computed: {
     ...mapState({
@@ -288,57 +185,242 @@ export default {
           return test
         })
         return result
-      }
-    }),
-    contragent: {
-      get () {
-        return this.$store.state.contragents.detail
       },
-      set (newValue) {}
-    },
+      contragent: state => state.contragents.detail
+    }),
     panels () {
       return [...Array(this.contragentInfo.length).keys()]
+    },
+    klass: {
+      set (klass) {
+        this.$store.commit('contragents/SET_CONTRAGENT', { klass })
+      },
+      get () {
+        return this.$store.state.contragents.detail.klass
+      }
+    },
+    excell_name: {
+      set (excellName) {
+        this.$store.commit('contragents/SET_CONTRAGENT', { excell_name: excellName })
+      },
+      get () {
+        return this.$store.state.contragents.detail.excell_name
+      }
+    },
+    dadata_name: {
+      set (dadataName) {
+        this.$store.commit('contragents/SET_CONTRAGENT', { dadata_name: dadataName })
+      },
+      get () {
+        return this.$store.state.contragents.detail.dadata_name
+      }
+    },
+    debt: {
+      set (debt) {
+        this.$store.commit('contragents/SET_CONTRAGENT', { debt })
+      },
+      get () {
+        return this.$store.state.contragents.detail.debt
+      }
+    },
+    inn: {
+      set (inn) {
+        this.$store.commit('contragents/SET_CONTRAGENT', { inn })
+      },
+      get () {
+        return this.$store.state.contragents.detail.inn
+      }
+    },
+    ogrn: {
+      set (ogrn) {
+        this.$store.commit('contragents/SET_CONTRAGENT', { ogrn })
+      },
+      get () {
+        return this.$store.state.contragents.detail.ogrn
+      }
+    },
+    kpp: {
+      set (kpp) {
+        this.$store.commit('contragents/SET_CONTRAGENT', { kpp })
+      },
+      get () {
+        return this.$store.state.contragents.detail.kpp
+      }
+    },
+    rs: {
+      set (rs) {
+        this.$store.commit('contragents/SET_CONTRAGENT', { rs })
+      },
+      get () {
+        return this.$store.state.contragents.detail.rs
+      }
+    },
+    ks: {
+      set (ks) {
+        this.$store.commit('contragents/SET_CONTRAGENT', { ks })
+      },
+      get () {
+        return this.$store.state.contragents.detail.ks
+      }
+    },
+    bank: {
+      set (bank) {
+        this.$store.commit('contragents/SET_CONTRAGENT', { bank })
+      },
+      get () {
+        return this.$store.state.contragents.detail.bank
+      }
+    },
+    bik: {
+      set (bik) {
+        this.$store.commit('contragents/SET_CONTRAGENT', { bik })
+      },
+      get () {
+        return this.$store.state.contragents.detail.bik
+      }
+    },
+    opf: {
+      set (opf) {
+        this.$store.commit('contragents/SET_CONTRAGENT', { opf })
+      },
+      get () {
+        return this.$store.state.contragents.detail.opf
+      }
+    },
+    director_status: {
+      set (directorStatus) {
+        this.$store.commit('contragents/SET_CONTRAGENT', { director_status: directorStatus })
+      },
+      get () {
+        return this.$store.state.contragents.detail.director_status
+      }
+    },
+    director_name: {
+      set (directorName) {
+        this.$store.commit('contragents/SET_CONTRAGENT', { director_name: directorName })
+      },
+      get () {
+        return this.$store.state.contragents.detail.director_name
+      }
+    },
+    creation_date: {
+      set (creationDate) {
+        this.$store.commit('contragents/SET_CONTRAGENT', { creation_date: creationDate })
+      },
+      get () {
+        return this.$store.state.contragents.detail.creation_date
+      }
+    },
+    is_func: {
+      set (isFunc) {
+        this.$store.commit('contragents/SET_CONTRAGENT', { is_func: isFunc })
+      },
+      get () {
+        return this.$store.state.contragents.detail.is_func
+      }
+    },
+    okved: {
+      set (okved) {
+        this.$store.commit('contragents/SET_CONTRAGENT', { okved })
+      },
+      get () {
+        return this.$store.state.contragents.detail.okved
+      }
+    },
+    physical_address: {
+      set (physicalAddress) {
+        this.$store.commit('contragents/SET_CONTRAGENT', { physical_address: physicalAddress })
+      },
+      get () {
+        return this.$store.state.contragents.detail.physical_address
+      }
+    },
+    legal_address: {
+      set (legalAddress) {
+        this.$store.commit('contragents/SET_CONTRAGENT', { legal_address: legalAddress })
+      },
+      get () {
+        return this.$store.state.contragents.detail.legal_address
+      }
+    },
+    stat_value: {
+      set (statValue) {
+        this.$store.commit('contragents/SET_CONTRAGENT', { stat_value: statValue })
+      },
+      get () {
+        return this.$store.state.contragents.detail.stat_value
+      }
+    },
+    contract_accept_date: {
+      set (contractAcceptDate) {
+        this.$store.commit('contragents/SET_CONTRAGENT', { contract_accept_date: contractAcceptDate })
+      },
+      get () {
+        return this.$store.state.contragents.detail.contract_accept_date
+      }
+    },
+    current_date: {
+      set (currentDate) {
+        this.$store.commit('contragents/SET_CONTRAGENT', { current_date: currentDate })
+      },
+      get () {
+        return this.$store.state.contragents.detail.current_date
+      }
+    },
+    current_contract_date: {
+      set (currentContractDate) {
+        this.$store.commit('contragents/SET_CONTRAGENT', { current_contract_date: currentContractDate })
+      },
+      get () {
+        return this.$store.state.contragents.detail.current_contract_date
+      }
+    },
+    platform: {
+      set (platform) {
+        this.$store.commit('contragents/SET_CONTRAGENT', { platform })
+      },
+      get () {
+        return this.$store.state.contragents.detail.platform
+      }
+    },
+    norm_value: {
+      set (normValue) {
+        this.$store.commit('contragents/SET_CONTRAGENT', { norm_value: normValue })
+      },
+      get () {
+        return this.$store.state.contragents.detail.norm_value
+      }
+    },
+    number_contract: {
+      set (numberContract) {
+        this.$store.commit('contragents/SET_CONTRAGENT', { number_contract: numberContract })
+      },
+      get () {
+        return this.$store.state.contragents.detail.number_contract
+      }
+    },
+    signed_user: {
+      set (signedUser) {
+        this.$store.commit('contragents/SET_CONTRAGENT', { signed_user: signedUser })
+      },
+      get () {
+        return this.$store.state.contragents.detail.signed_user
+      }
+    },
+    current_user: {
+      set (currentUser) {
+        this.$store.commit('contragents/SET_CONTRAGENT', { current_user: currentUser })
+      },
+      get () {
+        return this.$store.state.contragents.detail.current_user
+      }
     }
   },
   methods: {
     ...mapActions({
       UPDATE_CONTRAGENT: 'contragents/UPDATE_CONTRAGENT',
       GENERATE_PACKAGE: 'packages/GENERATE_PACKAGE'
-    }),
-    foo () {
-      this.UPDATE_CONTRAGENT({
-        id: this.id,
-        klass: this.klass,
-        excell_name: this.excell_name,
-        dadata_name: this.dadata_name,
-        debt: this.debt,
-        inn: this.inn,
-        ogrn: this.ogrn,
-        kpp: this.kpp,
-        rs: this.rs,
-        ks: this.ks,
-        bank: this.bank,
-        bik: this.bik,
-        opf: this.opf,
-        director_status: this.director_status,
-        director_name: this.director_name,
-        creation_date: this.creation_date,
-        is_func: this.is_func,
-        okved: this.okved,
-        physical_address: this.physical_address,
-        legal_address: this,
-        stat_value: this,
-        contract_accept_date: this,
-        current_date: this,
-        current_contract_date: this,
-        platform: this,
-        norm_value: this,
-        number_contract: this,
-        signed_user: this,
-        current_user: this
-      })
-    },
-    bar () {}
+    })
   }
 }
 </script>

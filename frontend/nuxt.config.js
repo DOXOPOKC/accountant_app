@@ -1,3 +1,7 @@
+require('dotenv').config()
+
+console.log(process.env)
+
 export default {
   mode: 'spa',
   /*
@@ -45,7 +49,8 @@ export default {
   modules: [
     // Doc: https://axios.nuxtjs.org/usage
     '@nuxtjs/axios',
-    '@nuxtjs/toast'
+    '@nuxtjs/toast',
+    '@nuxtjs/dotenv'
   ],
   /*
   ** Axios module configuration
