@@ -32,7 +32,6 @@ export const actions = {
     commit(types.SET_CONTRAGENT, data)
   },
   async [types.CREATE_CONTRAGENT] ({ commit, dispatch }, { vueFileAgent }) {
-    console.log(vueFileAgent.filesData)
     const formData = new FormData()
     formData.append('file', vueFileAgent.filesData[0].file)
     formData.append('filename', vueFileAgent.filesData[0].file.name)
