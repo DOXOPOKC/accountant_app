@@ -269,7 +269,7 @@ def generate_contract(package: DocumentsPackage):
     doc.save(tmp_path)
     if os.path.isfile(tmp_path):
         package.contract = str_remove_app(tmp_path)
-        package.save(force_update=True)
+        package.save()
 
 
 def generate_notes(total, package: DocumentsPackage):
@@ -290,7 +290,7 @@ def generate_notes(total, package: DocumentsPackage):
     doc.save(tmp_path)
     if os.path.isfile(tmp_path):
         package.court_note = str_remove_app(tmp_path)
-        package.save(force_update=True)
+        package.save()
 
 
 def generate_act_count(data: dict, package: DocumentsPackage, total: float,
@@ -312,7 +312,7 @@ def generate_act_count(data: dict, package: DocumentsPackage, total: float,
     generate_document(results, tmp_path)
     if os.path.isfile(tmp_path):
         package.act_count = str_remove_app(tmp_path)
-        package.save(force_update=True)
+        package.save()
 
 
 def generate_document(text: str, name: str, **kwargs):
