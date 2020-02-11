@@ -8,7 +8,7 @@ RUN npm ci
 
 COPY frontend /app/
 COPY .env /app/.env
-RUN npm run build
+RUN npm run generate
 
 # Stage 2 - nginx & frontend dist
 FROM nginx:1.17-alpine

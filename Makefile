@@ -14,6 +14,10 @@ upb:
 	docker-compose up -d --force-recreate --build
 down:
 	docker-compose down
+prod-upb:
+	docker-compose -f docker-compose-prod.yml up -d --force-recreate --build --remove-orphans
+prod-down:
+	docker-compose -f docker-compose-prod.yml down
 sh:
 	docker exec -it /birds /bin/sh
 migrations:
