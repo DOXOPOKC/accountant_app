@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const baseDomain = 'http://jud-module.lf.ru/'
+const baseDomain = 'http://localhost/'
 const baseURL = `${baseDomain}`
 
 export default axios.create({

@@ -7,8 +7,9 @@ export const types = {
   FETCH_CONTRAGENTS: 'FETCH_CONTRAGENTS',
 
   SET_CONTRAGENT: 'SET_CONTRAGENT',
+  CREATE_CONTRAGENT: 'CREATE_CONTRAGENT',
   FETCH_CONTRAGENT: 'FETCH_CONTRAGENT',
-  CREATE_CONTRAGENT: 'UPDATE_CONTRAGENT'
+  UPDATE_CONTRAGENT: 'UPDATE_CONTRAGENT'
 }
 
 export const state = () => ({
@@ -29,6 +30,13 @@ export const actions = {
   async [types.FETCH_CONTRAGENT] ({ commit }, id) {
     const { data } = await contragentRepository.getContragent(id)
     commit(types.SET_CONTRAGENT, data)
+  },
+  async [types.CREATE_CONTRAGENT] ({ commit, dispatch }, { vueFileAgent }) {
+    console.log(vueFileAgent.filesData)
+    const formData = new FormData()
+    formData.append('file', vueFileAgent.filesData[0].file)
+    formData.append('filename', vueFileAgent.filesData[0].file.name)
+    await contragentRepository.create(formData)
   },
   async [types.FETCH_CONTRAGENTS] ({ commit }) {
     const { data } = await contragentRepository.get()

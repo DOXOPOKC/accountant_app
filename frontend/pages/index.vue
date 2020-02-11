@@ -54,8 +54,8 @@
                 v-col(cols="12")
                   VueFileAgent(
                     class="profile-pic-upload-block"
-                    ref="profilePicRef"
-                    v-model="profilePic"
+                    ref="vueFileAgent"
+                    v-model="filesDataForUpload"
                     :theme="'list'"
                     :accept="'.xlsx'"
                     :maxSize="'2MB'"
@@ -94,7 +94,7 @@ export default {
   data: () => ({
     uploaded: false,
     uploadHeaders: {},
-    profilePic: null,
+    filesDataForUpload: null,
     uploadUrl: 'http://localhost/api/contragents/',
     contragentDialogState: false,
     headers: [
@@ -124,14 +124,12 @@ export default {
   methods: {
     ...mapActions([types.FETCH_CONTRAGENTS]),
     upload () {
-      this.$refs.profilePicRef.upload(this.uploadUrl, this.uploadHeaders, [this.profilePic])
-        .then((response) => {
-          this.uploaded = true
-          setTimeout(() => {
-            this.$store.commit('tasks/SET_TASK', response[0].data)
-            this.$store.dispatch('tasks/FETCH_TASKS')
-          }, 5000)
-        })
+      this.$store.dispatch('contragents/CREATE_CONTRAGENT', {
+        vueFileAgent: this.$refs.vueFileAgent,
+        uploadUrl: this.uploadUrl,
+        uploadHeaders: this.uploadHeaders,
+        filesDataForUpload: this.filesDataForUpload
+      })
     },
     onSelect (filesData) {
       this.uploaded = false
