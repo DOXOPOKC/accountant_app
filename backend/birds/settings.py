@@ -42,13 +42,11 @@ INSTALLED_APPS = [
 
     'rest_framework',
     'django_q',
-
+    'drf_yasg',
     'bluebird',
     'blackbird',
 ]
 
-if DEBUG:
-    INSTALLED_APPS += ['drf_yasg', ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
