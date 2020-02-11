@@ -43,15 +43,15 @@
                 )
                   v-expansion-panel-header {{ Object.keys(item)[0] }}
                   v-expansion-panel-content
-                    ValidationProvider(
-                      rules="required"
-                      v-slot="{ errors }"
+                    //- ValidationProvider(
+                    //-   rules="required"
+                    //-   v-slot="{ errors }"
+                    //- )
+                    v-text-field(
+                      v-model="contragent[item]"
+                      :label="Object.values(item)[0]"
+                      :error-messages="errors"
                     )
-                      v-text-field(
-                        v-model="contragent[item]"
-                        :label="Object.values(item)[0]"
-                        :error-messages="errors"
-                      )
         v-card-actions(class="px-10 py-6")
           v-btn(
             color="primary"
@@ -76,6 +76,12 @@
 import { mapState, mapActions } from 'vuex'
 import { ValidationProvider, ValidationObserver } from 'vee-validate'
 
+// import {
+//   contragentBank,
+//   contragentBik,
+//   contragentClass
+// } from '~/components/contragents'
+
 export default {
   components: {
     ValidationProvider,
@@ -84,7 +90,9 @@ export default {
   async asyncData ({ $axios, store, params }) {
     await store.dispatch('contragents/FETCH_CONTRAGENT', params.id)
   },
-  data: () => ({}),
+  data: () => ({
+    test: null
+  }),
   computed: {
     ...mapState({
       contragentInfo: (state) => {
@@ -101,9 +109,7 @@ export default {
       get () {
         return this.$store.state.contragents.detail
       },
-      set (newValue) {
-        // this.$stote.commit('contragents/' + types.SET_CONTRAGENT, newValue)
-      }
+      set (newValue) {}
     },
     panels () {
       return [...Array(this.contragentInfo.length).keys()]
