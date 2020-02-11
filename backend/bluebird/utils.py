@@ -9,7 +9,7 @@ import pdfkit
 import requests
 from django.http import Http404
 from django.template.loader import render_to_string
-from django_q.tasks import async_task, fetch, result
+from django_q.tasks import async_task
 from docxtpl import DocxTemplate
 
 
@@ -52,7 +52,7 @@ def parse_from_file(xlsx_file):
     for row in sheet.iter_rows(min_row=3, max_row=42, min_col=2, max_col=5,
                                values_only=True):
         a, b, c, d = row
-        print('|', a, '|', b, '|', c, '|', d, '|')
+        # print('|', a, '|', b, '|', c, '|', d, '|')
         if a is not None:
             if MIN_INNN_LEN > len(str(a)) or len(str(a)) > MAX_INN_LEN:
                 raise Exception(('200', 'Inn is wrong.'))
@@ -103,9 +103,9 @@ def get_data(id: int):
             for d in sug_d.suggestions:
                 is_result = d.data.state.status == 'ACTIVE'
                 if is_result:
-                    result = Result_response_from_suggestion(d)
+                    res = Result_response_from_suggestion(d)
                     serializer = ContragentFullSerializer(contragent,
-                                                          data=result.data)
+                                                          data=res.data)
                     if serializer.is_valid():
                         serializer.save()
                         return {'inn': contragent.inn, 'status': "OK"}
@@ -151,6 +151,7 @@ def generate_act(data: dict, package: DocumentsPackage,
             file_path = str_add_app(act.file_path)
             if os.path.exists(file_path):
                 os.remove(file_path)
+            ActFile.objects.filter(pk=act.pk).delete()
             act.delete()
         else:
             # Если длинна результата 0. Т.е. актов нет. Например мы
@@ -309,6 +310,9 @@ def generate_act_count(data: dict, package: DocumentsPackage, total: float,
     if recreate and os.path.exists(tmp_path):
         os.remove(tmp_path)
     generate_document(results, tmp_path)
+    if os.path.isfile(tmp_path):
+        package.act_count = str_remove_app(tmp_path)
+        package.save(force_update=True)
 
 
 def generate_document(text: str, name: str, **kwargs):

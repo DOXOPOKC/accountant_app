@@ -15,10 +15,13 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
-from .swagger_api import urlpatterns as swag
+from django.conf import settings
 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('bluebird.urls')),
-] + swag
+] 
+if settings.DEBUG:
+    from .swagger_api import urlpatterns as swag
+    urlpatterns += swag
