@@ -34,6 +34,8 @@ DATA_UPLOAD_MAX_NUMBER_FIELDS = None
 
 # Application definition
 
+APPEND_SLASH = True
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
