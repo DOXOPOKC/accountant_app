@@ -28,51 +28,38 @@ services:
     build:
       context: ./backend
       args:
-        - DEBUG=${DEBUG}
+        - DEBUG=False
       target: deploy
     image: backend_image
     volumes: 
       - ./backend:/app/
       - ./static:/app/static
-      - media_data:/app/media
+      - ./media:/app/media
     depends_on: 
       - postgres
     networks: 
       private_network:
         ipv4_address: 172.25.0.4
 
-  frontend:
-    container_name: 'node'
-    user: ${CURRENT_UID}
-    env_file: .env
-    build:
-      context: ./frontend
-    volumes:
-      - ./frontend:/app/
-    working_dir: /app/
-    restart: on-failure
-    depends_on:
-      - backend
-    networks:
-      private_network:
-        ipv4_address: 172.25.0.5
-
   nginx:
     container_name: 'nginx'
-    image: nginx:1.17-alpine
+    env_file: .env
+    build:
+      context: .
+      dockerfile: nginx/Dockerfile
     restart: on-failure
     ports:
       - 80:80
     volumes:
-      - ./nginx/dev.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/prod.conf:/etc/nginx/nginx.conf:ro
       - ./static:/app/static
-      - media_data:/app/media
+      - ./media:/app/media
     depends_on:
       - backend
-      - frontend
     networks:
       private_network:
         ipv4_address: 172.25.0.6
+      default:
 
   qcluster:
     image: backend_image
@@ -81,7 +68,7 @@ services:
     user: ${CURRENT_UID}
     volumes:
       - ./backend/:/app/
-      - media_data:/app/media
+      - ./media:/app/media
     working_dir: /app/
     restart: on-failure
     entrypoint: python3
@@ -102,4 +89,3 @@ networks:
 
 volumes:
   db_data:
-  media_data:

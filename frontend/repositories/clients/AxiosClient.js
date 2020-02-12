@@ -1,6 +1,9 @@
 import axios from 'axios'
 
-const baseDomain = 'http://jud-module.lf.ru/'
+const protocol = process.env.NUXT_ENV_PROTOCOL
+const domain = process.env.NUXT_ENV_DOMAIN 
+
+const baseDomain = `${protocol}://${domain}/`
 const baseURL = `${baseDomain}`
 
 export default axios.create({

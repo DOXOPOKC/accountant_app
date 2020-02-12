@@ -19,7 +19,7 @@ export const state = () => ({
 
 export const mutations = {
   [types.SET_CONTRAGENT] (state, contragent) {
-    state.detail = contragent
+    state.detail = Object.assign({}, state.detail, contragent)
   },
   [types.SET_CONTRAGENTS] (state, contragents) {
     state.list = contragents
@@ -32,7 +32,6 @@ export const actions = {
     commit(types.SET_CONTRAGENT, data)
   },
   async [types.CREATE_CONTRAGENT] ({ commit, dispatch }, { vueFileAgent }) {
-    console.log(vueFileAgent.filesData)
     const formData = new FormData()
     formData.append('file', vueFileAgent.filesData[0].file)
     formData.append('filename', vueFileAgent.filesData[0].file.name)
