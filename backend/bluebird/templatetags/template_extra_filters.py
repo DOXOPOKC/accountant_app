@@ -80,5 +80,5 @@ def cap_first(value: str):
 
 def proper_date_filter(date_value):
     if bool(date_value) or date_value is not None:
-        return f'{date_value.day}.{date_value.month}.{date_value.year}'
+        return f'{date_value.day:02}.{date_value.month:02}.{date_value.year}'
     return ''
