@@ -11,8 +11,12 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Create .env
-      run: cp /var/local/jud-module/.env ./.env
+      run: |
+        cp /var/local/jud-module/.env ./.env
+        cp /var/local/jud-module/template.xlsx ./media/template.xlsx
     - name: Create volumes
-      run: docker volume create db_data
-    - name: Make upb
-      run: make upb
+      run: |
+        docker volume create db_data
+        docker volume create media_data
+    - name: Make prod-upb
+      run: make prod-upb
