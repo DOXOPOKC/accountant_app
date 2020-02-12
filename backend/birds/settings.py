@@ -59,8 +59,11 @@ MIDDLEWARE = [
 ]
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication',
+    # 'DEFAULT_AUTHENTICATION_CLASSES': [
+    #     'rest_framework.authentication.TokenAuthentication',
+    # ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
     ]
 }
 
@@ -156,8 +159,9 @@ CACHES = {
 Q_CLUSTER = {
     'name': 'DjangORM',
     'workers': 4,
-    'timeout': 30,
-    'retry': 1,
+    'timeout': 1200,
+    'retry': 2400,
+    'ack_failures': True,
     'queue_limit': 50,
     'bulk': 10,
     'orm': 'default'
