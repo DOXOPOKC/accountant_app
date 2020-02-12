@@ -59,6 +59,7 @@ services:
     networks:
       private_network:
         ipv4_address: 172.25.0.6
+      default:
 
   qcluster:
     image: backend_image

@@ -89,7 +89,6 @@ import { types } from '~/store/contragents'
 
 export default {
   async asyncData ({ $axios, store, params }) {
-    console.log(process, context, 1488)
     await store.dispatch(`contragents/${types.FETCH_CONTRAGENTS}`)
   },
   data: () => ({
