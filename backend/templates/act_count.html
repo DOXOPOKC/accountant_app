@@ -27,109 +27,69 @@
 	<col width="1">
 	<tr>
 		<td colspan="15" height="25" style="border: none; padding: 0cm">
-			<p align="center"><font size="4" style="font-size: 14pt"><b>Акт
-			сверки</b></font></p>
+			<p align="center"><font size="4" style="font-size: 14pt"><b>Акт сверки</b></font></p>
 		</td>
 	</tr>
 	<tr>
 		<td colspan="15" height="65" valign="bottom" style="border: none; padding: 0cm">
 			<p align="center"><font size="2" style="font-size: 10pt">взаимных
-			расчетов за период: {{
-			consumer.contract_accept_date }} - {{ consumer.current_date
-			}}<br/>
-между ООО &quot;ЭКОТЕК&quot; <br/>
-и {{
-			consumer.excell_name }}<br/>
-по договору {{
-			consumer.number_contract }} от {{ consumer.current_contract_date
-			}}</font></p>
+			расчетов за период: {{ consumer.contract_accept_date|proper_date_filter }} - {{ consumer.current_date|proper_date_filter }}<br/>
+			между ООО &quot;ЭКОТЕК&quot; <br/>
+			и {{ consumer.excell_name }}<br/>
+			по договору {{ consumer.number_contract }} от {{ consumer.current_contract_date|proper_date_filter }}</font></p>
 		</td>
 	</tr>
 	<tr valign="bottom">
 		<td height="24" style="border: none; padding: 0cm">
-			<p><br/>
-
-			</p>
+			<p><br/></p>
 		</td>
 		<td style="border: none; padding: 0cm">
-			<p><br/>
-
-			</p>
+			<p><br/></p>
 		</td>
 		<td style="border: none; padding: 0cm">
-			<p><br/>
-
-			</p>
+			<p><br/></p>
 		</td>
 		<td style="border: none; padding: 0cm">
-			<p><br/>
-
-			</p>
+			<p><br/></p>
 		</td>
 		<td style="border: none; padding: 0cm">
-			<p><br/>
-
-			</p>
+			<p><br/></p>
 		</td>
 		<td style="border: none; padding: 0cm">
-			<p><br/>
-
-			</p>
+			<p><br/></p>
 		</td>
 		<td style="border: none; padding: 0cm">
-			<p><br/>
-
-			</p>
+			<p><br/></p>
 		</td>
 		<td style="border: none; padding: 0cm">
-			<p><br/>
-
-			</p>
+			<p><br/></p>
 		</td>
 		<td style="border: none; padding: 0cm">
-			<p><br/>
-
-			</p>
+			<p><br/></p>
 		</td>
 		<td style="border: none; padding: 0cm">
-			<p><br/>
-
-			</p>
+			<p><br/></p>
 		</td>
 		<td style="border: none; padding: 0cm">
-			<p><br/>
-
-			</p>
+			<p><br/></p>
 		</td>
 		<td style="border: none; padding: 0cm">
-			<p><br/>
-
-			</p>
+			<p><br/></p>
 		</td>
 		<td style="border: none; padding: 0cm">
-			<p><br/>
-
-			</p>
+			<p><br/></p>
 		</td>
 		<td style="border: none; padding: 0cm">
-			<p><br/>
-
-			</p>
+			<p><br/></p>
 		</td>
 		<td style="border: none; padding: 0cm">
-			<p><br/>
-
-			</p>
+			<p><br/></p>
 		</td>
 	</tr>
 	<tr>
 		<td colspan="15" height="33" valign="bottom" style="border: none; padding: 0cm">
-			<p align="justify"><font size="2" style="font-size: 10pt">Мы,
-			нижеподписавшиеся, Управляющий
-			директор ООО &quot;ЭКОТЕК&quot; Функ Андрей
-			Иванович, с одной стороны, и {{
-			consumer.director_status }} {{ consumer.excell_name }} {{
-			consumer.director_name }}, с другой стороны,
+			<p align="justify"><font size="2" style="font-size: 10pt">Мы, нижеподписавшиеся, Управляющий директор ООО &quot;ЭКОТЕК&quot; Функ Андрей
+			Иванович, с одной стороны, и {{ consumer.director_status }} {{ consumer.excell_name }} {{ consumer.director_name }}, с другой стороны,
 			составили настоящий акт сверки в том,
 			что состояние взаимных расчетов по
 			данным учета следующее:</font></p>
@@ -236,7 +196,7 @@
 				руб.</p>
 			</td>
 			<td colspan="7" style="border-top: 1px solid #000000; border-bottom: none; border-left: 1px solid #000000; border-right: 1px solid #000000; padding-top: 0.05cm; padding-bottom: 0cm; padding-left: 0.05cm; padding-right: 0.05cm">
-				<p align="left">По данным {{ consumer.director_name }},
+				<p align="left">По данным {{ consumer.excell_name }},
 				руб.</p>
 			</td>
 		</tr>
@@ -326,10 +286,10 @@
 	<tbody>
 		<tr>
 			<td height="15" style="border: 1px solid #000000; padding: 0.05cm" sdval="43450" sdnum="1049;1049;DD.MM.YYYY">
-				<p align="right">16.12.2018</p>
+				<p align="center">{{ consumer.current_date|proper_date_filter }}</p>
 			</td>
 			<td colspan="2" style="border: 1px solid #000000; padding: 0.05cm">
-				<p align="left">Продажа {{ data_frame.curr_date }}</p>
+				<p align="left">Продажа ({{ data_frame.curr_date|proper_date_filter }})</p>
 			</td>
 			<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0.05cm; padding-bottom: 0.05cm; padding-left: 0.05cm; padding-right: 0cm" sdnum="1049;0;#&nbsp;##0,00">
 				<p><br/>
@@ -337,7 +297,7 @@
 				</p>
 			</td>
 			<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: none; border-right: 1px solid #000000; padding-top: 0.05cm; padding-bottom: 0.05cm; padding-left: 0cm; padding-right: 0.05cm" sdval="353,59" sdnum="1049;0;#&nbsp;##0,00">
-				<p align="right"><font color="#ff0000">353,59</font></p>
+				<p align="right"><font color="#000000">{{ data_frame.summ_tax_precise }}</font></p>
 			</td>
 			<td colspan="3" style="border: 1px solid #000000; padding: 0.05cm" sdnum="1049;0;#&nbsp;##0,00;[RED]-#&nbsp;##0,00">
 				<p><br/>
@@ -386,7 +346,7 @@
 				<p align="left"><b>Обороты за период</b></p>
 			</td>
 			<td colspan="2" style="border: 1px solid #000000; padding: 0.05cm" sdval="6315,3" sdnum="1049;0;#&nbsp;##0,00;[RED]-#&nbsp;##0,00">
-				<p align="right"><b>6&nbsp;315,30</b></p>
+				<p align="right"><b>{{ total }}</b></p>
 			</td>
 			<td colspan="3" style="border: 1px solid #000000; padding: 0.05cm" sdnum="1049;0;#&nbsp;##0,00;[RED]-#&nbsp;##0,00">
 				<p><br/>
@@ -424,7 +384,7 @@
 				<p align="left"><b>Сальдо конечное</b></p>
 			</td>
 			<td colspan="2" style="border: 1px solid #000000; padding: 0.05cm" sdval="6315,3" sdnum="1049;0;#&nbsp;##0,00;[RED]-#&nbsp;##0,00">
-				<p align="right"><b>6&nbsp;315,30</b></p>
+				<p align="right"><b>{{ total }}</b></p>
 			</td>
 			<td style="border-top: 1px solid #000000; border-bottom: 1px solid #000000; border-left: 1px solid #000000; border-right: none; padding-top: 0.05cm; padding-bottom: 0.05cm; padding-left: 0.05cm; padding-right: 0cm">
 				<p><br/>
@@ -564,7 +524,7 @@
 		</tr>
 		<tr valign="bottom">
 			<td colspan="6" height="29" style="border: none; padding: 0cm">
-				<p align="left"><b>на {{ consumer.current_date }} задолженность
+				<p align="left"><b>на {{ consumer.current_date|proper_date_filter }} задолженность
 				в пользу ООО &quot;ЭКОТЕК&quot; {{ total }} руб.
 				({{ total|literal|capfirst }}).</b></p>
 			</td>

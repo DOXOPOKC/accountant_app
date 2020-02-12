@@ -31,9 +31,9 @@ from bluebird.templatetags.template_extra_filters import (
     pretty_date_filter,
     datv_case_filter,
     cap_first,
-    literal)
+    literal, proper_date_filter)
 
-from blackbird.views import calculate
+from blackbird.views import calculate, round_hafz
 
 # import pypandoc
 
@@ -124,7 +124,7 @@ def generate_documents(data: List, package: DocumentsPackage,
     """ Функция пакетной генерации документов."""
     package.contragent.create_package_and_folder()
     package.initialize_sub_folders()
-    total = count_total(data)
+    total = round_hafz(count_total(data), 2)
     generate_contract(package)
     generate_notes(total, package)
     generate_act_count(data, package, total, recreate)
@@ -303,6 +303,7 @@ def generate_act_count(data: dict, package: DocumentsPackage, total: float,
     jinja_env.filters['pretty_date_filter'] = pretty_date_filter
     jinja_env.filters['capfirst'] = cap_first
     jinja_env.filters['literal'] = literal
+    jinja_env.filters['proper_date_filter'] = proper_date_filter
     template = jinja_env.get_template('templates/act_count.html')
     results = template.render({'data': data, 'consumer': package.contragent,
                                'total': total})
