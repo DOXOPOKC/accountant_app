@@ -1,11 +1,25 @@
 <template lang="pug">
-  v-container()
-    title Юридическое наименование
+  v-col(cols="12")
+    v-text-field(
+      disabled
+      v-model="dadata_name"
+      label="Юридическое наименование"
+    )
 </template>
 
 <script>
 export default {
-  data: () => ({})
+  data: () => ({}),
+  computed: {
+    dadata_name: {
+      set (dadataName) {
+        this.$store.commit('contragents/SET_CONTRAGENT', { dadata_name: dadataName })
+      },
+      get () {
+        return this.$store.state.contragents.detail.dadata_name
+      }
+    },
+  }
 }
 // disabled
 </script>

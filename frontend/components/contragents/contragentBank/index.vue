@@ -1,10 +1,23 @@
 <template lang="pug">
-  v-container()
-    title Наименование банка
+  v-col(cols="12")
+    v-text-field(
+      v-model="bank"
+      label="Наименование банка"
+    )
 </template>
 
 <script>
 export default {
-  data: () => ({})
+  data: () => ({}),
+  computed: {
+    bank: {
+      set (bank) {
+        this.$store.commit('contragents/SET_CONTRAGENT', { bank })
+      },
+      get () {
+        return this.$store.state.contragents.detail.bank
+      }
+    }
+  }
 }
 </script>

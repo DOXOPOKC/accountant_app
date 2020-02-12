@@ -1,10 +1,23 @@
 <template lang="pug">
-  v-container()
-    title Номер контракта
+  v-col(cols="12")
+    v-text-field(
+      v-model="number_contract"
+      label="Номер контракта"
+    )
 </template>
 
 <script>
 export default {
-  data: () => ({})
+  data: () => ({}),
+  computed: {
+    number_contract: {
+      set (numberContract) {
+        this.$store.commit('contragents/SET_CONTRAGENT', { number_contract: numberContract })
+      },
+      get () {
+        return this.$store.state.contragents.detail.number_contract
+      }
+    }
+  }
 }
 </script>

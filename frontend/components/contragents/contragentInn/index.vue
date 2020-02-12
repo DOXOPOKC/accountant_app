@@ -1,10 +1,23 @@
 <template lang="pug">
-  v-container()
-    title ИНН
+  v-col(cols="12")
+    v-text-field(
+      v-model.number="inn"
+      label="ИНН"
+    )
 </template>
 
 <script>
 export default {
-  data: () => ({})
+  data: () => ({}),
+  computed: {
+    inn: {
+      set (inn) {
+        this.$store.commit('contragents/SET_CONTRAGENT', { inn })
+      },
+      get () {
+        return this.$store.state.contragents.detail.inn
+      }
+    },
+  }
 }
 </script>
