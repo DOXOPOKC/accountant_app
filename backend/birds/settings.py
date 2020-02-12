@@ -11,11 +11,13 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
 import os
+import environs
+
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-
+env = environs.Env()
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
@@ -24,7 +26,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY',
                             'very_secret_key')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', False)
+DEBUG = env.bool('DEBUG', False)
 
 ALLOWED_HOSTS = ['*', 'jud-module.lf.ru']
 
