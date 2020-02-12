@@ -4,6 +4,6 @@ const resource = '/api/tasks'
 
 export default {
   get (taskId) {
-    return client.get(`${resource}/${taskId}`)
+    return client.get(`${resource}/${taskId}/`)
   }
 }
