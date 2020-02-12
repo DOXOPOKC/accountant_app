@@ -24,7 +24,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY',
                             'very_secret_key')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', True)
+DEBUG = os.environ.get('DEBUG', False)
 
 ALLOWED_HOSTS = ['*', 'jud-module.lf.ru']
 
