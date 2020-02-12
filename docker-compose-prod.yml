@@ -34,7 +34,7 @@ services:
     volumes: 
       - ./backend:/app/
       - ./static:/app/static
-      - ./media:/app/media
+      - media_data:/app/media
     depends_on: 
       - postgres
     networks: 
@@ -53,7 +53,7 @@ services:
     volumes:
       - ./nginx/prod.conf:/etc/nginx/nginx.conf:ro
       - ./static:/app/static
-      - ./media:/app/media
+      - media_data:/app/media
     depends_on:
       - backend
     networks:
@@ -68,7 +68,7 @@ services:
     user: ${CURRENT_UID}
     volumes:
       - ./backend/:/app/
-      - ./media:/app/media
+      - media_data:/app/media
     working_dir: /app/
     restart: on-failure
     entrypoint: python3
@@ -89,3 +89,4 @@ networks:
 
 volumes:
   db_data:
+  media_data:
