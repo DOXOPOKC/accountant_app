@@ -1,10 +1,23 @@
 <template lang="pug">
-  v-container()
-    title БИК
+  v-col(cols="12")
+    v-text-field(
+      v-model="bik"
+      label="БИК"
+    )
 </template>
 
 <script>
 export default {
-  data: () => ({})
+  data: () => ({}),
+  computed: {
+    bik: {
+      set (bik) {
+        this.$store.commit('contragents/SET_CONTRAGENT', { bik })
+      },
+      get () {
+        return this.$store.state.contragents.detail.bik
+      }
+    }
+  }
 }
 </script>

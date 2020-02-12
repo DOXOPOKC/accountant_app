@@ -14,8 +14,8 @@ export default {
     return client.post(`/api/contragents/${contragentId}/packages/`, payload)
   },
   // Перегенирация
-  update (contragentId, packageId, payload) {
-    return client.put(`/api/contragents/${contragentId}/packages/${packageId}/`, payload)
+  update (contragentId, packageId) {
+    return client.put(`/api/contragents/${contragentId}/packages/${packageId}/`)
   },
   // Статус пакета переводится в закрытый
   delete (contragentId, packageId) {

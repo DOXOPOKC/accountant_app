@@ -1,10 +1,23 @@
 <template lang="pug">
-  v-container()
-    title к/с
+  v-col(cols="12")
+    v-text-field(
+      v-model="ks"
+      label="к/с"
+    )
 </template>
 
 <script>
 export default {
-  data: () => ({})
+  data: () => ({}),
+  computed: {
+    ks: {
+      set (ks) {
+        this.$store.commit('contragents/SET_CONTRAGENT', { ks })
+      },
+      get () {
+        return this.$store.state.contragents.detail.ks
+      }
+    }
+  }
 }
 </script>
