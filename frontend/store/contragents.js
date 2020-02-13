@@ -1,6 +1,7 @@
 import Repository from '~/repositories/RepositoryFactory'
 
 const contragentRepository = Repository.get('contragents')
+const normsRepository = Repository.get('norms')
 
 export const types = {
   SET_CONTRAGENTS: 'SET_CONTRAGENTS',
@@ -9,10 +10,14 @@ export const types = {
   SET_CONTRAGENT: 'SET_CONTRAGENT',
   CREATE_CONTRAGENT: 'CREATE_CONTRAGENT',
   FETCH_CONTRAGENT: 'FETCH_CONTRAGENT',
-  UPDATE_CONTRAGENT: 'UPDATE_CONTRAGENT'
+  UPDATE_CONTRAGENT: 'UPDATE_CONTRAGENT',
+
+  SET_NORM_LIST: 'SET_NORM_LIST',
+  FETCH_NORM_LIST: 'FETCH_NORM_LIST'
 }
 
 export const state = () => ({
+  normList: [],
   list: [],
   detail: {}
 })
@@ -23,6 +28,9 @@ export const mutations = {
   },
   [types.SET_CONTRAGENTS] (state, contragents) {
     state.list = contragents
+  },
+  [types.SET_NORM_LIST] (state, normList) {
+    state.normList = normList
   }
 }
 
@@ -43,8 +51,18 @@ export const actions = {
     commit(types.SET_CONTRAGENTS, data)
   },
   async [types.UPDATE_CONTRAGENT] ({ state, commit }) {
-    const { data } = await contragentRepository.update(state.detail, state.detail.id)
-    commit(types.SET_CONTRAGENT, data)
+    try {
+      const { data } = await contragentRepository.update(state.detail, state.detail.id)
+      commit(types.SET_CONTRAGENT, data)
+      this.$toast.success('Контрагент сохранен')
+    } catch (error) {
+      console.log({ error })
+      this.$toast.error(error.message)
+    }
+  },
+  async [types.FETCH_NORM_LIST] ({ state, commit }) {
+    const { data } = await normsRepository.get()
+    commit(types.SET_NORM_LIST, data)
   }
 }
 

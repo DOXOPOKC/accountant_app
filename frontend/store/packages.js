@@ -8,9 +8,9 @@ export const types = {
 
   SET_PACKAGE: 'SET_PACKAGE',
   FETCH_PACKAGE: 'FETCH_PACKAGE',
-
   GENERATE_PACKAGE: 'GENERATE_PACKAGE',
-  REGENERATE_PACKAGE: 'REGENERATE_PACKAGE'
+  REGENERATE_PACKAGE: 'REGENERATE_PACKAGE',
+  DEACTIVATE_PACKAGE: 'DEACTIVATE_PACKAGE'
 }
 
 export const state = () => ({
@@ -21,10 +21,6 @@ export const state = () => ({
 // to="put /contragents/{id}/packages/{package_id}"
 // )
 // | Перегенерировать
-
-// to="post /contragents/{id}/packages/{package_id}"
-// )
-// | Сгенерировать пакет
 
 export const mutations = {
   [types.SET_PACKAGES] (state, contragentPackages) {
@@ -43,24 +39,40 @@ export const actions = {
   },
   // // Генерация пакета (создание нового)
   async [types.GENERATE_PACKAGE] ({ commit, rootState }) {
-    const { data } = await packageRepository.create(rootState.contragents.detail.id, rootState.contragents.detail)
-    commit(types.SET_PACKAGE, data)
+    try {
+      const { data } = await packageRepository.create(rootState.contragents.detail.id, rootState.contragents.detail)
+      commit(types.SET_PACKAGE, data)
+      this.$toast.success('Пакет успешно сгенерирован')
+    } catch (error) {
+      console.log({ error })
+      this.$toast.error('Ошибка! Есть активный пакет')
+    }
   },
   // // Содержимое пакета
   async [types.FETCH_PACKAGE] ({ commit }, { contragentId, packageId }) {
     const { data } = await packageRepository.getPackage(contragentId, packageId)
     commit(types.SET_PACKAGE, data)
+  },
+  // Перегенирация
+  async [types.REGENERATE_PACKAGE] ({ dispatch }, { contragentId, packageId }) {
+    try {
+      await packageRepository.update(contragentId, packageId)
+      await dispatch(types.FETCH_PACKAGE, { contragentId, packageId })
+      this.$toast.success('Пакет успешно перегенерирован')
+    } catch (error) {
+      this.$toast.error('Ошибка генерации')
+    }
+  },
+  // Статус пакета переводится в закрытый
+  async [types.DEACTIVATE_PACKAGE] ({ dispatch }, { contragentId, packageId }) {
+    try {
+      await packageRepository.delete(contragentId, packageId)
+      await dispatch(types.FETCH_PACKAGE, { contragentId, packageId })
+      this.$toast.error('Пакет неактивен')
+    } catch (error) {
+      this.$toast.error('Ошибка статуса')
+    }
   }
-  // // Перегенирация
-  // async [types.FETCH_CONTRAGENTS] (store, id, packageId) {
-  //     const data = await this.$axios.$put(`http://localhost/api/contragents/${id}/packages/${packageId}`)
-  //     store.commit(types.SET_CONTRAGENTS, data)
-  // },
-  // // Статус пакета переводится в закрытый
-  // async [types.FETCH_CONTRAGENTS] (store, id) {
-  //     const data = await this.$axios.$delete(`http://localhost/api/contragents/${id}/packages`)
-  //     store.commit(types.SET_CONTRAGENTS, data)
-  // }
 }
 
 export const getters = {}

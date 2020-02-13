@@ -16,13 +16,27 @@
       )
         v-card-title(class="headline font-weight-light px-10")
           | Пакет № {{ package.id }}
+          v-spacer
+          v-btn(
+            v-if="packageActiveStatus"
+            color="error"
+            @click="DEACTIVATE_PACKAGE({ contragentId: package.contragent, packageId: package.id })"
+          )
+            | Сделать неактивным
+          v-btn(
+            v-if="packageActiveStatus"
+            class="ml-2"
+            color="primary"
+            @click="REGENERATE_PACKAGE({ contragentId: package.contragent, packageId: package.id })"
+          )
+            | Перегенерировать
         v-card-text
           v-subheader(class="subtitle-1 black--text")
-            a(:href="'http://jud-module.lf.ru' + package.contract" class="blue--text") Договор
+            a(:href="package.contract || ''" class="blue--text") Договор
           v-subheader(class="subtitle-1 black--text")
-            a(:href="'http://jud-module.lf.ru' + package.court_note" class="blue--text") Претензия
+            a(:href="package.court_note || ''" class="blue--text") Претензия
           v-subheader(class="subtitle-1 black--text")
-            a(:href="'http://jud-module.lf.ru' + package.act_count" class="blue--text") Акт сверки
+            a(:href="package.act_count || ''" class="blue--text") Акт сверки
           v-list
             v-subheader(class="subtitle-1 black--text") Акты
             v-list-item(
@@ -31,7 +45,7 @@
             )
               v-list-item-content
                 v-list-item-title
-                  a(v-text="file.file_name" :href="'http://jud-module.lf.ru' + file.file_path" class="blue--text")
+                  a(v-text="file.file_name" :href="file.file_path || ''" class="blue--text")
 
           v-list
             v-subheader Счета
@@ -41,7 +55,7 @@
             )
               v-list-item-content
                 v-list-item-title
-                  a(v-text="file.file_name" :href="'http://jud-module.lf.ru' + file.file_path" class="blue--text")
+                  a(v-text="file.file_name" :href="file.file_path || ''" class="blue--text")
 
           v-list
             v-subheader Счета фактур
@@ -51,11 +65,11 @@
             )
               v-list-item-content
                 v-list-item-title
-                  a(v-text="file.file_name" :href="'http://jud-module.lf.ru' + file.file_path" class="blue--text")
+                  a(v-text="file.file_name" :href="file.file_path || ''" class="blue--text")
 </template>
 
 <script>
-import { mapState } from 'vuex'
+import { mapState, mapActions } from 'vuex'
 import { ValidationProvider, ValidationObserver } from 'vee-validate'
 import { types } from '~/store/packages'
 
@@ -70,12 +84,15 @@ export default {
   data: () => ({}),
   computed: {
     ...mapState({
-      package: state => state.packages.detail
-    }),
-    panels () {
-      return [...Array(this.contragentInfo.length).keys()]
-    }
+      package: state => state.packages.detail,
+      packageActiveStatus: state => state.packages.detail.is_active
+    })
   },
-  methods: {}
+  methods: {
+    ...mapActions({
+      REGENERATE_PACKAGE: 'packages/REGENERATE_PACKAGE',
+      DEACTIVATE_PACKAGE: 'packages/DEACTIVATE_PACKAGE'
+    })
+  }
 }
 </script>

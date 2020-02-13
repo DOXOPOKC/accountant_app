@@ -54,13 +54,6 @@
           contragent-signed-user
           contragent-stat-value
         v-card-actions(class="px-10 py-6")
-          | {{contragent}}
-          //- v-btn(
-          //-   color="primary"
-          //-   @click=""
-          //-   to="put /contragents/{id}/packages/{package_id}"
-          //- )
-          //-   | Перегенерировать
           v-btn(
             @click="GENERATE_PACKAGE"
           )
