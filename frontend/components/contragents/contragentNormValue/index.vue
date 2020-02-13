@@ -1,7 +1,6 @@
 <template lang="pug">
   v-col(cols="12")
     v-select(
-      disabled
       item-text="name"
       item-value="id"
       v-model="norm_value"
