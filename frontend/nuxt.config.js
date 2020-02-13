@@ -63,7 +63,8 @@ export default {
   ** See https://github.com/nuxt-community/modules/blob/master/packages/toast/README.md
   */
   toast: {
-    position: 'top-center',
+    position: 'bottom-right',
+    duration : 5000,
     register: [ // Register custom toasts
       {
         name: 'my-error',
