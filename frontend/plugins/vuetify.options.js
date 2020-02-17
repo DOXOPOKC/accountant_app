@@ -1,4 +1,10 @@
-const options = {
+import ru from 'vuetify/es5/locale/ru'
+
+export default {
+  lang: {
+    locales: { ru },
+    current: 'ru'
+  },
   theme: {
     themes: {
       light: {
@@ -7,5 +13,3 @@ const options = {
     }
   }
 }
-
-export default options

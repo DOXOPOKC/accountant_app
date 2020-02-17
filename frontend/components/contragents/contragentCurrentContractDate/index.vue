@@ -10,12 +10,14 @@
       min-width="290px"
     )
       template(v-slot:activator="{ on }")
-        v-text-field(
-          v-model="current_contract_date"
-          label="Дата заключения договора"
-          readonly
-          v-on="on"
-        )
+        ValidationProvider(rules="required" name="" v-slot="{ errors }")
+          v-text-field(
+            v-model="current_contract_date"
+            label="Дата заключения договора"
+            readonly
+            v-on="on"
+            :error-messages="errors"
+          )
       v-date-picker(v-model="current_contract_date" no-title scrollable)
         v-spacer
         v-btn(text color="primary" @click="menu = false") Cancel
@@ -23,7 +25,12 @@
 </template>
 
 <script>
+import { ValidationProvider } from 'vee-validate'
+
 export default {
+  components: {
+    ValidationProvider
+  },
   data: () => ({
     menu: false
   }),
@@ -38,5 +45,5 @@ export default {
     }
   }
 }
-// date pikcer
+// date picker
 </script>
