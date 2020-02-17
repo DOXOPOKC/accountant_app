@@ -34,7 +34,7 @@
                     v-chip(color="green" dark) {{ item.id }}
                   td(v-else color="red") {{ item.id }}
                   td {{ item.contragent }}
-                  td {{ item.creation_date }}
+                  td {{ item.creation_date | dateFormat }}
 </template>
 
 <script>

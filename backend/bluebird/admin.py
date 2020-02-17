@@ -3,7 +3,7 @@ from django.shortcuts import reverse
 from django.utils.html import mark_safe
 from .models import (KLASS_TYPES, Contragent, NormativeCategory, Normative,
                      Contract, ContractNumberClass, DocumentsPackage, ActFile,
-                     OtherFile, CountFile, CountFactFile)
+                     OtherFile, CountFile, CountFactFile, SignUser)
 
 from django.contrib.contenttypes.admin import GenericTabularInline
 
@@ -81,9 +81,16 @@ class DocumentsPackageAdmin(admin.ModelAdmin):
         return str(obj.contragent.excell_name)
 
 
+class SignUserAdmin(admin.ModelAdmin):
+    sets = ('pk', 'name', 'position', 'address')
+    list_display = sets
+    list_display_links = sets
+
+
 admin.site.register(Contragent, ContragentAdmin)
 admin.site.register(NormativeCategory, NormativeCategoryAdmin)
 admin.site.register(Normative, NormativeAdmin)
 admin.site.register(Contract)
 admin.site.register(ContractNumberClass)
 admin.site.register(DocumentsPackage, DocumentsPackageAdmin)
+admin.site.register(SignUser, SignUserAdmin)

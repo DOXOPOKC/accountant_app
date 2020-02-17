@@ -10,12 +10,15 @@
       min-width="290px"
     )
       template(v-slot:activator="{ on }")
-        v-text-field(
-          v-model="creation_date"
-          label="Дата создания юр. лица"
-          readonly
-          v-on="on"
-        )
+        ValidationProvider(rules="required" v-slot="{ errors }")
+          v-text-field(
+            disabled
+            v-model="creation_date"
+            label="Дата создания юр. лица"
+            readonly
+            v-on="on"
+            :error-messages="errors"
+          )
       v-date-picker(v-model="creation_date" no-title scrollable disabled)
         v-spacer
         v-btn(text color="primary" @click="menu = false") Cancel
@@ -23,7 +26,12 @@
 </template>
 
 <script>
+import { ValidationProvider } from 'vee-validate'
+
 export default {
+  components: {
+    ValidationProvider
+  },
   data: () => ({
     menu: false
   }),

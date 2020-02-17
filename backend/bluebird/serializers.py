@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import (Contragent, DocumentsPackage, OtherFile, ActFile,
-                     CountFile, CountFactFile, NormativeCategory)
+                     CountFile, CountFactFile, NormativeCategory, SignUser)
 
 from django_q.models import Task
 
@@ -72,6 +72,12 @@ class TaskSerializer(serializers.ModelSerializer):
     class Meta:
         model = Task
         fields = '__all__'
+
+
+class SignUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SignUser
+        fields = ['id', 'name', 'position', 'address']
 
 
 class NormSerializer(serializers.ModelSerializer):
