@@ -18,10 +18,6 @@ export const state = () => ({
   detail: {}
 })
 
-// to="put /contragents/{id}/packages/{package_id}"
-// )
-// | Перегенерировать
-
 export const mutations = {
   [types.SET_PACKAGES] (state, contragentPackages) {
     state.list = contragentPackages
@@ -44,7 +40,6 @@ export const actions = {
       commit(types.SET_PACKAGE, data)
       this.$toast.success('Пакет успешно сгенерирован')
     } catch (error) {
-      console.log({ error })
       this.$toast.error('Ошибка! Есть активный пакет')
     }
   },

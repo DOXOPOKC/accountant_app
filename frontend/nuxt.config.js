@@ -1,7 +1,5 @@
 require('dotenv').config()
 
-console.log(process.env)
-
 export default {
   mode: 'spa',
   /*
@@ -33,6 +31,8 @@ export default {
   */
   plugins: [
     '~/plugins/vee-validate',
+    // '~/plugins/i18n',
+    '~/plugins/filters.js',
     '~/plugins/vue-file-agent'
   ],
   /*
@@ -64,7 +64,7 @@ export default {
   */
   toast: {
     position: 'bottom-right',
-    duration : 3000,
+    duration: 3000,
     register: [ // Register custom toasts
       {
         name: 'my-error',

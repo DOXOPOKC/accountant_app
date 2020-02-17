@@ -1,18 +1,24 @@
 <template lang="pug">
   v-col(cols="12")
-    v-text-field(
-      disabled
-      v-model="signed_user"
-      label="Уполномоченное лицо"
-    )
+    v-select(
+        item-text="name"
+        item-value="id"
+        v-model="signed_user"
+        :items="signUsers"
+        label="Уполномоченное лицо"
+        :error-messages="errors"
+      )
 </template>
 
 <script>
+import { mapState } from 'vuex'
+
 export default {
-  data: () => ({
-    status: [true, false]
-  }),
+  data: () => ({}),
   computed: {
+    ...mapState({
+      signUsers: state => state.contragents.signUsers
+    }),
     signed_user: {
       set (signedUser) {
         this.$store.commit('contragents/SET_CONTRAGENT', { signed_user: signedUser })
@@ -21,6 +27,9 @@ export default {
         return this.$store.state.contragents.detail.signed_user
       }
     }
+  },
+  async mounted () {
+    await this.$store.dispatch('contragents/FETCH_SIGN_USERS_LIST')
   }
 }
 // disabled

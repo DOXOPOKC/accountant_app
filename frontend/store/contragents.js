@@ -2,6 +2,7 @@ import Repository from '~/repositories/RepositoryFactory'
 
 const contragentRepository = Repository.get('contragents')
 const normsRepository = Repository.get('norms')
+const signUsersRepository = Repository.get('signUsers')
 
 export const types = {
   SET_CONTRAGENTS: 'SET_CONTRAGENTS',
@@ -13,11 +14,15 @@ export const types = {
   UPDATE_CONTRAGENT: 'UPDATE_CONTRAGENT',
 
   SET_NORM_LIST: 'SET_NORM_LIST',
-  FETCH_NORM_LIST: 'FETCH_NORM_LIST'
+  FETCH_NORM_LIST: 'FETCH_NORM_LIST',
+
+  SET_SIGN_USERS_LIST: 'SET_SIGN_USERS_LIST',
+  FETCH_SIGN_USERS_LIST: 'FETCH_SIGN_USERS_LIST'
 }
 
 export const state = () => ({
   normList: [],
+  signUsers: [],
   list: [],
   detail: {}
 })
@@ -31,6 +36,9 @@ export const mutations = {
   },
   [types.SET_NORM_LIST] (state, normList) {
     state.normList = normList
+  },
+  [types.SET_SIGN_USERS_LIST] (state, signUsers) {
+    state.signUsers = signUsers
   }
 }
 
@@ -56,12 +64,15 @@ export const actions = {
       commit(types.SET_CONTRAGENT, data)
       this.$toast.success('Контрагент сохранен')
     } catch (error) {
-      console.log({ error })
       this.$toast.error(error.message)
     }
   },
-  async [types.FETCH_NORM_LIST] ({ state, commit }) {
+  async [types.FETCH_NORM_LIST] ({ commit }) {
     const { data } = await normsRepository.get()
+    commit(types.SET_NORM_LIST, data)
+  },
+  async [types.FETCH_SIGN_USERS_LIST] ({ commit }) {
+    const { data } = await signUsersRepository.get()
     commit(types.SET_NORM_LIST, data)
   }
 }
