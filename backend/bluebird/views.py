@@ -1,5 +1,5 @@
 from django_q.tasks import (
-    async_task, fetch_group)
+    async_task, fetch_group, Task)
 from rest_framework import status
 from rest_framework.parsers import (
     FileUploadParser, MultiPartParser)
@@ -114,13 +114,13 @@ class PackageView(APIView):
 
     def put(self, request, pk, package_id):
         package = get_object(package_id, DocumentsPackage)
-        if package.is_active:
-            contragent = package.contragent
-
-            group_id = create_unique_id()
-            async_task(calc_create_gen_async, contragent, package, True,
-                       group=group_id)
-            return Response(group_id, status=status.HTTP_200_OK)
+        group_id = package.name_uuid
+        if Task.get_group_count(group_id):
+            if package.is_active:
+                contragent = package.contragent
+                async_task(calc_create_gen_async, contragent, package, True,
+                           group=group_id)
+                return Response(group_id, status=status.HTTP_200_OK)
 
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
