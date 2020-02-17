@@ -1,18 +1,21 @@
-from django_q.tasks import async_task, fetch_group
+from django_q.tasks import (
+    async_task, fetch_group)
 from rest_framework import status
-from rest_framework.parsers import (FileUploadParser, MultiPartParser)
+from rest_framework.parsers import (
+    FileUploadParser, MultiPartParser)
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from bluebird.models import (Contragent, ContractNumberClass, DocumentsPackage,
-                             OtherFile, NormativeCategory)
-from bluebird.serializers import (ContragentShortSerializer,
-                                  ContragentFullSerializer,
-                                  TaskSerializer, PackageShortSerializer,
-                                  PackageFullSerializer, OtherFileSerializer,
-                                  NormSerializer)
-from bluebird.utils import (parse_from_file, get_data, get_object,
-                            create_unique_id, calc_create_gen_async)
+from bluebird.models import (
+    ContractNumberClass, Contragent, DocumentsPackage, NormativeCategory,
+    OtherFile, SignUser)
+from bluebird.serializers import (
+    ContragentFullSerializer, ContragentShortSerializer, NormSerializer,
+    OtherFileSerializer, PackageFullSerializer, PackageShortSerializer,
+    TaskSerializer, SignUserSerializer)
+from bluebird.utils import (
+    calc_create_gen_async, create_unique_id, get_data, get_object,
+    parse_from_file)
 
 
 class ContragentsView(APIView):
@@ -91,7 +94,7 @@ class PackagesView(APIView):
                                                 is_active=True)
             pack.initialize_sub_folders()
 
-            group_id = create_unique_id()
+            group_id = pack.name_uuid
             async_task(calc_create_gen_async, contragent, pack,
                        group=group_id)
             return Response(group_id, status=status.HTTP_200_OK)
@@ -123,9 +126,11 @@ class PackageView(APIView):
 
     def delete(self, request, pk, package_id):
         package = get_object(package_id, DocumentsPackage)
-        package.is_active = False
-        package.save(force_update=True)
-        return Response(status=status.HTTP_200_OK)
+        if package.is_active:
+            package.is_active = False
+            package.save()
+            return Response(status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 class TasksView(APIView):
@@ -136,7 +141,16 @@ class TasksView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+class SignUsersView(APIView):
+    """ Вью пользователей имеющих право подписи """
+    def get(self, request):
+        results = SignUser.objects.all()
+        serializer = SignUserSerializer(results, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 class NormsView(APIView):
+    """ Вью нормативов """
     def get(self, request):
         results = NormativeCategory.objects.all()
         serializer = NormSerializer(results, many=True)

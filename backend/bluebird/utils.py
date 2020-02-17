@@ -2,14 +2,14 @@ import json
 import os
 import uuid
 from typing import List
+import aiohttp
 
 import jinja2
 import openpyxl
 import pdfkit
-import requests
 from django.http import Http404
 from django.template.loader import render_to_string
-from django_q.tasks import async_task
+from django_q.tasks import async_task, Task
 from docxtpl import DocxTemplate
 
 
@@ -35,8 +35,6 @@ from bluebird.templatetags.template_extra_filters import (
 
 from blackbird.views import calculate, round_hafz
 
-# import pypandoc
-
 
 MIN_INNN_LEN = 10
 MAX_INN_LEN = 12
@@ -46,6 +44,7 @@ URL = 'https://suggestions.dadata.ru/suggestions/api/4_1/rs/findById/party'
 
 
 def parse_from_file(xlsx_file):
+    """ Функция получения данных из экселя """
     xl = openpyxl.load_workbook(xlsx_file)
     sheet = xl.worksheets[0]
     results = []
@@ -80,23 +79,32 @@ def get_object(pk, klass):
         raise Http404
 
 
-def get_dadata_data(contragent_inn: int) -> dict:
+async def get_dadata_data(contragent_inn: int):
+    """ Функция получения данных из ДаДаты """
     headers = {"Content-Type": "application/json",
                "Accept": "application/json",
                "Authorization": f"Token {TOKEN}"}
     data = {"query": contragent_inn}
-    r = requests.post(
-        URL,
-        data=json.dumps(data),
-        headers=headers,
-        timeout=(3.0, 5.0),
-    )
-    return r.json()
+    async with aiohttp.ClientSession() as session:
+        async with session.post(
+            URL,
+            data=json.dumps(data),
+            headers=headers,
+            timeout=aiohttp.ClientTimeout(total=5*60)
+        ) as resp:
+            resp.raise_for_status()
+            return await resp.json()
 
 
 def get_data(id: int):
+    """ Функция обработки данных из ДаДаты """
     contragent = get_object(id, Contragent)
-    data = get_dadata_data(contragent.inn)
+    import asyncio
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    data = loop.run_until_complete(get_dadata_data(contragent.inn))
+    loop.close()
+    print(data)
     sug_d = suggestions_response_from_dict(data)
     if sug_d:
         if len(sug_d.suggestions):
@@ -134,6 +142,8 @@ def generate_documents(data: List, package: DocumentsPackage,
         generate_count(d, package, recreate)
 
         generate_count_fact(d, package, recreate)
+    package.contragent.debt = total
+    package.contragent.save()
 
 
 def generate_act(data: dict, package: DocumentsPackage,
@@ -280,6 +290,7 @@ def generate_notes(total, package: DocumentsPackage):
     jinja_env.filters['pretty_date_filter'] = pretty_date_filter
     jinja_env.filters['capfirst'] = cap_first
     jinja_env.filters['literal'] = literal
+    jinja_env.filters['proper_date_filter'] = proper_date_filter
     data = {'consumer': package.contragent, 'total': total}
     doc.render(data, jinja_env)
     tmp_path = os.path.join(
@@ -295,6 +306,7 @@ def generate_notes(total, package: DocumentsPackage):
 
 def generate_act_count(data: dict, package: DocumentsPackage, total: float,
                        recreate: bool = False):
+    """ Функция генерации акта сверки """
     jinja_env = jinja2.Environment(
         loader=jinja2.FileSystemLoader('./'),
         autoescape=jinja2.select_autoescape(['html', 'xml'])
@@ -342,11 +354,23 @@ def count_total(data: List):
 
 
 def calc_create_gen_async(contragent, pack, recreate: bool = False):
-    async_task(calculate, contragent.contract_accept_date,
-               contragent.current_date, contragent.stat_value,
-               contragent.norm_value, pack, recreate, hook=gen_async)
+    try:
+        async_task(calculate, contragent.contract_accept_date,
+                   contragent.current_date, contragent.stat_value,
+                   contragent.norm_value, pack, recreate,
+                   hook=gen_async, group=pack.name_uuid)
+    except AttributeError:
+        raise Http404
 
 
 def gen_async(task):
     if task.success:
-        async_task(generate_documents, task.result, task.args[4], task.args[5])
+        async_task(generate_documents, task.result, task.args[4], task.args[5],
+                   hook=del_after_exec, group=task.group)
+    else:
+        del_after_exec(task)
+        raise Http404
+
+
+def del_after_exec(task):
+    Task.delete_group(task.group)
