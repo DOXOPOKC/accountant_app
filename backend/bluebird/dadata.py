@@ -222,8 +222,9 @@ class Result_response_from_suggestion:
             response.data.ogrn) if response.data.ogrn else None
         self.data['kpp'] = int(
             response.data.kpp) if response.data.kpp else None
-        self.data['director_status'] = response.data.management.post
-        self.data['director_name'] = response.data.management.name
+        if response.data.management:
+            self.data['director_status'] = response.data.management.post
+            self.data['director_name'] = response.data.management.name
         self.data['creation_date'] = date.fromtimestamp(
             int(int(response.data.state.registration_date) / 1000))
         self.data['is_func'] = response.data.state.status == 'ACTIVE'

@@ -18,7 +18,7 @@ export default {
       get () {
         return this.$store.state.contragents.detail.dadata_name
       }
-    },
+    }
   }
 }
 // disabled

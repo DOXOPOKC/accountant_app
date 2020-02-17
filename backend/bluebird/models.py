@@ -25,6 +25,17 @@ NORM_TYPE = [
     (2, '1 человек'),
 ]
 
+DOC_TYPE = [
+    (0, 'Доверенность'),
+    (1, 'Пасспорт'),
+]
+
+POST_TYPE = [
+    (0, 'Клиент-менеджер'),
+    (1, 'Старший менеджер по работе с ЮЛ'),
+    (2, 'Менеджер'),
+]
+
 
 class Contragent(models.Model):
     """
@@ -84,7 +95,7 @@ class Contragent(models.Model):
                                            blank=True, null=True)
     current_contract_date = models.DateField('Дата заключения договора',
                                              blank=True, null=True)
-    signed_user = models.ForeignKey(User, blank=True, null=True,
+    signed_user = models.ForeignKey('SignUser', blank=True, null=True,
                                     on_delete=models.CASCADE,
                                     related_name='signed')
     current_user = models.ForeignKey(User, blank=True, null=True,
@@ -111,6 +122,21 @@ class Contragent(models.Model):
 
     def __str__(self):
         return f'{self.excell_name}'
+
+
+class SignUser(models.Model):
+    name = models.CharField('ФИО отвественного лица', max_length=255)
+    document = models.IntegerField('Документ основания', choices=DOC_TYPE,
+                                   default=0)
+    position = models.IntegerField('Должность', choices=POST_TYPE,
+                                   default=0)
+    doc_number = models.CharField('Номер документа', max_length=255)
+    doc_date = models.DateField('Дата начала действия документа')
+    address = models.CharField('Адресс', max_length=255)
+    tel_number = models.CharField('Телефон', max_length=255)
+
+    def __str__(self):
+        return self.name
 
 
 class AbstractFileModel(models.Model):

@@ -24,43 +24,35 @@
             :to="'/contragent/' + $route.params.id + '/packages/'"
           ) Посмотреть пакеты
         v-card-text
-          contragent-bank
-          contragent-bik
           contragent-class
-          contragent-contract-accept-date
-          contragent-creation-date
-          contragent-current-contract-date
-          contragent-current-date
-          contragent-current-user
-          contragent-dadata-name
-          contragent-debt
-          contragent-director-name
-          contragent-director-status
           contragent-excell-name
-          contragent-id
-          contragent-inn
-          contragent-is-func
-          contragent-kpp
-          contragent-ks
+          contragent-dadata-name
+          contragent-director-status
+          contragent-director-name
           contragent-legal-address
-          contragent-norm-value
-          contragent-number-contract
+          contragent-physical-address
+          contragent-inn
+          contragent-kpp
           contragent-ogrn
+          contragent-is-func
           contragent-okved
           contragent-opf
-          contragent-physical-address
-          contragent-platform
           contragent-rs
-          contragent-signed-user
+          contragent-ks
+          contragent-bank
+          contragent-bik
+          contragent-creation-date
+          contragent-contract-accept-date
+          contragent-current-date
+          contragent-current-contract-date
+          contragent-debt
+          contragent-number-contract
+          contragent-norm-value
           contragent-stat-value
+          contragent-platform
+          contragent-signed-user
+          contragent-current-user
         v-card-actions(class="px-10 py-6")
-          | {{contragent}}
-          //- v-btn(
-          //-   color="primary"
-          //-   @click=""
-          //-   to="put /contragents/{id}/packages/{package_id}"
-          //- )
-          //-   | Перегенерировать
           v-btn(
             @click="GENERATE_PACKAGE"
           )
@@ -90,7 +82,7 @@ import contragentDebt from '@/components/contragents/contragentDebt'
 import contragentDirectorName from '@/components/contragents/contragentDirectorName'
 import contragentDirectorStatus from '@/components/contragents/contragentDirectorStatus'
 import contragentExcellName from '@/components/contragents/contragentExcellName'
-import contragentId from '@/components/contragents/contragentId'
+// import contragentId from '@/components/contragents/contragentId'
 import contragentInn from '@/components/contragents/contragentInn'
 import contragentIsFunc from '@/components/contragents/contragentIsFunc'
 import contragentKpp from '@/components/contragents/contragentKpp'
@@ -124,7 +116,7 @@ export default {
     contragentDirectorName,
     contragentDirectorStatus,
     contragentExcellName,
-    contragentId,
+    // contragentId,
     contragentInn,
     contragentIsFunc,
     contragentKpp,

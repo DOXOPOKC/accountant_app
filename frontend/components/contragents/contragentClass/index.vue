@@ -30,7 +30,7 @@ export default {
       get () {
         return this.$store.state.contragents.detail.klass
       }
-    },
+    }
   }
 }
 // disabled

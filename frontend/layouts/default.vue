@@ -5,7 +5,6 @@
           v-model="drawer"
           fixed
           clipped
-          class="elevation-2"
           mini-variant
           mini-variant-width="64"
           hide-overlay
@@ -14,12 +13,12 @@
             v-row(class="fill-height" no-gutters)
               v-col(cols="12")
                 v-navigation-drawer(
-                    v-model="drawer"
-                    mini-variant
-                    mini-variant-width="64"
-                    color="primary"
-                    class="elevation-0 pt-2"
-                    hide-overlay
+                  v-model="drawer"
+                  mini-variant
+                  mini-variant-width="64"
+                  color="primary"
+                  class="elevation-0 pt-2"
+                  hide-overlay
                 )
                     v-list-item
                         v-list-item-avatar
