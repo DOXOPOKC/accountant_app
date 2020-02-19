@@ -87,7 +87,7 @@ class Contragent(models.Model):
                             blank=True, null=True
                     )
     current_date = models.DateField('Конечная дата оказания услуг',
-                                    auto_now_add=True, blank=True,
+                                    default=datetime.date.today, blank=True,
                                     null=True)
     number_contract = models.OneToOneField('ContractNumberClass',
                                            on_delete=models.CASCADE,
@@ -133,7 +133,7 @@ class SignUser(models.Model):
     doc_number = models.CharField('Номер документа', max_length=255)
     doc_date = models.DateField('Дата начала действия документа')
     address = models.CharField('Адресс', max_length=255)
-    tel_number = models.CharField('Телефон', max_length=255)
+    tel_number = models.CharField('Телефон', max_length=255, default='')
 
     def __str__(self):
         return self.name
