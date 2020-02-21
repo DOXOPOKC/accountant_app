@@ -22,9 +22,6 @@ class Formula(models.Model):
     def get_tax(self):
         return self.tax_rate
 
-    def get_tariff(self):
-        return self.tariff
-
     def __str__(self):
         return ('Формула расчета. '
                 + f'Действует с {self.since_date.strftime("%d.%m.%Y")} '
