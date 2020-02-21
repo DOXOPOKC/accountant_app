@@ -297,11 +297,11 @@ class Normative(models.Model):
                                   null=True, blank=True)
     up_to_date = models.DateField('Дата окончания действия норматива',
                                   null=True, blank=True)
-    value = models.FloatField('Значение норматива (мес.)',
+    value = models.FloatField('Значение норматива (год.)',
                               null=True, blank=True)
 
     def __str__(self):
-        return (f'Норматив: {self.value}/мес.,'
+        return (f'Норматив: {self.value}/год.,'
                 + f' действующий с {self.since_date.strftime("%d.%m.%Y")}'
                 + f' по {self.up_to_date.strftime("%d.%m.%Y")}')
 
