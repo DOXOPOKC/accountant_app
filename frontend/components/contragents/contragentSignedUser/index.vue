@@ -1,19 +1,24 @@
 <template lang="pug">
   v-col(cols="12")
-    v-select(
-        item-text="name"
-        item-value="id"
-        v-model="signed_user"
-        :items="signUsers"
-        label="Уполномоченное лицо"
-        :error-messages="errors"
-      )
+    ValidationProvider(rules="required" v-slot="{ errors }")
+      v-select(
+          item-text="name"
+          item-value="id"
+          v-model="signed_user"
+          :items="signUsers"
+          label="Уполномоченное лицо"
+          :error-messages="errors"
+        )
 </template>
 
 <script>
 import { mapState } from 'vuex'
+import { ValidationProvider } from 'vee-validate'
 
 export default {
+  components: {
+    ValidationProvider
+  },
   data: () => ({}),
   computed: {
     ...mapState({

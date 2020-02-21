@@ -37,7 +37,7 @@ export const actions = {
   async [types.GENERATE_PACKAGE] ({ commit, rootState }) {
     try {
       const { data } = await packageRepository.create(rootState.contragents.detail.id, rootState.contragents.detail)
-      commit(types.SET_PACKAGE, data)
+      commit('packages/SET_TASK', data)
       this.$toast.success('Пакет успешно сгенерирован')
     } catch (error) {
       this.$toast.error('Ошибка! Есть активный пакет')

@@ -47,7 +47,7 @@ export const actions = {
     const { data } = await contragentRepository.getContragent(id)
     commit(types.SET_CONTRAGENT, data)
   },
-  async [types.CREATE_CONTRAGENT] ({ commit, dispatch }, { vueFileAgent }) {
+  async [types.CREATE_CONTRAGENT] ({ dispatch }, { vueFileAgent }) {
     const formData = new FormData()
     formData.append('file', vueFileAgent.filesData[0].file)
     formData.append('filename', vueFileAgent.filesData[0].file.name)

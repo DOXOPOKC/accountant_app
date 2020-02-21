@@ -14,6 +14,7 @@
         flat
         exact
       )
+      ValidationObserver(ref="observer" v-slot="{ passes }")
         v-card-title(class="headline font-weight-light px-10")
           | Контрагент № {{ contragent.id }}
           v-spacer
@@ -24,45 +25,44 @@
             :to="'/contragent/' + $route.params.id + '/packages/'"
           ) Посмотреть пакеты
         v-card-text
-          ValidationObserver(v-slot="{ passes }")
-            v-form(@keyup.enter="UPDATE_CONTRAGENT")
-              contragent-class
-              contragent-excell-name
-              contragent-dadata-name
-              contragent-director-status
-              contragent-director-name
-              contragent-legal-address
-              contragent-physical-address
-              contragent-inn
-              contragent-kpp
-              contragent-ogrn
-              contragent-is-func
-              contragent-okved
-              contragent-opf
-              contragent-rs
-              contragent-ks
-              contragent-bank
-              contragent-bik
-              contragent-creation-date
-              contragent-contract-accept-date
-              contragent-current-date
-              contragent-current-contract-date
-              contragent-debt
-              contragent-number-contract
-              contragent-norm-value
-              contragent-stat-value
-              contragent-platform
-              contragent-signed-user
-              contragent-current-user
+          v-form(@keyup.enter="UPDATE_CONTRAGENT")
+            contragent-class
+            contragent-excell-name
+            contragent-dadata-name
+            contragent-director-status
+            contragent-director-name
+            contragent-legal-address
+            contragent-physical-address
+            contragent-inn
+            contragent-kpp
+            contragent-ogrn
+            contragent-is-func
+            contragent-okved
+            contragent-opf
+            contragent-rs
+            contragent-ks
+            contragent-bank
+            contragent-bik
+            contragent-creation-date
+            contragent-contract-accept-date
+            contragent-current-date
+            contragent-current-contract-date
+            contragent-debt
+            contragent-number-contract
+            contragent-norm-value
+            contragent-stat-value
+            contragent-platform
+            contragent-signed-user
+            contragent-current-user
         v-card-actions(class="px-10 py-6")
           v-btn(
-            @click="GENERATE_PACKAGE"
+            @click="passes(GENERATE_PACKAGE)"
           )
             | Сгенерировать пакет
           v-spacer
           v-btn(
             color="primary"
-            @click="UPDATE_CONTRAGENT"
+            @click="passes(UPDATE_CONTRAGENT)"
           )
             | Сохранить
 </template>
@@ -118,7 +118,6 @@ export default {
     contragentDirectorName,
     contragentDirectorStatus,
     contragentExcellName,
-    // contragentId,
     contragentInn,
     contragentIsFunc,
     contragentKpp,
