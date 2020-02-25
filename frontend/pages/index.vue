@@ -38,7 +38,7 @@
                 ) Добавить контрагента
             template(v-slot:body="{ items }")
               tbody
-                router-link(tag="tr" :to="'contragent/' + item.id + '/'" v-for="item in items" :key="item.name")
+                nuxt-link(tag="tr" :to="'contragent/' + item.id + '/'" v-for="item in items" :key="item.name")
                   td {{ item.excell_name }}
                   td {{ item.physical_address }}
                   td {{ item.klass }}
@@ -53,19 +53,18 @@
               v-row(no-gutters)
                 v-col(cols="12")
                   VueFileAgent(
-                    class="profile-pic-upload-block"
                     ref="vueFileAgent"
                     v-model="filesDataForUpload"
                     :theme="'list'"
                     :accept="'.xlsx'"
                     :maxSize="'2MB'"
                     :maxFiles="1"
-                    :multiple="false"
+                    :multiple="true"
                     :deletable="true"
                     :compact="true"
                     :helpText="'Загрузите свой файл'"
                     :errorText="{ type: 'Некоректный тип файла. Доступно только xlsx', size: 'Размер файла выше 2MB' }"
-                    @select="onSelect($event)"
+                    @delete="fileDeleted($event)"
                   )
                   small *Файл должен быть с расширением .xlsx и размером меньше двух мегабайт
           v-card-actions
@@ -93,7 +92,6 @@ export default {
   },
   data: () => ({
     uploaded: false,
-    uploadHeaders: {},
     filesDataForUpload: null,
     uploadUrl: 'http://localhost/api/contragents/',
     contragentDialogState: false,
@@ -130,9 +128,11 @@ export default {
         uploadHeaders: this.uploadHeaders,
         filesDataForUpload: this.filesDataForUpload
       })
+      this.contragentDialogState = false
+      this.filesDataForUpload = null
     },
-    onSelect (filesData) {
-      this.uploaded = false
+    fileDeleted (fileData) {
+      this.filesDataForUpload = null
     }
   }
 }

@@ -88,6 +88,12 @@ export default {
       packageActiveStatus: state => state.packages.detail.is_active
     })
   },
+  mounted () {
+    this.$nextTick(() => {
+      this.$nuxt.$loading.start()
+      setTimeout(() => this.$nuxt.$loading.finish(), 2000)
+    })
+  },
   methods: {
     ...mapActions({
       REGENERATE_PACKAGE: 'packages/REGENERATE_PACKAGE',

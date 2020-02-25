@@ -1,11 +1,12 @@
 import Repository from '~/repositories/RepositoryFactory'
 
-// const contragentRepository = Repository.get('contragents')
 const TasksRepository = Repository.get('tasks')
+const packageRepository = Repository.get('packages')
 
 export const types = {
   SET_TASK: 'SET_TASK',
-  REMOVE_TASK_: 'REMOVE_TASK_UID',
+
+  REMOVE_TASK_UID: 'REMOVE_TASK_UID',
 
   SET_TASKS: 'SET_TASKS',
   REMOVE_TASKS: 'REMOVE_TASKS',
@@ -33,20 +34,20 @@ export const mutations = {
 }
 
 export const actions = {
-  async [types.FETCH_TASKS] ({ state, commit, getters }) {
+  async [types.FETCH_TASKS] ({ state, commit, getters }, { contragentId, packageId }) {
     try {
-      const tasksStatus = getters.tasksStatus()
-      while (tasksStatus) {
-        const { data } = (await Promise.all([
+      while (getters.tasksStatus) {
+        const responses = (await Promise.all([
           await new Promise(resolve => setTimeout(() => resolve(), 2000)),
-          await TasksRepository.get(state.taskUid)
-        ]))[1]
-        console.log(data, 1488)
-        if (!data.length) {
-          console.log(data, 1337)
-          commit(types.REMOVE_TASK_UID)
-        }
-        commit(types.SET_TASKS, data)
+          await TasksRepository.get(state.taskUid),
+          await packageRepository.getPackage(contragentId, packageId)
+        ]))
+        const tasks = responses[1]
+        const contragentPackage = responses[2]
+        if (!tasks.data.length) { commit(types.REMOVE_TASK_UID) }
+        commit(types.SET_TASKS, tasks.data)
+        this.commit('packages/SET_PACKAGE', contragentPackage.data)
+        // this.dispatch('packages/FETCH_PACKAGE', { contragentId, packageId })
       }
     } catch (error) {
       console.error(error)

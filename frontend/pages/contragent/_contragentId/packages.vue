@@ -29,7 +29,7 @@
                 v-toolbar-title Пакеты контрагента № {{ $route.params.contragentId }}
             template(v-slot:body="{ items }")
               tbody
-                router-link(tag="tr" :to="'/contragent/' + $route.params.contragentId + '/package/' + item.id + '/'" v-for="item in items" :key="item.name")
+                nuxt-link(tag="tr" :to="'/contragent/' + $route.params.contragentId + '/package/' + item.id + '/'" v-for="item in items" :key="item.name")
                   td(v-if="item.is_active")
                     v-chip(color="green" dark) {{ item.id }}
                   td(v-else color="red") {{ item.id }}

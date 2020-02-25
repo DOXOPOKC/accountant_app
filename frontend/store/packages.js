@@ -38,7 +38,6 @@ export const actions = {
     try {
       const { data } = await packageRepository.create(rootState.contragents.detail.id, rootState.contragents.detail)
       this.commit('tasks/SET_TASK', data)
-      this.dispatch('tasks/FETCH_TASKS')
       this.$toast.success('Пакет успешно сгенерирован')
     } catch (error) {
       this.$toast.error('Ошибка! Есть активный пакет')
@@ -46,8 +45,14 @@ export const actions = {
   },
   // // Содержимое пакета
   async [types.FETCH_PACKAGE] ({ commit }, { contragentId, packageId }) {
-    const { data } = await packageRepository.getPackage(contragentId, packageId)
-    commit(types.SET_PACKAGE, data)
+    try {
+      const { data } = await packageRepository.getPackage(contragentId, packageId)
+      commit(types.SET_PACKAGE, data)
+      this.commit('tasks/SET_TASK', data.name_uuid)
+      this.dispatch('tasks/FETCH_TASKS', { contragentId, packageId })
+    } catch (error) {
+      console.error(error)
+    }
   },
   // Перегенирация
   async [types.REGENERATE_PACKAGE] ({ dispatch }, { contragentId, packageId }) {
