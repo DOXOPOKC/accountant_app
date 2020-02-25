@@ -56,13 +56,13 @@
             contragent-current-user
         v-card-actions(class="px-10 py-6")
           v-btn(
-            @click="passes(GENERATE_PACKAGE)"
+            @click="GENERATE_PACKAGE"
           )
             | Сгенерировать пакет
           v-spacer
           v-btn(
             color="primary"
-            @click="passes(UPDATE_CONTRAGENT)"
+            @click="UPDATE_CONTRAGENT"
           )
             | Сохранить
 </template>

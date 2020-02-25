@@ -73,7 +73,7 @@ export const actions = {
   },
   async [types.FETCH_SIGN_USERS_LIST] ({ commit }) {
     const { data } = await signUsersRepository.get()
-    commit(types.SET_NORM_LIST, data)
+    commit(types.SET_SIGN_USERS_LIST, data)
   }
 }
 
