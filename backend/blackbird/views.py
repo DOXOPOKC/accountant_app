@@ -1,4 +1,4 @@
-from blackbird.models import Formula
+from blackbird.models import Formula, Tariff
 
 from datetime import date
 import calendar
@@ -77,7 +77,7 @@ def calculate(since_date, up_to_date, stat_value, norm_value, *args, **kwargs):
                          month=dt[1],
                          year=dt[0])
         norm = get_normative(curr_date, norm_value)
-
+        tariff = get_tariff(curr_date)
         formula_obj_r = get_formula_object(curr_date)
         formula_rough = formula_obj_r.get_formula()
 
@@ -91,16 +91,16 @@ def calculate(since_date, up_to_date, stat_value, norm_value, *args, **kwargs):
         V_as_rough = round_hafz(eval(eval(formula_rough)), 5)
         V_as_precise = round_hafz(eval(eval(formula_precise)), 5)
 
-        summ_precise = round_hafz(V_as_precise * formula_obj_p.get_tariff(), 2)
+        summ_precise = round_hafz(V_as_precise * tariff, 2)
         tax_price_precise = round_hafz(summ_precise * formula_obj_p.get_tax(),
                                        2)
         summ_tax_precise = round_hafz(summ_precise + tax_price_precise, 2)
 
-        summ_rough = round_hafz(V_as_rough * formula_obj_r.get_tariff(), 2)
+        summ_rough = round_hafz(V_as_rough * tariff, 2)
         tax_price_rough = round_hafz(summ_rough * formula_obj_r.get_tax(), 2)
         summ_tax_rough = round_hafz(summ_rough + tax_price_rough, 2)
 
-        tariff_tax = formula_obj_p.get_tariff() * (1 + formula_obj_p.get_tax())
+        tariff_tax = tariff * (1 + formula_obj_p.get_tax())
 
         result.append(
             {
@@ -111,7 +111,7 @@ def calculate(since_date, up_to_date, stat_value, norm_value, *args, **kwargs):
                 'tax_price_rough': str(tax_price_rough),
                 'summ_tax_rough': str(summ_tax_rough),
                 'tax': formula_obj_p.get_tax(),
-                'tariff': formula_obj_p.get_tariff(),
+                'tariff': tariff,
                 'tariff_tax': str(round_hafz(tariff_tax, 2)),
                 'V_as_precise': str(V_as_precise),
                 'summ_precise': str(summ_precise),
@@ -130,6 +130,7 @@ def get_formula_object(curr_date, rough=True):
     for f in formulas:
         if f.since_date <= curr_date <= f.up_to_date:
             return f
+    return ''
 
 
 def get_normative(curr_date, norm_value):
@@ -141,6 +142,18 @@ def get_normative(curr_date, norm_value):
     for n in norm_vals:
         if n.since_date <= curr_date <= n.up_to_date:
             return n.value
+    return 0
+
+
+def get_tariff(curr_date):
+    """ Функция возвращает значение норматива на переданную дату.
+    Параметр `pk` первичный ключ норматива.
+    """
+    tariffs = Tariff.objects.all()
+    for t in tariffs:
+        if t.since_date <= curr_date <= t.up_to_date:
+            return t.tariff
+    return 0
 
 
 def month_year_iter(start_month, start_year, end_month, end_year):

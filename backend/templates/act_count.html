@@ -89,10 +89,8 @@
 	<tr>
 		<td colspan="15" height="33" valign="bottom" style="border: none; padding: 0cm">
 			<p align="justify"><font size="2" style="font-size: 10pt">Мы, нижеподписавшиеся, Управляющий директор ООО &quot;ЭКОТЕК&quot; Функ Андрей
-			Иванович, с одной стороны, и {{ consumer.director_status }} {{ consumer.excell_name }} {{ consumer.director_name }}, с другой стороны,
-			составили настоящий акт сверки в том,
-			что состояние взаимных расчетов по
-			данным учета следующее:</font></p>
+			Иванович, с одной стороны, и {% if consumer.director_status %}{{ consumer.director_status }}{% else %}_________________{% endif %} {{ consumer.excell_name }} {% if consumer.director_name %}{{ consumer.director_name }}{% else %}______________________________________{% endif %}, с другой стороны,
+			составили настоящий акт сверки в том, что состояние взаимных расчетов по данным учета следующее:</font></p>
 		</td>
 	</tr>
 	<tr valign="bottom">
@@ -756,7 +754,7 @@
 				</p>
 			</td>
 			<td colspan="7" style="border: none; padding: 0cm">
-				<p align="left">Директор</p>
+				<p align="left">{% if consumer.director_status %}{{ consumer.director_status }}{% else %}_________________{% endif %}</p>
 			</td>
 			<td style="border: none; padding: 0cm">
 				<p><br/>

@@ -13,8 +13,6 @@ class Formula(models.Model):
     since_date = models.DateField(null=True, blank=True)
     up_to_date = models.DateField(null=True, blank=True)
     tax_rate = models.FloatField(default=0.0)
-    tariff = models.FloatField(default=0.0)
-    # norm_type = models.FloatField(max_length=10, choices=NORM_TYPES)
     is_rough = models.BooleanField(default=True)
     equasion = models.TextField(max_length=300)
 
@@ -24,10 +22,18 @@ class Formula(models.Model):
     def get_tax(self):
         return self.tax_rate
 
-    def get_tariff(self):
-        return self.tariff
-
     def __str__(self):
         return ('Формула расчета. '
                 + f'Действует с {self.since_date.strftime("%d.%m.%Y")} '
                 + f'по {self.up_to_date.strftime("%d.%m.%Y")}.')
+
+
+class Tariff(models.Model):
+    since_date = models.DateField(null=True, blank=True)
+    up_to_date = models.DateField(null=True, blank=True)
+    tariff = models.FloatField(default=0.0)
+
+    def __str__(self):
+        return (f'Тариф {self.tariff}р., действующий с'
+                + f' {self.since_date.strftime("%d.%m.%Y")} по'
+                + f' {self.up_to_date.strftime("%d.%m.%Y")}.')
