@@ -20,11 +20,13 @@
           v-data-table(
             :headers="headers"
             :items="contragents"
+            item-key="id"
             class="elevation-0"
             disable-sort
             disable-pagination
             disable-filtering
             calculate-widths
+            hide-default-footer
           )
             template(v-slot:top)
               v-toolbar(flat)
@@ -64,6 +66,7 @@
                     :compact="true"
                     :helpText="'Загрузите свой файл'"
                     :errorText="{ type: 'Некоректный тип файла. Доступно только xlsx', size: 'Размер файла выше 2MB' }"
+                    @select="upload($event)"
                     @delete="fileDeleted($event)"
                   )
                   small *Файл должен быть с расширением .xlsx и размером меньше двух мегабайт

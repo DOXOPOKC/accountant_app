@@ -18,11 +18,14 @@
           v-data-table(
             :headers="headers"
             :items="packages"
+            item-key="id"
             class="elevation-0"
-            disable-sort
+            sort-by="id"
+            :sort-desc="true"
             disable-pagination
             disable-filtering
             calculate-widths
+            hide-default-footer
           )
             template(v-slot:top)
               v-toolbar(flat)
