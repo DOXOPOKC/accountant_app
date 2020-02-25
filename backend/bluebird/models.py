@@ -87,7 +87,7 @@ class Contragent(models.Model):
                             blank=True, null=True
                     )
     current_date = models.DateField('Конечная дата оказания услуг',
-                                    auto_now_add=True, blank=True,
+                                    default=datetime.date.today, blank=True,
                                     null=True)
     number_contract = models.OneToOneField('ContractNumberClass',
                                            on_delete=models.CASCADE,
@@ -133,7 +133,7 @@ class SignUser(models.Model):
     doc_number = models.CharField('Номер документа', max_length=255)
     doc_date = models.DateField('Дата начала действия документа')
     address = models.CharField('Адресс', max_length=255)
-    tel_number = models.CharField('Телефон', max_length=255)
+    tel_number = models.CharField('Телефон', max_length=255, default='')
 
     def __str__(self):
         return self.name
@@ -297,11 +297,11 @@ class Normative(models.Model):
                                   null=True, blank=True)
     up_to_date = models.DateField('Дата окончания действия норматива',
                                   null=True, blank=True)
-    value = models.FloatField('Значение норматива (мес.)',
+    value = models.FloatField('Значение норматива (год.)',
                               null=True, blank=True)
 
     def __str__(self):
-        return (f'Норматив: {self.value}/мес.,'
+        return (f'Норматив: {self.value}/год.,'
                 + f' действующий с {self.since_date.strftime("%d.%m.%Y")}'
                 + f' по {self.up_to_date.strftime("%d.%m.%Y")}')
 

@@ -115,7 +115,7 @@ class PackageView(APIView):
     def put(self, request, pk, package_id):
         package = get_object(package_id, DocumentsPackage)
         group_id = package.name_uuid
-        if Task.get_group_count(group_id):
+        if not Task.get_group_count(group_id):
             if package.is_active:
                 contragent = package.contragent
                 async_task(calc_create_gen_async, contragent, package, True,
