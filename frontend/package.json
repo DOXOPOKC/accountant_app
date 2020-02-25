@@ -39,7 +39,7 @@
     "pug": "^2.0.4",
     "pug-plain-loader": "^1.0.0",
     "typescript": "^3.7.4",
-    "vue-file-agent": "^1.5.0",
+    "vue-file-agent": "^1.5.3-beta.1",
     "vue-jest": "^3.0.5",
     "date-fns": "^2.9.0"
   }

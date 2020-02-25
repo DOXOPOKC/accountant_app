@@ -48,11 +48,16 @@ export const actions = {
     commit(types.SET_CONTRAGENT, data)
   },
   async [types.CREATE_CONTRAGENT] ({ dispatch }, { vueFileAgent }) {
-    const formData = new FormData()
-    formData.append('file', vueFileAgent.filesData[0].file)
-    formData.append('filename', vueFileAgent.filesData[0].file.name)
-    await contragentRepository.create(formData)
-    dispatch(types.FETCH_CONTRAGENTS)
+    try {
+      const formData = new FormData()
+      formData.append('file', vueFileAgent.filesData[0].file)
+      formData.append('filename', vueFileAgent.filesData[0].file.name)
+      await contragentRepository.create(formData)
+      dispatch(types.FETCH_CONTRAGENTS)
+      this.$toast.success('Контрагент успешно добавлен')
+    } catch (error) {
+      this.$toast.error(error.message)
+    }
   },
   async [types.FETCH_CONTRAGENTS] ({ commit }) {
     const { data } = await contragentRepository.get()

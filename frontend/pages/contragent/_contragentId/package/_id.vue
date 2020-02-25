@@ -37,35 +37,44 @@
             a(:href="package.court_note || ''" class="blue--text") Претензия
           v-subheader(class="subtitle-1 black--text")
             a(:href="package.act_count || ''" class="blue--text") Акт сверки
-          v-list
-            v-subheader(class="subtitle-1 black--text") Акты
-            v-list-item(
-              v-for="(file, i) in package.act_files"
-              :key="i"
-            )
-              v-list-item-content
-                v-list-item-title
-                  a(v-text="file.file_name" :href="file.file_path || ''" class="blue--text")
-
-          v-list
-            v-subheader Счета
-            v-list-item(
-              v-for="(file, i) in package.count_files"
-              :key="i"
-            )
-              v-list-item-content
-                v-list-item-title
-                  a(v-text="file.file_name" :href="file.file_path || ''" class="blue--text")
-
-          v-list
-            v-subheader Счета фактур
-            v-list-item(
-              v-for="(file, i) in package.count_fact_files"
-              :key="i"
-            )
-              v-list-item-content
-                v-list-item-title
-                  a(v-text="file.file_name" :href="file.file_path || ''" class="blue--text")
+          v-row(no-gutters)
+            v-col(cols="4")
+              v-list(rounded pa-0 max-width="400px")
+                v-list-item-group(color="blue")
+                  v-subheader Акты
+                  v-list-item(
+                    v-for="(file, i) in package.act_files"
+                    :key="i"
+                  )
+                    v-list-item-content
+                      v-list-item-title(v-text="file.file_name" :href="file.file_path || ''")
+                    v-list-item-icon
+                      v-btn(fab :to="file.file_path || ''" color="blue" dark class="elevation-0" small)
+                        v-icon mdi-download
+            v-col(cols="4")
+              v-list(rounded pa-0 max-width="400px")
+                v-subheader Счета
+                v-list-item(
+                  v-for="(file, i) in package.count_files"
+                  :key="i"
+                )
+                  v-list-item-content
+                    v-list-item-title(v-text="file.file_name" :href="file.file_path || ''")
+                  v-list-item-icon
+                    v-btn(fab :to="file.file_path || ''" color="blue" dark class="elevation-0" small)
+                        v-icon mdi-download
+            v-col(cols="4")
+              v-list(rounded pa-0 max-width="400px")
+                v-subheader Счета фактур
+                v-list-item(
+                  v-for="(file, i) in package.count_fact_files"
+                  :key="i"
+                )
+                  v-list-item-content
+                    v-list-item-title(v-text="file.file_name" :href="file.file_path || ''")
+                  v-list-item-icon
+                    v-btn(fab :to="file.file_path || ''" color="blue" dark class="elevation-0" small)
+                        v-icon mdi-download
 </template>
 
 <script>
@@ -86,6 +95,12 @@ export default {
     ...mapState({
       package: state => state.packages.detail,
       packageActiveStatus: state => state.packages.detail.is_active
+    })
+  },
+  mounted () {
+    this.$nextTick(() => {
+      this.$nuxt.$loading.start()
+      setTimeout(() => this.$nuxt.$loading.finish(), 20000)
     })
   },
   methods: {
