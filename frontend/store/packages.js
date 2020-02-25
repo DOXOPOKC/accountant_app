@@ -51,7 +51,7 @@ export const actions = {
       this.commit('tasks/SET_TASK', data.name_uuid)
       this.dispatch('tasks/FETCH_TASKS', { contragentId, packageId })
     } catch (error) {
-      console.error(error)
+      this.$toast.error('Ошибка!')
     }
   },
   // Перегенирация

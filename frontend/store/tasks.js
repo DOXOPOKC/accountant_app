@@ -38,7 +38,7 @@ export const actions = {
     try {
       while (getters.tasksStatus) {
         const responses = (await Promise.all([
-          await new Promise(resolve => setTimeout(() => resolve(), 2000)),
+          await new Promise(resolve => setTimeout(() => resolve(), 1000)),
           await TasksRepository.get(state.taskUid),
           await packageRepository.getPackage(contragentId, packageId)
         ]))
@@ -50,7 +50,7 @@ export const actions = {
         // this.dispatch('packages/FETCH_PACKAGE', { contragentId, packageId })
       }
     } catch (error) {
-      console.error(error)
+      this.$toast.error('Ошибка!')
     }
     // const failedTasks = tasksGroup.filter(task => task.success === false)
   }
