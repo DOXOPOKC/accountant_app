@@ -53,7 +53,7 @@ def pretty_date_filter(date_value):
         months = ('января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
                   'июля', 'августа', 'сентября', 'октября', 'ноября',
                   'декабря')
-        return f'"{date_value.day}" {months[date_value.month-1]}\
+        return f'"{date_value.day}" {months[date_value.month-1]} \
 {date_value.year}'
     return ''
 
