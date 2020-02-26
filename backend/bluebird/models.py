@@ -133,6 +133,8 @@ class SignUser(models.Model):
     doc_number = models.CharField('Номер документа', max_length=255)
     doc_date = models.DateField('Дата начала действия документа')
     address = models.CharField('Адресс', max_length=255)
+    city = models.CharField('Город/населенный пункт',
+                            max_length=255, default='Кемерово')
     tel_number = models.CharField('Телефон', max_length=255, default='')
 
     def __str__(self):
@@ -249,6 +251,8 @@ class DocumentsPackage(models.Model):
                                   null=True, blank=True)
     act_count = models.CharField('Акт сверки', max_length=255,
                                  null=True, blank=True)
+    price_count = models.CharField('Расчет стоимости', max_length=255,
+                                   null=True, blank=True)
     # Пакеты документов
     act_files = GenericRelation(ActFile)
     count_files = GenericRelation(CountFile)
