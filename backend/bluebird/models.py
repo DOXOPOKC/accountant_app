@@ -133,6 +133,8 @@ class SignUser(models.Model):
     doc_number = models.CharField('Номер документа', max_length=255)
     doc_date = models.DateField('Дата начала действия документа')
     address = models.CharField('Адресс', max_length=255)
+    city = models.ForeignKey('CityModel', on_delete=models.CASCADE,
+                             blank=True, null=True)
     tel_number = models.CharField('Телефон', max_length=255, default='')
 
     def __str__(self):
@@ -153,6 +155,14 @@ class AbstractFileModel(models.Model):
 
     class Meta:
         abstract = True
+
+
+class SingleFile(AbstractFileModel):
+    file_type = models.ForeignKey('DocumentTypeModel',
+                                  on_delete=models.CASCADE)
+
+    def __str__(self):
+        return str(self.file_type)
 
 
 class ActFile(AbstractFileModel):
@@ -242,18 +252,21 @@ class DocumentsPackage(models.Model):
                                  editable=False)
     is_active = models.BooleanField('Активный пакет', default=True)
     creation_date = models.DateField('Дата создания пакета', auto_now_add=True)
-    # Единичные документы
-    contract = models.CharField('Договор', max_length=255,
-                                null=True, blank=True)
-    court_note = models.CharField('Претензия', max_length=255,
-                                  null=True, blank=True)
-    act_count = models.CharField('Акт сверки', max_length=255,
-                                 null=True, blank=True)
+    # # Единичные документы
+    # contract = models.CharField('Договор', max_length=255,
+    #                             null=True, blank=True)
+    # court_note = models.CharField('Претензия', max_length=255,
+    #                               null=True, blank=True)
+    # act_count = models.CharField('Акт сверки', max_length=255,
+    #                              null=True, blank=True)
     # Пакеты документов
+
+    single_files = GenericRelation(SingleFile)
+
     act_files = GenericRelation(ActFile)
     count_files = GenericRelation(CountFile)
     count_fact_files = GenericRelation(CountFactFile)
-    files = GenericRelation(OtherFile)
+    other_files = GenericRelation(OtherFile)
 
     def __str__(self):
         return f'Пакет {self.name_uuid}'
@@ -272,6 +285,12 @@ class DocumentsPackage(models.Model):
 
     def initialize_sub_folders(self):
         os.makedirs(str(self.get_save_path()), exist_ok=True)
+
+
+class SingleFilesTemplate(models.Model):
+    contagent_type = models.IntegerField(choices=KLASS_TYPES, default=0)
+    documents = models.ManyToManyField('DocumentTypeModel',
+                                       related_name='document_types')
 
 
 class NormativeCategory(models.Model):
@@ -416,3 +435,32 @@ class CountFactUniqueNumber(models.Model):
         cls_obj = cls.objects.create(number='')
         cls_obj.set_number(f'{cls_obj.pk:08}/01')
         return cls_obj
+
+
+class CityModel(models.Model):
+    name = models.CharField('Город', max_length=255, null=True, blank=True)
+
+    def __str__(self):
+        return self.name
+
+
+class TemplateModel(models.Model):
+    template_path = models.CharField('Путь до шаблона', max_length=255)
+    city = models.ForeignKey(CityModel, on_delete=models.CASCADE)
+    contragent_type = models.IntegerField('Тип контрагента',
+                                          choices=KLASS_TYPES, default=0)
+    document_type = models.ForeignKey('DocumentTypeModel',
+                                      verbose_name='Тип документа',
+                                      on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'{str(self.document_type)}|\
+{KLASS_TYPES[self.contragent_type][1]}|{self.city}'
+
+
+class DocumentTypeModel(models.Model):
+    doc_type = models.CharField('Тип документа', max_length=255,
+                                null=True, blank=True)
+
+    def __str__(self):
+        return self.doc_type

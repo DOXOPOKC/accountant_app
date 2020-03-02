@@ -3,7 +3,9 @@ from django.shortcuts import reverse
 from django.utils.html import mark_safe
 from .models import (KLASS_TYPES, Contragent, NormativeCategory, Normative,
                      Contract, ContractNumberClass, DocumentsPackage, ActFile,
-                     OtherFile, CountFile, CountFactFile, SignUser)
+                     OtherFile, CountFile, CountFactFile, SignUser, CityModel,
+                     TemplateModel, DocumentTypeModel, SingleFilesTemplate,
+                     SingleFile)
 
 from django.contrib.contenttypes.admin import GenericTabularInline
 
@@ -42,6 +44,13 @@ class NormativeAdmin(admin.ModelAdmin):
     list_display = ('__str__',)
 
 
+class SingleFileInLine(GenericTabularInline):
+    model = SingleFile
+    extra = 1
+    ct_fk_field = 'object_id'
+    ct_field = 'content_type'
+
+
 class ActInLine(GenericTabularInline):
     model = ActFile
     extra = 1
@@ -75,14 +84,38 @@ class DocumentsPackageAdmin(admin.ModelAdmin):
             'creation_date')
     list_display = sets
     list_display_links = sets
-    inlines = [ActInLine, CountInLine, CountFactInLine, OtherFileInLine, ]
+    inlines = [SingleFileInLine, ActInLine, CountInLine, CountFactInLine,
+               OtherFileInLine, ]
 
     def contragent_name(self, obj):
         return str(obj.contragent.excell_name)
 
 
+class SingleFilesTemplateAdmin(admin.ModelAdmin):
+    filter_horizontal = ('documents',)
+    list_display = ('__str__', )
+
+
 class SignUserAdmin(admin.ModelAdmin):
     sets = ('pk', 'name', 'position', 'address')
+    list_display = sets
+    list_display_links = sets
+
+
+class CityModelAdmin(admin.ModelAdmin):
+    sets = ('pk', 'name')
+    list_display = sets
+    list_display_links = sets
+
+
+class DocumentTypeModelAdmin(admin.ModelAdmin):
+    sets = ('pk', 'doc_type')
+    list_display = sets
+    list_display_links = sets
+
+
+class TemplateModelAdmin(admin.ModelAdmin):
+    sets = ('pk', 'document_type', 'contragent_type', 'city')
     list_display = sets
     list_display_links = sets
 
@@ -94,3 +127,7 @@ admin.site.register(Contract)
 admin.site.register(ContractNumberClass)
 admin.site.register(DocumentsPackage, DocumentsPackageAdmin)
 admin.site.register(SignUser, SignUserAdmin)
+admin.site.register(CityModel, CityModelAdmin)
+admin.site.register(DocumentTypeModel, DocumentTypeModelAdmin)
+admin.site.register(TemplateModel, TemplateModelAdmin)
+admin.site.register(SingleFilesTemplate, SingleFilesTemplateAdmin)

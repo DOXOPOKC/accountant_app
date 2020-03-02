@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import (Contragent, DocumentsPackage, OtherFile, ActFile,
-                     CountFile, CountFactFile, NormativeCategory, SignUser)
+                     CountFile, CountFactFile, NormativeCategory, SignUser,
+                     DocumentTypeModel, SingleFile)
 
 from django_q.models import Task
 
@@ -33,6 +34,20 @@ class ContragentFullSerializer(serializers.ModelSerializer):
                         }
 
 
+class DocumentTypeModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DocumentTypeModel
+        fields = ['doc_type', ]
+
+
+class SingleFileSerializer(serializers.ModelSerializer):
+    file_type = DocumentTypeModelSerializer()
+
+    class Meta:
+        model = SingleFile
+        fields = ['file_name', 'file_path', 'file_type']
+
+
 class ActFileListSerializer(serializers.ModelSerializer):
     class Meta:
         model = ActFile
@@ -58,10 +73,11 @@ class OtherFileSerializer(serializers.ModelSerializer):
 
 
 class PackageFullSerializer(serializers.ModelSerializer):
+    single_files = SingleFileSerializer(many=True)
     act_files = ActFileListSerializer(many=True)
     count_files = CountFileListSerializer(many=True)
     count_fact_files = CountFactFileListSerializer(many=True)
-    files = OtherFileSerializer(many=True)
+    other_files = OtherFileSerializer(many=True)
 
     class Meta:
         model = DocumentsPackage

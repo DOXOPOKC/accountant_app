@@ -3,12 +3,14 @@ import os
 import uuid
 from typing import List
 import aiohttp
+import datetime
 
 import jinja2
 import openpyxl
 import pdfkit
 from django.http import Http404
 from django.template.loader import render_to_string
+from django.core.exceptions import ObjectDoesNotExist
 from django_q.tasks import async_task, Task
 from docxtpl import DocxTemplate
 
@@ -24,7 +26,11 @@ from bluebird.models import (
     CountFactUniqueNumber,
     CountFile,
     CountUniqueNumber,
-    DocumentsPackage)
+    DocumentsPackage,
+    TemplateModel,
+    DocumentTypeModel,
+    SingleFilesTemplate,
+    SingleFile)
 from bluebird.serializers import ContragentFullSerializer
 from bluebird.templatetags.template_extra_filters import (
     gent_case_filter,
@@ -130,12 +136,12 @@ def get_data(id: int):
 def generate_documents(data: List, package: DocumentsPackage,
                        recreate: bool = False):
     """ Функция пакетной генерации документов."""
-    package.contragent.create_package_and_folder()
-    package.initialize_sub_folders()
-    total = round_hafz(count_total(data), 2)
-    generate_contract(package)
-    generate_notes(total, package)
-    generate_act_count(data, package, total, recreate)
+    package.contragent.create_package_and_folder()  # Создаем папку контрагента
+    package.initialize_sub_folders()  # Создаем подпапки пакета
+    total = round_hafz(count_total(data), 2)  # Считаем Итого.
+
+    generate_single_files(data, package, total, recreate)
+
     for d in data:
 
         generate_act(d, package, recreate)
@@ -149,6 +155,9 @@ def generate_documents(data: List, package: DocumentsPackage,
 def generate_act(data: dict, package: DocumentsPackage,
                  recreate: bool = False):
     """ Функция генерации Акта """
+    template = get_template('Акт', package)
+    if not template:
+        return None
     data['consumer'] = package.contragent
     curr_date = data['curr_date']
     if recreate:
@@ -174,7 +183,7 @@ def generate_act(data: dict, package: DocumentsPackage,
     file_name = f'Акт №{tmp_name} от {curr_date}.pdf'
     file_path = os.path.join(ActFile.get_files_path(package), file_name)
     data['uniq_num_id'] = unique_num
-    text = render_to_string('act.html', context=data)
+    text = render_to_string(template.template_path, context=data)
     generate_document(text, file_path)
     act = ActFile.objects.create(file_name=file_name,
                                  file_path=str_remove_app(file_path),
@@ -187,6 +196,9 @@ def generate_act(data: dict, package: DocumentsPackage,
 def generate_count(data: dict, package: DocumentsPackage,
                    recreate: bool = False):
     """ Функция генерации счета на оплату """
+    template = get_template('Счет', package)
+    if not template:
+        return None
     data['consumer'] = package.contragent
     curr_date = data['curr_date']
     if recreate:
@@ -209,7 +221,7 @@ def generate_count(data: dict, package: DocumentsPackage,
     file_name = f'Счет №{tmp_name} от {curr_date}.pdf'
     file_path = os.path.join(CountFile.get_files_path(package), file_name)
     data['uniq_num_id'] = unique_num
-    text = render_to_string('count.html', context=data)
+    text = render_to_string(template.template_path, context=data)
     generate_document(text, file_path)
     count = CountFile.objects.create(file_name=file_name,
                                      file_path=str_remove_app(file_path),
@@ -222,6 +234,10 @@ def generate_count(data: dict, package: DocumentsPackage,
 def generate_count_fact(data: dict, package: DocumentsPackage,
                         recreate: bool = False):
     """ Функция генерации счета фактуры """
+
+    template = get_template('Счет-фактура', package)
+    if not template:
+        return None
     data['consumer'] = package.contragent
     curr_date = data['curr_date']
     if recreate:
@@ -245,7 +261,7 @@ def generate_count_fact(data: dict, package: DocumentsPackage,
     file_name = f'Счет фактура №{tmp_name} от {curr_date}.pdf'
     file_path = os.path.join(CountFactFile.get_files_path(package), file_name)
     data['uniq_num_id'] = unique_num
-    text = render_to_string('count_fact.html', context=data)
+    text = render_to_string(template.template_path, context=data)
     options = {'orientation': 'Landscape',
                'page-size': 'A4',
                'margin-top': '0.75in',
@@ -262,75 +278,138 @@ def generate_count_fact(data: dict, package: DocumentsPackage,
     return count_fact
 
 
-def generate_contract(package: DocumentsPackage):
-    """ Функция генерации контракта """
-    doc = DocxTemplate('templates/docx/contracts/ul.docx')
-    jinja_env = jinja2.Environment()
-    jinja_env.filters['gent_case_filter'] = gent_case_filter
-    jinja_env.filters['pretty_date_filter'] = pretty_date_filter
-    data = {'consumer': package.contragent, }
-    doc.render(data, jinja_env)
-    tmp_name = str(package.contragent.number_contract).replace('/', '-')
-    tmp_path = os.path.join(
-        package.get_save_path(),
-        f'Договор №{tmp_name}.docx')
-    if os.path.exists(tmp_path):
-        os.remove(tmp_path)
-    doc.save(tmp_path)
-    if os.path.isfile(tmp_path):
-        package.contract = str_remove_app(tmp_path)
-        package.save()
+# def generate_contract(package: DocumentsPackage):
+#     """ Функция генерации контракта """
+#     template = get_template('Договор', package)
+#     if not template:
+#         return None
+#     doc = DocxTemplate(template.template_path)
+#     jinja_env = jinja2.Environment()
+#     jinja_env.filters['gent_case_filter'] = gent_case_filter
+#     jinja_env.filters['pretty_date_filter'] = pretty_date_filter
+#     data = {'consumer': package.contragent, }
+#     doc.render(data, jinja_env)
+#     tmp_name = str(package.contragent.number_contract).replace('/', '-')
+#     tmp_path = os.path.join(
+#         package.get_save_path(),
+#         f'Договор №{tmp_name}.docx')
+#     if os.path.exists(tmp_path):
+#         os.remove(tmp_path)
+#     doc.save(tmp_path)
+#     if os.path.isfile(tmp_path):
+#         package.contract = str_remove_app(tmp_path)
+#         package.save()
 
 
-def generate_notes(total, package: DocumentsPackage):
-    """ Функция генерации претензии """
-    doc = DocxTemplate('templates/docx/notes/ul_note.docx')
-    jinja_env = jinja2.Environment()
-    jinja_env.filters['datv_case_filter'] = datv_case_filter
-    jinja_env.filters['pretty_date_filter'] = pretty_date_filter
-    jinja_env.filters['capfirst'] = cap_first
-    jinja_env.filters['literal'] = literal
-    jinja_env.filters['proper_date_filter'] = proper_date_filter
-    data = {'consumer': package.contragent, 'total': total}
-    doc.render(data, jinja_env)
-    tmp_path = os.path.join(
-        package.get_save_path(),
-        f'Претензия.docx')
-    if os.path.exists(tmp_path):
-        os.remove(tmp_path)
-    doc.save(tmp_path)
-    if os.path.isfile(tmp_path):
-        package.court_note = str_remove_app(tmp_path)
-        package.save()
+# def generate_notes(total, package: DocumentsPackage):
+#     """ Функция генерации претензии """
+#     template = get_template('Претензия', package)
+#     if not template:
+#         return None
+#     doc = DocxTemplate(template.template_path)
+#     jinja_env = jinja2.Environment()
+#     jinja_env.filters['datv_case_filter'] = datv_case_filter
+#     jinja_env.filters['pretty_date_filter'] = pretty_date_filter
+#     jinja_env.filters['capfirst'] = cap_first
+#     jinja_env.filters['literal'] = literal
+#     jinja_env.filters['proper_date_filter'] = proper_date_filter
+#     data = {'consumer': package.contragent, 'total': total}
+#     doc.render(data, jinja_env)
+#     tmp_path = os.path.join(
+#         package.get_save_path(),
+#         f'Претензия.docx')
+#     if os.path.exists(tmp_path):
+#         os.remove(tmp_path)
+#     doc.save(tmp_path)
+#     if os.path.isfile(tmp_path):
+#         package.court_note = str_remove_app(tmp_path)
+#         package.save()
 
 
-def generate_act_count(data: dict, package: DocumentsPackage, total: float,
-                       recreate: bool = False):
-    """ Функция генерации акта сверки """
-    jinja_env = jinja2.Environment(
-        loader=jinja2.FileSystemLoader('./'),
-        autoescape=jinja2.select_autoescape(['html', 'xml'])
-    )
-    jinja_env.filters['datv_case_filter'] = datv_case_filter
-    jinja_env.filters['pretty_date_filter'] = pretty_date_filter
-    jinja_env.filters['capfirst'] = cap_first
-    jinja_env.filters['literal'] = literal
-    jinja_env.filters['proper_date_filter'] = proper_date_filter
-    template = jinja_env.get_template('templates/act_count.html')
-    results = template.render({'data': data, 'consumer': package.contragent,
-                               'total': total})
-    tmp_path = os.path.join(package.get_save_path(), 'Акт сверки.pdf')
-    if recreate and os.path.exists(tmp_path):
-        os.remove(tmp_path)
-    generate_document(results, tmp_path)
-    if os.path.isfile(tmp_path):
-        package.act_count = str_remove_app(tmp_path)
-        package.save()
+# def generate_act_count(data: dict, package: DocumentsPackage, total: float,
+#                        recreate: bool = False):
+#     """ Функция генерации акта сверки """
+#     template = get_template('Акт сверки', package)
+#     if not template:
+#         return None
+#     jinja_env = jinja2.Environment(
+#         loader=jinja2.FileSystemLoader('./'),
+#         autoescape=jinja2.select_autoescape(['html', 'xml'])
+#     )
+#     jinja_env.filters['datv_case_filter'] = datv_case_filter
+#     jinja_env.filters['pretty_date_filter'] = pretty_date_filter
+#     jinja_env.filters['capfirst'] = cap_first
+#     jinja_env.filters['literal'] = literal
+#     jinja_env.filters['proper_date_filter'] = proper_date_filter
+#     template = jinja_env.get_template(template.template_path)
+#     results = template.render({'data': data, 'consumer': package.contragent,
+#                                'total': total})
+#     tmp_path = os.path.join(package.get_save_path(), 'Акт сверки.pdf')
+#     if recreate and os.path.exists(tmp_path):
+#         os.remove(tmp_path)
+#     generate_document(results, tmp_path)
+#     if os.path.isfile(tmp_path):
+#         package.act_count = str_remove_app(tmp_path)
+#         package.save()
 
 
 def generate_document(text: str, name: str, **kwargs):
     """ Функция генерации  PDF документа из заданного HTML текста """
     pdfkit.from_string(text, name, **kwargs)
+
+
+def generate_single_files(data: dict, package: DocumentsPackage, total: float,
+                          recreate: bool = False):
+    document_types = SingleFilesTemplate.objects.get(
+        contagent_type=package.contragent.klass)
+    doc_types = document_types.documents.all()
+    for document_type in doc_types:
+        generate_docx_file(data, package, total, document_type, recreate)
+    # # Генерируем контракт
+    # generate_contract(package)
+
+    # # Генерируем претензии
+    # generate_notes(total, package)
+
+    # # Генерируем акт сверки
+    # generate_act_count(data, package, total, recreate)
+
+
+def generate_docx_file(data: dict, package: DocumentsPackage, total: float,
+                       document_type_obj: int, recreate: bool = False):
+    template = get_template(document_type_obj, package)
+    if not template:
+        return None
+    doc = DocxTemplate(template.template_path)
+    jinja_env = jinja2.Environment()
+    jinja_env.filters['datv_case_filter'] = datv_case_filter
+    jinja_env.filters['gent_case_filter'] = gent_case_filter
+    jinja_env.filters['pretty_date_filter'] = pretty_date_filter
+    jinja_env.filters['capfirst'] = cap_first
+    jinja_env.filters['literal'] = literal
+    jinja_env.filters['proper_date_filter'] = proper_date_filter
+    context = {'data': data, 'consumer': package.contragent, 'total': total}
+    doc.render(context, jinja_env)
+    tmp_name = str(package.contragent.number_contract).replace('/', '-')
+    file_name = f'{str(document_type_obj)} ({tmp_name}).docx'
+    tmp_path = os.path.join(
+        package.get_save_path(),
+        file_name)
+
+    if os.path.exists(tmp_path):
+        os.remove(tmp_path)
+
+    doc.save(tmp_path)
+
+    if os.path.isfile(tmp_path):
+        single_file = SingleFile.objects.create(
+            file_name=file_name,
+            file_path=str_remove_app(tmp_path),
+            content_object=package,
+            creation_date=datetime.date.today(),
+            file_type=document_type_obj)
+        return single_file
+    return None
 
 
 def create_unique_id():
@@ -374,3 +453,19 @@ def gen_async(task):
 
 def del_after_exec(task):
     Task.delete_group(task.group)
+
+
+def get_template(doc_type, package: DocumentsPackage):
+    try:
+        if isinstance(doc_type, str):
+            doc_type = DocumentTypeModel.objects.get(doc_type=doc_type)
+        if isinstance(doc_type, DocumentTypeModel):
+            template = TemplateModel.objects.get(
+                city=package.contragent.signed_user.city,
+                contragent_type=package.contragent.klass,
+                document_type=doc_type.id
+                )
+            return template
+        raise ObjectDoesNotExist()
+    except ObjectDoesNotExist:
+        return None

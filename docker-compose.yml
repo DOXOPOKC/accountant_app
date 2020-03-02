@@ -37,9 +37,12 @@ services:
       - ./media:/app/media
     depends_on: 
       - postgres
+    ports:
+      - 5678:3000 
     networks: 
       private_network:
         ipv4_address: 172.25.0.4
+
 
   frontend:
     container_name: 'node'
