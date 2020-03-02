@@ -37,7 +37,7 @@ from bluebird.templatetags.template_extra_filters import (
     pretty_date_filter,
     datv_case_filter,
     cap_first,
-    literal, proper_date_filter)
+    literal, proper_date_filter, remove_zero_at_end)
 
 from blackbird.views import calculate, round_hafz
 
@@ -278,81 +278,6 @@ def generate_count_fact(data: dict, package: DocumentsPackage,
     return count_fact
 
 
-# def generate_contract(package: DocumentsPackage):
-#     """ Функция генерации контракта """
-#     template = get_template('Договор', package)
-#     if not template:
-#         return None
-#     doc = DocxTemplate(template.template_path)
-#     jinja_env = jinja2.Environment()
-#     jinja_env.filters['gent_case_filter'] = gent_case_filter
-#     jinja_env.filters['pretty_date_filter'] = pretty_date_filter
-#     data = {'consumer': package.contragent, }
-#     doc.render(data, jinja_env)
-#     tmp_name = str(package.contragent.number_contract).replace('/', '-')
-#     tmp_path = os.path.join(
-#         package.get_save_path(),
-#         f'Договор №{tmp_name}.docx')
-#     if os.path.exists(tmp_path):
-#         os.remove(tmp_path)
-#     doc.save(tmp_path)
-#     if os.path.isfile(tmp_path):
-#         package.contract = str_remove_app(tmp_path)
-#         package.save()
-
-
-# def generate_notes(total, package: DocumentsPackage):
-#     """ Функция генерации претензии """
-#     template = get_template('Претензия', package)
-#     if not template:
-#         return None
-#     doc = DocxTemplate(template.template_path)
-#     jinja_env = jinja2.Environment()
-#     jinja_env.filters['datv_case_filter'] = datv_case_filter
-#     jinja_env.filters['pretty_date_filter'] = pretty_date_filter
-#     jinja_env.filters['capfirst'] = cap_first
-#     jinja_env.filters['literal'] = literal
-#     jinja_env.filters['proper_date_filter'] = proper_date_filter
-#     data = {'consumer': package.contragent, 'total': total}
-#     doc.render(data, jinja_env)
-#     tmp_path = os.path.join(
-#         package.get_save_path(),
-#         f'Претензия.docx')
-#     if os.path.exists(tmp_path):
-#         os.remove(tmp_path)
-#     doc.save(tmp_path)
-#     if os.path.isfile(tmp_path):
-#         package.court_note = str_remove_app(tmp_path)
-#         package.save()
-
-
-# def generate_act_count(data: dict, package: DocumentsPackage, total: float,
-#                        recreate: bool = False):
-#     """ Функция генерации акта сверки """
-#     template = get_template('Акт сверки', package)
-#     if not template:
-#         return None
-#     jinja_env = jinja2.Environment(
-#         loader=jinja2.FileSystemLoader('./'),
-#         autoescape=jinja2.select_autoescape(['html', 'xml'])
-#     )
-#     jinja_env.filters['datv_case_filter'] = datv_case_filter
-#     jinja_env.filters['pretty_date_filter'] = pretty_date_filter
-#     jinja_env.filters['capfirst'] = cap_first
-#     jinja_env.filters['literal'] = literal
-#     jinja_env.filters['proper_date_filter'] = proper_date_filter
-#     template = jinja_env.get_template(template.template_path)
-#     results = template.render({'data': data, 'consumer': package.contragent,
-#                                'total': total})
-#     tmp_path = os.path.join(package.get_save_path(), 'Акт сверки.pdf')
-#     if recreate and os.path.exists(tmp_path):
-#         os.remove(tmp_path)
-#     generate_document(results, tmp_path)
-#     if os.path.isfile(tmp_path):
-#         package.act_count = str_remove_app(tmp_path)
-#         package.save()
-
-
 def generate_document(text: str, name: str, **kwargs):
     """ Функция генерации  PDF документа из заданного HTML текста """
     pdfkit.from_string(text, name, **kwargs)
@@ -387,6 +312,7 @@ def generate_docx_file(data: dict, package: DocumentsPackage, total: float,
     jinja_env.filters['pretty_date_filter'] = pretty_date_filter
     jinja_env.filters['capfirst'] = cap_first
     jinja_env.filters['literal'] = literal
+    jinja_env.filters['remove_zero_at_end'] = remove_zero_at_end
     jinja_env.filters['proper_date_filter'] = proper_date_filter
     context = {'data': data, 'consumer': package.contragent, 'total': total}
     doc.render(context, jinja_env)
@@ -396,12 +322,12 @@ def generate_docx_file(data: dict, package: DocumentsPackage, total: float,
         package.get_save_path(),
         file_name)
 
-    if os.path.exists(tmp_path):
+    if recreate and os.path.exists(tmp_path):
         os.remove(tmp_path)
 
     doc.save(tmp_path)
 
-    if os.path.isfile(tmp_path):
+    if not recreate and os.path.isfile(tmp_path):
         single_file = SingleFile.objects.create(
             file_name=file_name,
             file_path=str_remove_app(tmp_path),

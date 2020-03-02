@@ -3,6 +3,7 @@ from django.template.defaultfilters import stringfilter
 from .num2t4ru import decimal2text
 import pymorphy2
 import decimal
+import math
 
 
 register = template.Library()
@@ -12,10 +13,22 @@ register = template.Library()
 @stringfilter
 def literal(value):
     if bool(value) or value is not None:
+        value = float(value)
+        if not math.ceil(value % 1):
+            value = int(value)
         return decimal2text(decimal.Decimal(value),
                             int_units=((u'рубль', u'рубля', u'рублей'), 'm'),
                             exp_units=((u'копейка', u'копейки', u'копеек'),
                                        'f'))
+    return ''
+
+
+def remove_zero_at_end(value):
+    if (bool(value) or value is not None):
+        value = float(value)
+        if not math.ceil(value % 1):
+            value = int(value)
+        return value
     return ''
 
 
