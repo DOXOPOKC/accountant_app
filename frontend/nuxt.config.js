@@ -33,7 +33,9 @@ export default {
     '~/plugins/vee-validate',
     // '~/plugins/i18n',
     '~/plugins/filters.js',
-    '~/plugins/vue-file-agent'
+    '~/plugins/vue-file-agent',
+    '~/plugins/repository',
+    '~/plugins/axios'
   ],
   /*
   ** Nuxt.js dev-modules
@@ -49,6 +51,7 @@ export default {
   modules: [
     // Doc: https://axios.nuxtjs.org/usage
     '@nuxtjs/axios',
+    '@nuxtjs/auth',
     '@nuxtjs/toast',
     '@nuxtjs/dotenv'
   ],
@@ -57,7 +60,66 @@ export default {
   ** See https://axios.nuxtjs.org/options
   */
   axios: {
+    baseURL: `${process.env.NUXT_ENV_PROTOCOL}://${process.env.NUXT_ENV_DOMAIN}/api`,
+    credentials: true,
   },
+  auth: {
+    localStorage: false,
+    cookie: {
+      options: {
+        expires: 7
+      }
+    },
+    strategies: {
+      local: {
+        // endpoints: {
+        //   login: { url: 'user/login/', method: 'post', propertyName: 'access', altProperty: 'refresh' },
+        //   refresh: { url: 'user/login/refresh/', method: 'post', propertyName: 'refresh' },
+        //   logout: false,
+        //   user: false
+        // },
+        endpoints: {
+            login: { url: 'user/login/', method: 'post', propertyName: false },
+            logout: false,
+            user: { url: 'user/', method: 'get', propertyName: '' }
+          },
+        tokenRequired: true,
+      }
+    },
+    plugins: [{ src: '~/plugins/auth.js', mode: 'client' }]
+  },
+  // router: {
+    // middleware: ['loggedIn']
+  // },
+  /*
+  ** Ayth module configuration
+  ** See https://auth.nuxtjs.org/api/options.html
+  */
+  // auth: {
+  //   localStorage: false,
+  //   cookie: {
+  //     options: {
+  //       expires: 7
+  //     }
+  //   },
+  //   strategies: {
+  //     local: {
+  //       endpoints: {
+  //         login: {
+  //           url: 'token/',
+  //           method: 'post',
+  //           propertyName: 'data.refresh'
+  //         },
+  //         logout: false,
+  //         user: false
+  //       }
+  //     }
+  //     // vuex: {
+  //     //   namespace: 'users'
+  //     // }
+  //   },
+  //   plugins: ['~/repositories/clients/AxiosClient.js', { src: '~/plugins/auth.js', mode: 'client' }]
+  // },
   /*
   ** Toats module
   ** See https://github.com/nuxt-community/modules/blob/master/packages/toast/README.md

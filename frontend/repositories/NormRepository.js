@@ -1,9 +1,5 @@
-import client from './clients/AxiosClient'
-
-const resource = '/api/norms'
-
-export default {
+export default $axios => resource => ({
   get () {
-    return client.get(`${resource}/`)
+    return $axios.$get(`${resource}/`)
   }
-}
+})

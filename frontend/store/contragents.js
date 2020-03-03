@@ -60,7 +60,7 @@ export const actions = {
     }
   },
   async [types.FETCH_CONTRAGENTS] ({ commit }) {
-    const { data } = await contragentRepository.get()
+    const { data } = await this.$repositories.contragents.get()
     commit(types.SET_CONTRAGENTS, data)
   },
   async [types.UPDATE_CONTRAGENT] ({ state, commit }) {
