@@ -12,7 +12,7 @@ register = template.Library()
 @register.filter(name='literal')
 @stringfilter
 def literal(value):
-    if bool(value) or value is not None:
+    if (bool(value) or value is not None):
         value = float(value)
         if not math.ceil(value % 1):
             value = int(value)
@@ -87,7 +87,13 @@ def datv_case_filter(value: str):
 
 def cap_first(value: str):
     if bool(value) or value is not None:
-        return value.capitalize()
+        return value.lower().capitalize()
+    return ''
+
+
+def all_lower(value: str):
+    if bool(value) or value is not None:
+        return value.lower()
     return ''
 
 
