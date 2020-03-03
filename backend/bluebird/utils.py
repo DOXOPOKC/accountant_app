@@ -322,19 +322,17 @@ def generate_docx_file(data: dict, package: DocumentsPackage, total: float,
         package.get_save_path(),
         file_name)
 
-    if recreate and os.path.exists(tmp_path):
+    if recreate and os.path.isfile(tmp_path):
         os.remove(tmp_path)
-
-    doc.save(tmp_path)
-
-    if not recreate and os.path.isfile(tmp_path):
-        single_file = SingleFile.objects.create(
+    else:
+        SingleFile.objects.create(
             file_name=file_name,
             file_path=str_remove_app(tmp_path),
             content_object=package,
             creation_date=datetime.date.today(),
             file_type=document_type_obj)
-        return single_file
+
+    doc.save(tmp_path)
     return None
 
 
