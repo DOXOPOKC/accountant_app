@@ -9,6 +9,8 @@ from django.contrib.auth.models import User
 from django.conf import settings
 from django.db import models
 
+from .snippets import str_add_app
+
 
 KLASS_TYPES = [
         (0, 'Пусто'),
@@ -153,6 +155,11 @@ class AbstractFileModel(models.Model):
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey('content_type', 'object_id')
 
+    def delete(self, using=None, keep_parents=False):
+        if os.path.exists(str_add_app(self.file_path)):
+            os.remove(str_add_app(self.file_path))
+        return super().delete(using=using, keep_parents=keep_parents)
+
     class Meta:
         abstract = True
 
@@ -261,7 +268,8 @@ class DocumentsPackage(models.Model):
     #                              null=True, blank=True)
     # Пакеты документов
 
-    single_files = GenericRelation(SingleFile)
+    single_files = GenericRelation(SingleFile)#,
+                                   #related_query_name='single_files')
 
     act_files = GenericRelation(ActFile)
     count_files = GenericRelation(CountFile)

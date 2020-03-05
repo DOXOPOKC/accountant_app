@@ -41,6 +41,8 @@ from bluebird.templatetags.template_extra_filters import (
 
 from blackbird.views import calculate, round_hafz
 
+from .snippets import str_add_app, str_remove_app
+
 
 MIN_INNN_LEN = 10
 MAX_INN_LEN = 12
@@ -290,9 +292,13 @@ def generate_single_files(data: dict, package: DocumentsPackage, total: float,
     doc_types = document_types.documents.all()
     for document_type in doc_types:
         generate_docx_file(data, package, total, document_type, recreate)
+
+    res = SingleFile.objects.filter(object_id=package.id).exclude(
+        file_type__in=doc_types)
+    for r in res:
+        r.delete()
     # # Генерируем контракт
     # generate_contract(package)
-
     # # Генерируем претензии
     # generate_notes(total, package)
 
@@ -339,14 +345,6 @@ def generate_docx_file(data: dict, package: DocumentsPackage, total: float,
 def create_unique_id():
     """ Функция генерации уникального uuid """
     return str(uuid.uuid4())
-
-
-def str_remove_app(string: str):
-    return string.replace('/app', '')
-
-
-def str_add_app(string: str):
-    return string.replace('/media/', '/app/media/')
 
 
 def count_total(data: List):
