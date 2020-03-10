@@ -34,8 +34,7 @@ export default {
     // '~/plugins/i18n',
     '~/plugins/filters.js',
     '~/plugins/vue-file-agent',
-    '~/plugins/repository',
-    '~/plugins/axios'
+    '~/plugins/repository'
   ],
   /*
   ** Nuxt.js dev-modules

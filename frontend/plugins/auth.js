@@ -8,8 +8,8 @@ async function refreshTokenF ($auth, $axios, token, refreshToken, store, redirec
       token = 'Bearer ' + response.data.access
       refreshToken = response.data.refresh || refreshToken
       $auth.setToken(strategy, token)
-      $auth.setRefreshToken(strategy, refreshToken)
       $axios.setToken(token)
+      $auth.setRefreshToken(strategy, refreshToken)
       return decodeToken.call(this, token).exp
     } catch (error) {
       $auth.logout()

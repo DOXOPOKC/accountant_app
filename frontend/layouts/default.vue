@@ -1,6 +1,7 @@
 <template lang="pug">
     v-app
         v-navigation-drawer(
+          v-if="user"
           app
           v-model="drawer"
           fixed
@@ -20,27 +21,51 @@
                   class="elevation-0 pt-2"
                   hide-overlay
                 )
+
+                  v-list(
+                    dense
+                    nav
+                  )
                     v-list-item
-                        v-list-item-avatar
-                            //- v-img(src="https://randomuser.me/api/portraits/women/75.jpg")
-                            v-icon(class="white black--text") mdi-account
-                    v-list(
-                        dense
-                        nav
+                      v-tooltip(
+                        right
+                        dark
+                        fixed
+                        content-class="ml-4"
+                      )
+                        template(v-slot:activator="{ on }")
+                          v-list-item-avatar(class="mx-0")
+                            v-icon(v-on="on" class="white black--text") mdi-account
+                        span {{ user.username }}
+                    v-list-item(
+                      v-for="(item, i) in items"
+                      :key="i"
+                      :to="item.to"
+                      router
+                      exact
+                      flat
+                      class="py-3"
                     )
-                        v-list-item(
-                            v-for="(item, i) in items"
-                            :key="i"
-                            :to="item.to"
-                            router
-                            exact
-                            flat
-                            class="py-3"
-                        )
-                              v-tooltip(right dark)
-                                template(v-slot:activator="{ on }")
-                                  v-icon(v-on="on") {{ item.icon }}
-                                span {{ item.title }}
+                      v-tooltip(
+                        right
+                        dark
+                        fixed
+                        content-class="ml-4"
+                      )
+                        template(v-slot:activator="{ on }")
+                          v-icon(v-on="on") {{ item.icon }}
+                        span {{ item.title }}
+                  template(v-slot:append)
+                    v-list-item
+                      v-tooltip(
+                        right
+                        dark
+                        fixed
+                        content-class="ml-4"
+                      )
+                        template(v-slot:activator="{ on }")
+                          v-icon(v-on="on") mdi-logout
+                        span Выйти
               //- v-col(cols="9")
               //-   v-list(class="grow" color="grey lighten-3")
               //-       v-list-item(
@@ -67,20 +92,33 @@
 </template>
 
 <script>
+import { mapState } from 'vuex'
+
 export default {
+  auth: 'guest',
   data: () => ({
     links: ['Home', 'Contacts', 'Settings'],
     clipped: false,
     drawer: true,
     fixed: false,
     items: [
+      // {
+      //   icon: 'mdi-account',
+      //   title: 'Профиль',
+      //   to: '/'
+      // },
       {
         icon: 'mdi-chart-bubble',
         title: 'Контрагенты',
         to: '/'
       }
     ]
-  })
+  }),
+  computed: {
+    ...mapState({
+      user: state => state.auth.user
+    })
+  }
 }
 </script>
 
