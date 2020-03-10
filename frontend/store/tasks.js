@@ -1,8 +1,3 @@
-import Repository from '~/repositories/RepositoryFactory'
-
-const TasksRepository = Repository.get('tasks')
-const packageRepository = Repository.get('packages')
-
 export const types = {
   SET_TASK: 'SET_TASK',
 
@@ -39,17 +34,19 @@ export const actions = {
       while (getters.tasksStatus) {
         const responses = (await Promise.all([
           await new Promise(resolve => setTimeout(() => resolve(), 1000)),
-          await TasksRepository.get(state.taskUid),
-          await packageRepository.getPackage(contragentId, packageId)
+          await this.$repositories.tasks.get(state.taskUid),
+          await this.$repositories.packages.getPackage(contragentId, packageId)
         ]))
         const tasks = responses[1]
         const contragentPackage = responses[2]
-        if (!tasks.data.length) { commit(types.REMOVE_TASK_UID) }
-        commit(types.SET_TASKS, tasks.data)
-        this.commit('packages/SET_PACKAGE', contragentPackage.data)
+        console.log(tasks, contragentPackage)
+        if (!tasks.length) { commit(types.REMOVE_TASK_UID) }
+        commit(types.SET_TASKS, tasks)
+        this.commit('packages/SET_PACKAGE', contragentPackage)
         // this.dispatch('packages/FETCH_PACKAGE', { contragentId, packageId })
       }
     } catch (error) {
+      console.log({ error })
       this.$toast.error('Ошибка!')
     }
     // const failedTasks = tasksGroup.filter(task => task.success === false)

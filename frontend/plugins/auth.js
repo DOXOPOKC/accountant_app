@@ -6,7 +6,7 @@ async function refreshTokenF ($auth, $axios, token, refreshToken, store, redirec
     try {
       const response = await $axios.post('user/login/refresh/', { refresh: refreshToken })
       token = 'Bearer ' + response.data.access
-      refreshToken = response.data.refresh
+      refreshToken = response.data.refresh || refreshToken
       $auth.setToken(strategy, token)
       $auth.setRefreshToken(strategy, refreshToken)
       $axios.setToken(token)
@@ -21,11 +21,10 @@ async function refreshTokenF ($auth, $axios, token, refreshToken, store, redirec
 
 export default async function ({ app, store, redirect }) {
   const { $axios, $auth } = app
-  console.log(app)
   let token
   let refreshToken
   $axios.onError(async (err) => {
-    if (!err.config.retry && err.response.status === 401 && !err.config.url.endsWith('/token') && !err.config.url.endsWith('/refresh_token')) {
+    if (!err.config.retry && err.response.status === 401 && !err.config.url.endsWith('/token') && !err.config.url.endsWith('/refresh')) {
       err.config.retry = true
       token = $auth.getToken(strategy)
       refreshToken = $auth.getRefreshToken(strategy)
@@ -60,7 +59,6 @@ export default async function ({ app, store, redirect }) {
 }
 function decodeToken (str) {
   str = str.split('.')[1]
-
   str = str.replace('/-/g', '+')
   str = str.replace('/_/g', '/')
   switch (str.length % 4) {
@@ -75,12 +73,9 @@ function decodeToken (str) {
     default:
       throw new Error('Invalid token')
   }
-
   str = (str + '===').slice(0, str.length + (str.length % 4))
   str = str.replace(/-/g, '+').replace(/_/g, '/')
-
   str = decodeURIComponent(escape(Buffer.from(str, 'base64').toString('binary')))
-
   str = JSON.parse(str)
   return str
 }

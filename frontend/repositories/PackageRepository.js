@@ -1,7 +1,7 @@
 export default $axios => resource => ({
   // Возвращает список пакетов с документами конкретного контрагента
   get (contragentId) {
-    return $axios.$get(`/api/contragents/${contragentId}/packages/`)
+    return $axios.$get(`contragents/${contragentId}/packages/`)
   },
   // Содержимое пакета
   getPackage (contragentId, packageId) {

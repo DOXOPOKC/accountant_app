@@ -63,6 +63,9 @@ export default {
     baseURL: `${process.env.NUXT_ENV_PROTOCOL}://${process.env.NUXT_ENV_DOMAIN}/api`,
     credentials: true,
   },
+  router: {
+    middleware: ['loggedIn']
+  },
   auth: {
     localStorage: false,
     cookie: {
@@ -72,54 +75,16 @@ export default {
     },
     strategies: {
       local: {
-        // endpoints: {
-        //   login: { url: 'user/login/', method: 'post', propertyName: 'access', altProperty: 'refresh' },
-        //   refresh: { url: 'user/login/refresh/', method: 'post', propertyName: 'refresh' },
-        //   logout: false,
-        //   user: false
-        // },
         endpoints: {
-            login: { url: 'user/login/', method: 'post', propertyName: false },
-            logout: false,
-            user: { url: 'user/', method: 'get', propertyName: '' }
-          },
-        tokenRequired: true,
+          login: { url: 'user/login/', method: 'post', propertyName: 'access' },
+          logout: false,
+          user: { url: 'user/', method: 'get', propertyName: false }
+        },
+        tokenRequired: true
       }
     },
     plugins: [{ src: '~/plugins/auth.js', mode: 'client' }]
   },
-  // router: {
-    // middleware: ['loggedIn']
-  // },
-  /*
-  ** Ayth module configuration
-  ** See https://auth.nuxtjs.org/api/options.html
-  */
-  // auth: {
-  //   localStorage: false,
-  //   cookie: {
-  //     options: {
-  //       expires: 7
-  //     }
-  //   },
-  //   strategies: {
-  //     local: {
-  //       endpoints: {
-  //         login: {
-  //           url: 'token/',
-  //           method: 'post',
-  //           propertyName: 'data.refresh'
-  //         },
-  //         logout: false,
-  //         user: false
-  //       }
-  //     }
-  //     // vuex: {
-  //     //   namespace: 'users'
-  //     // }
-  //   },
-  //   plugins: ['~/repositories/clients/AxiosClient.js', { src: '~/plugins/auth.js', mode: 'client' }]
-  // },
   /*
   ** Toats module
   ** See https://github.com/nuxt-community/modules/blob/master/packages/toast/README.md
@@ -127,7 +92,8 @@ export default {
   toast: {
     position: 'bottom-right',
     duration: 3000,
-    register: [ // Register custom toasts
+    register: [
+      // Register custom toasts
       {
         name: 'my-error',
         message: 'Oops...Something went wrong',

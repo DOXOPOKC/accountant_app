@@ -24,7 +24,7 @@
               v-model="username"
               label="Login"
               name="login"
-              prepend-icon="mdi-person"
+              prepend-icon="mdi-account"
               type="text"
             />
 
@@ -59,7 +59,7 @@ export default {
   },
   methods: {
     // ...mapActions(['users/']),
-    login () {
+    async login () {
       // this.error = null
       // return this.$auth
       //   .loginWith('local', {
@@ -71,24 +71,31 @@ export default {
       //   .catch((e) => {
       //     this.error = e + ''
       //   })
-      const self = this
-      this.$axios.post('/user/login/', {
-        username: this.username,
-        password: this.password
-      }).then(function (resp) {
+      try {
+        const self = this
+        // const resp = await this.$auth.login({
+        //   data: {
+        //     username: this.username,
+        //     password: this.password
+        //   }
+        // })
+        const resp = await this.$axios.post('user/login/', {
+          username: this.username,
+          password: this.password
+        })
         self.$auth.setToken('local', 'Bearer ' + resp.data.access)
         self.$auth.setRefreshToken('local', resp.data.refresh)
         self.$axios.setHeader('Authorization', 'Bearer ' + resp.data.access)
         self.$auth.ctx.app.$axios.setHeader('Authorization', 'Bearer ' + resp.data.access)
-        self.$axios.get('/contragents/').then((resp) => { self.$router.push('/') })
-      }).catch((err) => {
-        if (err.response) {
+        self.$axios.get('user/').then((resp) => { self.$auth.setUser(resp.data); self.$router.push('/') })
+      } catch (error) {
+        if (error.response) {
           self.usernameErrors = []
           self.passwordErrors = []
-          const status = err.response.data.detail.status
+          const status = error.response.status
           if (status === 404) { self.usernameErrors = ['That user does not exist'] } else if (status === 401) { self.passwordErrors = ['Invalid password'] }
         }
-      })
+      }
     }
   }
 }

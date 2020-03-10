@@ -5,8 +5,6 @@ import createNormRepository from '~/repositories/NormRepository'
 import createSignUsers from '~/repositories/SignUsersRepository'
 
 export default (ctx, inject) => {
-  // inject the repository in the context (ctx.app.$repository)
-  // And in the Vue instances (this.$repository in your components)
   const contragentRepository = createContragentRepository(ctx.$axios)
   const packageRepository = createPackageRepository(ctx.$axios)
   const taskRepository = createTaskRepository(ctx.$axios)
@@ -16,9 +14,9 @@ export default (ctx, inject) => {
   const repositories = {
     contragents: contragentRepository('/contragents'),
     packages: packageRepository('/contragents'),
-    tasks: taskRepository('/contragents'),
-    norms: normRepository('/contragents'),
-    signUsers: signUserRepository('/contragents')
+    tasks: taskRepository('/tasks'),
+    norms: normRepository('/norms'),
+    signUsers: signUserRepository('/sign_users')
   }
 
   inject('repositories', repositories)
