@@ -22,7 +22,7 @@
             :items="contragents"
             item-key="id"
             class="elevation-0"
-            disable-sort
+            sort-by="id"
             disable-pagination
             disable-filtering
             calculate-widths
@@ -41,6 +41,7 @@
             template(v-slot:body="{ items }")
               tbody
                 nuxt-link(tag="tr" :to="'contragent/' + item.id + '/'" v-for="item in items" :key="item.name")
+                  td {{ item.id }}
                   td {{ item.excell_name }}
                   td {{ item.physical_address }}
                   td {{ item.klass }}
@@ -90,6 +91,7 @@ export default {
     uploadUrl: 'http://localhost/api/contragents/',
     contragentDialogState: false,
     headers: [
+      { text: '', value: 'id' },
       {
         text: 'Название',
         align: 'left',
@@ -97,10 +99,7 @@ export default {
         value: 'excell_name'
       },
       { text: 'Факт. адрес', value: 'physical_address' },
-      {
-        text: 'Класс',
-        value: 'klass'
-      },
+      { text: 'Класс', value: 'klass' },
       { text: 'ИНН', value: 'inn' },
       { text: 'Задолжность', value: 'debt' }
     ]

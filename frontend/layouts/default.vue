@@ -1,7 +1,6 @@
 <template lang="pug">
     v-app
         v-navigation-drawer(
-          v-if="user"
           app
           v-model="drawer"
           fixed
@@ -36,7 +35,7 @@
                         template(v-slot:activator="{ on }")
                           v-list-item-avatar(class="mx-0")
                             v-icon(v-on="on" class="white black--text") mdi-account
-                        span {{ user.username }}
+                        span(v-if="user") {{ user.username }}
                     v-list-item(
                       v-for="(item, i) in items"
                       :key="i"
@@ -56,7 +55,13 @@
                           v-icon(v-on="on") {{ item.icon }}
                         span {{ item.title }}
                   template(v-slot:append)
-                    v-list-item
+                    v-list-item(
+                      @click="handleLogout"
+                      router
+                      exact
+                      flat
+                      class="py-3"
+                    )
                       v-tooltip(
                         right
                         dark
@@ -79,13 +84,14 @@
             clipped-left
             app
         )
-            v-app-bar-nav-icon(@click.stop="drawer = !drawer")
+            v-app-bar-nav-icon(v-if="user" @click.stop="drawer = !drawer")
             v-spacer
             v-icon(color="primary" class="mx-1")
                 | M13.7762 1.25867C17.3867 -0.0631387 21.0723 3.02948 20.4104 6.82538L18.6231 17.0743C17.9612 20.8702 13.4481 22.5225 10.4996 20.0484L2.5386 13.3683C-0.409905 10.8942 0.417539 6.14936 4.028 4.82756L13.7762 1.25867Z
             v-toolbar-title(class="text-uppercase headline")
                 span(class="primary--text") Эко
                 span(class="grey--text text--darken-2") тек
+            v-spacer(v-if="!user")
         v-content
             v-container(fluid fill-height pa-0 align-start)
                 nuxt
@@ -99,7 +105,7 @@ export default {
   data: () => ({
     links: ['Home', 'Contacts', 'Settings'],
     clipped: false,
-    drawer: true,
+    drawer: false,
     fixed: false,
     items: [
       // {
@@ -118,6 +124,12 @@ export default {
     ...mapState({
       user: state => state.auth.user
     })
+  },
+  methods: {
+    handleLogout () {
+      this.$auth.logout()
+      this.$router.push('/login')
+    }
   }
 }
 </script>

@@ -59,19 +59,7 @@ export default {
     }
   },
   methods: {
-    // ...mapActions(['users/']),
     async login () {
-      // this.error = null
-      // return this.$auth
-      //   .loginWith('local', {
-      //     data: {
-      //       username: this.username,
-      //       password: this.password
-      //     }
-      //   })
-      //   .catch((e) => {
-      //     this.error = e + ''
-      //   })
       try {
         const self = this
         // const resp = await this.$auth.login({
@@ -88,7 +76,7 @@ export default {
         self.$auth.setRefreshToken('local', resp.data.refresh)
         self.$axios.setHeader('Authorization', 'Bearer ' + resp.data.access)
         self.$auth.ctx.app.$axios.setHeader('Authorization', 'Bearer ' + resp.data.access)
-        self.$axios.get('user/').then((resp) => { self.$auth.setUser(resp.data); self.$router.push('/') })
+        self.$axios.get('user/').then((resp) => { self.$auth.setUser(resp.data) })
       } catch (error) {
         if (error.response) {
           self.usernameErrors = []
