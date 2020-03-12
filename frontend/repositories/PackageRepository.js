@@ -1,24 +1,22 @@
-import client from '~/repositories/clients/AxiosClient'
-
-export default {
+export default $axios => resource => ({
   // Возвращает список пакетов с документами конкретного контрагента
   get (contragentId) {
-    return client.get(`/api/contragents/${contragentId}/packages/`)
+    return $axios.$get(`${resource}/${contragentId}/packages/`)
   },
   // Содержимое пакета
   getPackage (contragentId, packageId) {
-    return client.get(`/api/contragents/${contragentId}/packages/${packageId}/`)
+    return $axios.$get(`${resource}/${contragentId}/packages/${packageId}/`)
   },
   // Генерация пакета (создание нового)
   create (contragentId, payload) {
-    return client.post(`/api/contragents/${contragentId}/packages/`, payload)
+    return $axios.$post(`${resource}/${contragentId}/packages/`, payload)
   },
   // Перегенирация
   update (contragentId, packageId) {
-    return client.put(`/api/contragents/${contragentId}/packages/${packageId}/`)
+    return $axios.$put(`${resource}/${contragentId}/packages/${packageId}/`)
   },
   // Статус пакета переводится в закрытый
   delete (contragentId, packageId) {
-    return client.delete(`/api/contragents/${contragentId}/packages/${packageId}/`)
+    return $axios.$delete(`${resource}/${contragentId}/packages/${packageId}/`)
   }
-}
+})

@@ -1,21 +1,17 @@
-import client from './clients/AxiosClient'
-
-const resource = '/api/contragents'
-
-export default {
+export default $axios => resource => ({
   get () {
-    return client.get(`${resource}/`)
+    return $axios.$get(`${resource}/`)
   },
   getContragent (id) {
-    return client.get(`${resource}/${id}/`)
+    return $axios.$get(`${resource}/${id}/`)
   },
   create (payload) {
-    return client.post(`${resource}/`, payload)
+    return $axios.$post(`${resource}/`, payload)
   },
   update (payload, id) {
-    return client.put(`${resource}/${id}/`, payload)
+    return $axios.$put(`${resource}/${id}/`, payload)
   },
   delete (id) {
-    return client.delete(`${resource}/${id}/`)
+    return $axios.$delete(`${resource}/${id}/`)
   }
-}
+})

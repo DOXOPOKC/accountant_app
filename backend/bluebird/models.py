@@ -5,7 +5,7 @@ import os
 from django.contrib.contenttypes.fields import (GenericRelation,
                                                 GenericForeignKey)
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.auth.models import User
+# from django.contrib.auth.models import User
 from django.conf import settings
 from django.db import models
 
@@ -98,8 +98,8 @@ class Contragent(models.Model):
     signed_user = models.ForeignKey('SignUser', blank=True, null=True,
                                     on_delete=models.CASCADE,
                                     related_name='signed')
-    current_user = models.ForeignKey(User, blank=True, null=True,
-                                     on_delete=models.CASCADE,
+    current_user = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True,
+                                     null=True, on_delete=models.CASCADE,
                                      related_name='current')
     platform = models.IntegerField('№ площадки',
                                    blank=True, null=True)
