@@ -76,7 +76,7 @@ export default {
         self.$auth.setRefreshToken('local', resp.data.refresh)
         self.$axios.setHeader('Authorization', 'Bearer ' + resp.data.access)
         self.$auth.ctx.app.$axios.setHeader('Authorization', 'Bearer ' + resp.data.access)
-        self.$axios.get('user/').then((resp) => { self.$auth.setUser(resp.data) })
+        self.$axios.get('user/').then((resp) => { self.$auth.setUser(resp.data); self.$router.push('/') })
       } catch (error) {
         if (error.response) {
           self.usernameErrors = []

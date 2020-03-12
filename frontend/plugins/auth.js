@@ -6,7 +6,7 @@ async function refreshTokenF ($auth, $axios, token, refreshToken, store, redirec
     try {
       const response = await $axios.post('user/login/refresh/', { refresh: refreshToken })
       token = 'Bearer ' + response.data.access
-      refreshToken = response.data.refresh || refreshToken
+      refreshToken = response.data.refresh
       $auth.setToken(strategy, token)
       $axios.setToken(token)
       $auth.setRefreshToken(strategy, refreshToken)
@@ -23,6 +23,7 @@ export default async function ({ app, store, redirect }) {
   const { $axios, $auth } = app
   let token
   let refreshToken
+
   $axios.onError(async (err) => {
     if (!err.config.retry && err.response.status === 401 && !err.config.url.endsWith('/token') && !err.config.url.endsWith('/refresh')) {
       err.config.retry = true
@@ -31,7 +32,10 @@ export default async function ({ app, store, redirect }) {
       if (refreshToken) {
         await refreshTokenF($auth, $axios, token, refreshToken, store, redirect)
         return $axios(err.config)
-      } else { $auth.logout(); redirect('/login') }
+      } else {
+        $auth.logout()
+        redirect('/login')
+      }
     }
     return Promise.reject(err)
   })
@@ -57,6 +61,7 @@ export default async function ({ app, store, redirect }) {
     await refreshTokenF($auth, $axios, token, refreshToken, store, redirect)
   }, refreshInterval)
 }
+
 function decodeToken (str) {
   str = str.split('.')[1]
   str = str.replace('/-/g', '+')
