@@ -1,9 +1,5 @@
-import client from './clients/AxiosClient'
-
-const resource = '/api/sign_users'
-
-export default {
+export default $axios => resource => ({
   get () {
-    return client.get(`${resource}/`)
+    return $axios.$get(`${resource}/`)
   }
-}
+})

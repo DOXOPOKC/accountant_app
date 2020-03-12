@@ -1,9 +1,5 @@
-import client from '~/repositories/clients/AxiosClient'
-
-const resource = '/api/tasks'
-
-export default {
+export default $axios => resource => ({
   get (taskId) {
-    return client.get(`${resource}/${taskId}/`)
+    return $axios.$get(`${resource}/${taskId}/`)
   }
-}
+})

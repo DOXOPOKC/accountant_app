@@ -136,6 +136,7 @@ def generate_documents(data: List, package: DocumentsPackage,
     generate_contract(package)
     generate_notes(total, package)
     generate_act_count(data, package, total, recreate)
+    generate_price_count_annual(data, package, total, recreate)
     for d in data:
 
         generate_act(d, package, recreate)
@@ -325,6 +326,26 @@ def generate_act_count(data: dict, package: DocumentsPackage, total: float,
     generate_document(results, tmp_path)
     if os.path.isfile(tmp_path):
         package.act_count = str_remove_app(tmp_path)
+        package.save()
+
+
+def generate_price_count_annual(data: dict, package: DocumentsPackage,
+                                total: float, recreate: bool = False):
+    tmp_path = os.path.join(package.get_save_path(), 'Расчет стоимости.pdf')
+    num_mes = len(data)
+    summ_V = round_hafz(sum([float(d['V_as_precise']) for d in data]), 5)
+    summ_tax = round_hafz(sum([float(d['tax_price_precise']) for d in data]),
+                          2)
+    summ_v_o_tax = round_hafz(sum([float(d['summ_precise']) for d in data]), 2)
+    context = {'data': data, 'consumer': package.contragent, 'total': total,
+               'num_mes': num_mes, 'summ_V': summ_V, 'summ_tax': summ_tax,
+               'summ_v_o_tax': summ_v_o_tax}
+    text = render_to_string('price_count_annual.html', context=context)
+    if recreate and os.path.exists(tmp_path):
+        os.remove(tmp_path)
+    generate_document(text, tmp_path)
+    if os.path.isfile(tmp_path):
+        package.price_count = str_remove_app(tmp_path)
         package.save()
 
 
