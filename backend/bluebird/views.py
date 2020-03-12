@@ -48,7 +48,7 @@ class ContragentsView(APIView):
                 if data_element['klass'] == 1:
                     contract_number = ContractNumberClass.create(new=True)
                     data_element['number_contract'] = contract_number.pk
-                    data_element['current_user'] = request.user
+                    data_element['current_user'] = request.user.id
                     serializer = ContragentFullSerializer(data=data_element)
                     if serializer.is_valid(True):
                         serializer.save()
