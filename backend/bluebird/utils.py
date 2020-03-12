@@ -4,6 +4,7 @@ import uuid
 from typing import List
 import aiohttp
 import datetime
+import shutil
 
 import jinja2
 import openpyxl
@@ -19,13 +20,10 @@ from bluebird.dadata import (Result_response_from_suggestion,
                              suggestions_response_from_dict)
 from bluebird.models import (
     KLASS_TYPES,
-    ActFile,
-    ActUniqueNumber,
     Contragent,
-    CountFactFile,
-    CountFactUniqueNumber,
-    CountFile,
-    CountUniqueNumber,
+    PackFile,
+    SyncUniqueNumber,
+    PackFilesTemplate,
     DocumentsPackage,
     TemplateModel,
     DocumentTypeModel,
@@ -144,140 +142,153 @@ def generate_documents(data: List, package: DocumentsPackage,
 
     generate_single_files(data, package, total, recreate)
 
-    for d in data:
+    generate_pack_doc(data, package, recreate)
 
-        generate_act(d, package, recreate)
-        generate_count(d, package, recreate)
-
-        generate_count_fact(d, package, recreate)
     package.contragent.debt = total
     package.contragent.save()
 
 
-def generate_act(data: dict, package: DocumentsPackage,
-                 recreate: bool = False):
-    """ Функция генерации Акта """
-    template = get_template('Акт', package)
+def generate_pack_doc(data_list, package: DocumentsPackage,
+                      recreate: bool = False):
+    contragent = package.contragent
+
+    # Находим запись шаблона со списком подпакетов.
+    pack_template = PackFilesTemplate.objects.get(
+        contagent_type=contragent.klass)
+
+    # Находим экземпляры класса входящие в пакет.
+    docs = PackFile.objects.filter(object_id=package.id)
+
+    # Получаем список всех подпакетов.
+    # И создаем словарь с экземплярами классов.
+    tmp_template_doc_types_list = pack_template.documents.all()
+    tmp_templ_dict = dict()
+    for tmpl in tmp_template_doc_types_list:
+        tmp_templ_dict[str(tmpl)] = list(docs.filter(file_type=tmpl))
+
+    # Удаляем папки с файлами.
+    delete_folders(package)
+
+    if len(docs):  # Смотрим есть ли уже экземпляры класса.
+        if recreate:  # Перегенерируем пакет?
+            # Пакет перегенерируется. Экземпляры есть.
+
+            # Находим экземпляры класса не входящие в перечень шаблонов.
+            removed_docs = docs.exclude(
+                file_type__in=tmp_template_doc_types_list)
+            # Удаляем найденные записи.
+            delete_models(removed_docs)
+            for data in data_list:
+                data['consumer'] = contragent
+                curr_date = data['curr_date']
+                for doc_type in tmp_template_doc_types_list:
+                    # Берем конкретную запись на дату и тип.
+                    doc_list = docs.filter(creation_date=curr_date,
+                                           file_type=doc_type)
+
+                    # Если такая запись найдена продолжаем работать с ней.
+                    if len(doc_list):
+                        doc = doc_list[0]
+                        template = get_template(doc_type, package)
+                        if not template:
+                            return None
+                        # Если запись в словаре, то:
+                        if doc in tmp_templ_dict[str(doc_type)]:
+
+                            # Формируем путь из экземпляра.
+                            file_path = str_add_app(doc.file_path)
+
+                            # Инициализируем подпапки.
+                            doc.get_files_path(package)
+
+                            # Удаляем экземпляр из массива в словаре.
+                            tmp_templ_dict[str(doc_type)].remove(doc)
+
+                            # Создаем фаил.
+                            create_files(data, template, file_path)
+                            continue
+                    # Создаем запись по переданным данным.
+                    # Либо такого файла не найдено, что значит мы работаем с
+                    # новой датой, либо экземпляры были удалены.
+                    create_models(data, package, doc_type)
+
+            # Если после удаления найденых записей, еще остаются записи в
+            # словаре, значит из шаблона были удалены подпакеты. И именно их
+            # теперь необходимо удалить.
+            for v in tmp_templ_dict.values():
+                if len(v):
+                    for item in v:
+                        if item:
+                            item.delete()
+            return
+        else:
+            # Пакет создается с 0, но при этом есть экземпляры.
+            # Такое вряд ли возможно, но на всякий случай удалим эти
+            # экземпляры.
+            delete_models(docs)
+    # Здесь мы окажемся в 3х случаях:
+    # - если мы с 0 создаем пакет;
+    # - если создаем с 0 но при этом есть записи в базе с екземплярами класса
+    # PackFile;
+    #  - если пересоздаем, но екземпляров найдено не было.
+    for data in data_list:
+        data['consumer'] = contragent
+        for doc_type in tmp_template_doc_types_list:
+            create_models(data, package, doc_type)
+
+
+def create_models(data: dict, package: DocumentsPackage,
+                  file_type: DocumentTypeModel):
+    """ Функция создания экземпляра модели PackFile по шаблону.
+    На вход принимает:
+    data - словарь с данными на определенную дату.
+    package - пакет.
+    file_type - тип генерируемого документа.
+    """
+    template = get_template(file_type, package)
     if not template:
         return None
-    data['consumer'] = package.contragent
-    curr_date = data['curr_date']
-    if recreate:
-        # Если пересоздаем акты
-        acts = package.act_files.filter(creation_date=curr_date)
-        if len(acts):
-            # Если длинна результата не 0. Т.е. мы нашли акт на нужную дату.
-            act = acts[0]
-            unique_num = act.act_unique_number
-            file_path = str_add_app(act.file_path)
-            if os.path.exists(file_path):
-                os.remove(file_path)
-            ActFile.objects.filter(pk=act.pk).delete()
-            act.delete()
-        else:
-            # Если длинна результата 0. Т.е. актов нет. Например мы
-            # выставили новую дату, на которую нет актов.
-            unique_num = ActUniqueNumber.create()
-    else:
-        # Если мы создаем акт с нуля.
-        unique_num = ActUniqueNumber.create()
-    tmp_name = unique_num.number.replace('/', '-')
-    file_name = f'Акт №{tmp_name} от {curr_date}.pdf'
-    file_path = os.path.join(ActFile.get_files_path(package), file_name)
-    data['uniq_num_id'] = unique_num
-    text = render_to_string(template.template_path, context=data)
-    generate_document(text, file_path)
-    act = ActFile.objects.create(file_name=file_name,
-                                 file_path=str_remove_app(file_path),
-                                 content_object=package,
-                                 creation_date=curr_date,
-                                 act_unique_number=unique_num)
-    return act
-
-
-def generate_count(data: dict, package: DocumentsPackage,
-                   recreate: bool = False):
-    """ Функция генерации счета на оплату """
-    template = get_template('Счет', package)
-    if not template:
-        return None
-    data['consumer'] = package.contragent
-    curr_date = data['curr_date']
-    if recreate:
-        # Если пересоздаем счета
-        counts = package.count_files.filter(creation_date=curr_date)
-        if len(counts):
-            # Если длинна результата не 0. Т.е. мы нашли счет на нужную дату.
-            count = counts[0]
-            unique_num = count.count_unique_number
-            file_path = str_add_app(count.file_path)
-            if os.path.exists(file_path):
-                os.remove(file_path)
-            count.delete()
-        else:
-            unique_num = CountUniqueNumber.create()
-    else:
-        # Если мы создаем счет с нуля.
-        unique_num = CountUniqueNumber.create()
-    tmp_name = unique_num.number.replace('/', '-')
-    file_name = f'Счет №{tmp_name} от {curr_date}.pdf'
-    file_path = os.path.join(CountFile.get_files_path(package), file_name)
-    data['uniq_num_id'] = unique_num
-    text = render_to_string(template.template_path, context=data)
-    generate_document(text, file_path)
-    count = CountFile.objects.create(file_name=file_name,
-                                     file_path=str_remove_app(file_path),
-                                     content_object=package,
-                                     creation_date=curr_date,
-                                     count_unique_number=unique_num)
-    return count
-
-
-def generate_count_fact(data: dict, package: DocumentsPackage,
-                        recreate: bool = False):
-    """ Функция генерации счета фактуры """
-
-    template = get_template('Счет-фактура', package)
-    if not template:
-        return None
-    data['consumer'] = package.contragent
-    curr_date = data['curr_date']
-    if recreate:
-        # Если пересоздаем счета фактуры
-        counts_f = package.count_fact_files.filter(creation_date=curr_date)
-        if len(counts_f):
-            # Если длинна результата не 0. Т.е. мы нашли счет фактуру на
-            # нужную дату.
-            count_f = counts_f[0]
-            unique_num = count_f.count_fact_unique_number
-            file_path = str_add_app(count_f.file_path)
-            if os.path.exists(file_path):
-                os.remove(file_path)
-            count_f.delete()
-        else:
-            unique_num = CountFactUniqueNumber.create()
-    else:
-        # Если мы создаем счет фактуру с нуля.
-        unique_num = CountFactUniqueNumber.create()
-    tmp_name = unique_num.number.replace('/', '-')
-    file_name = f'Счет фактура №{tmp_name} от {curr_date}.pdf'
-    file_path = os.path.join(CountFactFile.get_files_path(package), file_name)
-    data['uniq_num_id'] = unique_num
-    text = render_to_string(template.template_path, context=data)
-    options = {'orientation': 'Landscape',
-               'page-size': 'A4',
-               'margin-top': '0.75in',
-               'margin-right': '0.75in',
-               'margin-bottom': '0.75in',
-               'margin-left': '0.75in'}
-    generate_document(text, file_path, options=options)
-    count_fact = CountFactFile.objects.create(
-        file_name=file_name,
-        file_path=str_remove_app(file_path),
+    unique_number = SyncUniqueNumber.objects.create()
+    file_obj = PackFile.objects.create(
         content_object=package,
-        creation_date=curr_date,
-        count_fact_unique_number=unique_num)
-    return count_fact
+        creation_date=data['curr_date'],
+        unique_number=unique_number,
+        file_type=file_type)
+    file_name = f'{file_type.doc_type.title()} \
+№{unique_number} от {data["curr_date"]}.pdf'.replace('/', '-')
+    file_path = os.path.join(file_obj.get_files_path(package), file_name)
+    create_files(data, template, file_path)
+    file_obj.file_name = file_name
+    file_obj.file_path = str_remove_app(file_path)
+    file_obj.save(force_update=True)
+
+
+def delete_folders(package: DocumentsPackage):
+    """Функция удаления папок в указанном пакете.
+    Удаляет все папки кроме папки "прочие". """
+    dir_path = package.get_save_path()
+    with os.scandir(dir_path) as it:
+        for entry in it:
+            if entry.is_dir() and not entry.name.startswith('прочие'):
+                shutil.rmtree(entry.path, True)
+
+
+def delete_models(docs):
+    """ Функия удаления моделей. На вход получает список с экземплярами
+    объектов."""
+    for doc in docs:
+        doc.delete()
+
+
+def create_files(data: dict, template: TemplateModel, file_path: str):
+    """ Фунция создания файлов.
+    На вход получает:
+    data - словарь с данными.
+    template - экземпляр шаблона генерации.
+    file_path - путь сохранения итогового документа в виде строки.
+    """
+    text = render_to_string(template.template_path, context=data)
+    generate_document(text, file_path)
 
 
 def generate_document(text: str, name: str, **kwargs):
@@ -297,13 +308,6 @@ def generate_single_files(data: dict, package: DocumentsPackage, total: float,
         file_type__in=doc_types)
     for r in res:
         r.delete()
-    # # Генерируем контракт
-    # generate_contract(package)
-    # # Генерируем претензии
-    # generate_notes(total, package)
-
-    # # Генерируем акт сверки
-    # generate_act_count(data, package, total, recreate)
 
 
 def generate_docx_file(data: dict, package: DocumentsPackage, total: float,

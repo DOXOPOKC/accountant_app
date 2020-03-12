@@ -2,10 +2,10 @@ from django.contrib import admin
 from django.shortcuts import reverse
 from django.utils.html import mark_safe
 from .models import (KLASS_TYPES, Contragent, NormativeCategory, Normative,
-                     Contract, ContractNumberClass, DocumentsPackage, ActFile,
-                     OtherFile, CountFile, CountFactFile, SignUser, CityModel,
+                     Contract, ContractNumberClass, DocumentsPackage,
+                     OtherFile, PackFile, SignUser, CityModel,
                      TemplateModel, DocumentTypeModel, SingleFilesTemplate,
-                     SingleFile)
+                     SingleFile, PackFilesTemplate)
 
 from django.contrib.contenttypes.admin import GenericTabularInline
 
@@ -51,22 +51,8 @@ class SingleFileInLine(GenericTabularInline):
     ct_field = 'content_type'
 
 
-class ActInLine(GenericTabularInline):
-    model = ActFile
-    extra = 1
-    ct_fk_field = 'object_id'
-    ct_field = 'content_type'
-
-
-class CountInLine(GenericTabularInline):
-    model = CountFile
-    extra = 1
-    ct_fk_field = 'object_id'
-    ct_field = 'content_type'
-
-
-class CountFactInLine(GenericTabularInline):
-    model = CountFactFile
+class PackFileInLine(GenericTabularInline):
+    model = PackFile
     extra = 1
     ct_fk_field = 'object_id'
     ct_field = 'content_type'
@@ -84,14 +70,18 @@ class DocumentsPackageAdmin(admin.ModelAdmin):
             'creation_date')
     list_display = sets
     list_display_links = sets
-    inlines = [SingleFileInLine, ActInLine, CountInLine, CountFactInLine,
-               OtherFileInLine, ]
+    inlines = [SingleFileInLine, PackFileInLine, OtherFileInLine, ]
 
     def contragent_name(self, obj):
         return str(obj.contragent.excell_name)
 
 
 class SingleFilesTemplateAdmin(admin.ModelAdmin):
+    filter_horizontal = ('documents',)
+    list_display = ('__str__', )
+
+
+class PackFilesTemplateAdmin(admin.ModelAdmin):
     filter_horizontal = ('documents',)
     list_display = ('__str__', )
 
@@ -131,3 +121,5 @@ admin.site.register(CityModel, CityModelAdmin)
 admin.site.register(DocumentTypeModel, DocumentTypeModelAdmin)
 admin.site.register(TemplateModel, TemplateModelAdmin)
 admin.site.register(SingleFilesTemplate, SingleFilesTemplateAdmin)
+admin.site.register(PackFilesTemplate, PackFilesTemplateAdmin)
+admin.site.register(PackFile)

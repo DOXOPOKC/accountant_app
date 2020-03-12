@@ -61,6 +61,15 @@ def gent_case_filter(value: str):
     return ''
 
 
+def plur_form(value: str):
+    if bool(value) or value is not None:
+        morph = pymorphy2.MorphAnalyzer()
+        parsed_phrase = morph.parse(value)[0]
+        plur_form = parsed_phrase.inflect({'plur'})[0]
+        return plur_form
+    return None
+
+
 def pretty_date_filter(date_value):
     if bool(date_value) or date_value is not None:
         months = ('января', 'февраля', 'марта', 'апреля', 'мая', 'июня',

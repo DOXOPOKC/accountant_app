@@ -5,11 +5,13 @@ import os
 from django.contrib.contenttypes.fields import (GenericRelation,
                                                 GenericForeignKey)
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
 from django.conf import settings
 from django.db import models
 
 from .snippets import str_add_app
+from bluebird.templatetags.template_extra_filters import plur_form
 
 
 KLASS_TYPES = [
@@ -155,6 +157,9 @@ class AbstractFileModel(models.Model):
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey('content_type', 'object_id')
 
+    file_type = models.ForeignKey('DocumentTypeModel',
+                                  on_delete=models.CASCADE)
+
     def delete(self, using=None, keep_parents=False):
         if os.path.exists(str_add_app(self.file_path)):
             os.remove(str_add_app(self.file_path))
@@ -165,71 +170,31 @@ class AbstractFileModel(models.Model):
 
 
 class SingleFile(AbstractFileModel):
-    file_type = models.ForeignKey('DocumentTypeModel',
-                                  on_delete=models.CASCADE)
 
     def __str__(self):
         return str(self.file_type)
 
 
-class ActFile(AbstractFileModel):
-    act_unique_number = models.ForeignKey('ActUniqueNumber',
-                                          on_delete=models.CASCADE,
-                                          null=True, blank=True)
+class PackFile(AbstractFileModel):
+    unique_number = models.ForeignKey('SyncUniqueNumber',
+                                      on_delete=models.CASCADE,
+                                      null=True, blank=True)
 
     class Meta:
         abstract = False
 
-    @classmethod
-    def initialize_folder(cls, path: str):
-        if not os.path.isdir(f'{path}/акты/'):
-            os.makedirs(f'{path}/акты/')
+    def initialize_folder(self, path: str):
+        if self.file_type:
+            tmp_str_path = plur_form(self.file_type.doc_type)
+            if not os.path.isdir(f'{path}/{tmp_str_path}/'):
+                os.makedirs(f'{path}/{tmp_str_path}/')
+        else:
+            raise AttributeError()
 
-    @classmethod
-    def get_files_path(cls, package: 'DocumentsPackage'):
+    def get_files_path(self, package: 'DocumentsPackage'):
         tmp_path = package.get_save_path()
-        cls.initialize_folder(tmp_path)
-        return os.path.join(tmp_path, 'акты/')
-
-
-class CountFile(AbstractFileModel):
-    count_unique_number = models.ForeignKey('CountUniqueNumber',
-                                            on_delete=models.CASCADE,
-                                            null=True, blank=True)
-
-    class Meta:
-        abstract = False
-
-    @classmethod
-    def initialize_folder(cls, path: str):
-        if not os.path.isdir(f'{path}/счета/'):
-            os.makedirs(f'{path}/счета/')
-
-    @classmethod
-    def get_files_path(cls, package: 'DocumentsPackage'):
-        tmp_path = package.get_save_path()
-        cls.initialize_folder(tmp_path)
-        return os.path.join(tmp_path, 'счета/')
-
-
-class CountFactFile(AbstractFileModel):
-    count_fact_unique_number = models.ForeignKey('CountFactUniqueNumber',
-                                                 on_delete=models.CASCADE,
-                                                 null=True, blank=True)
-
-    class Meta:
-        abstract = False
-
-    @classmethod
-    def initialize_folder(cls, path: str):
-        if not os.path.isdir(f'{path}/счета_фактуры/'):
-            os.makedirs(f'{path}/счета_фактуры/')
-
-    @classmethod
-    def get_files_path(cls, package: 'DocumentsPackage'):
-        tmp_path = package.get_save_path()
-        cls.initialize_folder(tmp_path)
-        return os.path.join(tmp_path, 'счета_фактуры/')
+        self.initialize_folder(tmp_path)
+        return os.path.join(tmp_path, f'{plur_form(self.file_type.doc_type)}/')
 
 
 def other_files_directory_path(instance, filename):
@@ -259,21 +224,11 @@ class DocumentsPackage(models.Model):
                                  editable=False)
     is_active = models.BooleanField('Активный пакет', default=True)
     creation_date = models.DateField('Дата создания пакета', auto_now_add=True)
-    # # Единичные документы
-    # contract = models.CharField('Договор', max_length=255,
-    #                             null=True, blank=True)
-    # court_note = models.CharField('Претензия', max_length=255,
-    #                               null=True, blank=True)
-    # act_count = models.CharField('Акт сверки', max_length=255,
-    #                              null=True, blank=True)
-    # Пакеты документов
 
-    single_files = GenericRelation(SingleFile)#,
-                                   #related_query_name='single_files')
+    single_files = GenericRelation(SingleFile)
 
-    act_files = GenericRelation(ActFile)
-    count_files = GenericRelation(CountFile)
-    count_fact_files = GenericRelation(CountFactFile)
+    pack_files = GenericRelation(PackFile)
+
     other_files = GenericRelation(OtherFile)
 
     def __str__(self):
@@ -298,7 +253,23 @@ class DocumentsPackage(models.Model):
 class SingleFilesTemplate(models.Model):
     contagent_type = models.IntegerField(choices=KLASS_TYPES, default=0)
     documents = models.ManyToManyField('DocumentTypeModel',
-                                       related_name='document_types')
+                                       related_name='document_type')
+
+    def clean(self):
+        for doc in self.documents:
+            if doc.is_pack:
+                raise ValidationError('There is pack documents type included.\
+Remove them')
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
+
+
+class PackFilesTemplate(models.Model):
+    contagent_type = models.IntegerField(choices=KLASS_TYPES, default=0)
+    documents = models.ManyToManyField('DocumentTypeModel',
+                                       related_name='document_type_pack')
 
 
 class NormativeCategory(models.Model):
@@ -391,58 +362,10 @@ class ContractNumberClass(models.Model):
         return self.contract_number
 
 
-class ActUniqueNumber(models.Model):
-    number = models.CharField('Номер', max_length=255, null=True, blank=True)
+class SyncUniqueNumber(models.Model):
 
     def __str__(self):
-        return str(self.number)
-
-    def set_number(self, number: str):
-        self.number = number
-        self.save(force_update=True)
-        return self
-
-    @classmethod
-    def create(cls):
-        cls_obj = cls.objects.create(number='')
-        cls_obj.set_number(f'{cls_obj.pk:08}/01')
-        return cls_obj
-
-
-class CountUniqueNumber(models.Model):
-    number = models.CharField('Номер', max_length=255, null=True, blank=True)
-
-    def __str__(self):
-        return str(self.number)
-
-    def set_number(self, number: str):
-        self.number = number
-        self.save(force_update=True)
-        return self
-
-    @classmethod
-    def create(cls):
-        cls_obj = cls.objects.create(number='')
-        cls_obj.set_number(f'{cls_obj.pk:08}/01')
-        return cls_obj
-
-
-class CountFactUniqueNumber(models.Model):
-    number = models.CharField('Номер', max_length=255, null=True, blank=True)
-
-    def __str__(self):
-        return str(self.number)
-
-    def set_number(self, number: str):
-        self.number = number
-        self.save(force_update=True)
-        return self
-
-    @classmethod
-    def create(cls):
-        cls_obj = cls.objects.create(number='')
-        cls_obj.set_number(f'{cls_obj.pk:08}/01')
-        return cls_obj
+        return f'{self.pk:08}/01'
 
 
 class CityModel(models.Model):
@@ -469,6 +392,7 @@ class TemplateModel(models.Model):
 class DocumentTypeModel(models.Model):
     doc_type = models.CharField('Тип документа', max_length=255,
                                 null=True, blank=True)
+    is_pack = models.BooleanField('Пакет документов', default=False)
 
     def __str__(self):
         return self.doc_type
