@@ -17,10 +17,13 @@ from bluebird.utils import (
     calc_create_gen_async, create_unique_id, get_data, get_object,
     parse_from_file)
 
+from rest_framework.permissions import IsAuthenticated
+
 
 class ContragentsView(APIView):
     """ Вью для списка контрагентов """
     parser_class = [FileUploadParser, MultiPartParser]
+    permission_classes = (IsAuthenticated,)
 
     def get(self, request):
         conrtagents = Contragent.objects.all()
@@ -45,6 +48,7 @@ class ContragentsView(APIView):
                 if data_element['klass'] == 1:
                     contract_number = ContractNumberClass.create(new=True)
                     data_element['number_contract'] = contract_number.pk
+                    data_element['current_user'] = request.user
                     serializer = ContragentFullSerializer(data=data_element)
                     if serializer.is_valid(True):
                         serializer.save()
@@ -61,6 +65,8 @@ class ContragentsView(APIView):
 
 class ContragentView(APIView):
     """ Вью для одного конкретного контрагента """
+    permission_classes = (IsAuthenticated,)
+
     def get(self, request, pk):
         obj = get_object(pk, Contragent)
         serializer = ContragentFullSerializer(obj)
@@ -77,6 +83,8 @@ class ContragentView(APIView):
 
 class PackagesView(APIView):
     """ Вью списка пакетов документов """
+    permission_classes = (IsAuthenticated,)
+
     def get(self, request, pk):
         packages = DocumentsPackage.objects.filter(contragent__pk=pk)
         serializer = PackageShortSerializer(packages, many=True)
@@ -104,6 +112,8 @@ class PackagesView(APIView):
 
 class PackageView(APIView):
     """ Вью конкретного пакета """
+    permission_classes = (IsAuthenticated,)
+
     def get(self, request, pk, package_id):
         package = get_object(package_id, DocumentsPackage)
         serializer = PackageFullSerializer(package)
@@ -159,6 +169,8 @@ class NormsView(APIView):
 
 class OtherFilesView(APIView):
     """ Вью списка прочих документов """
+    permission_classes = (IsAuthenticated,)
+
     def get(self, request, package_id):
         results = OtherFile.objects.filter(content_object__id=package_id)
         serializer = OtherFileSerializer(results, many=True)
@@ -174,6 +186,8 @@ class OtherFilesView(APIView):
 
 class OtherFileView(APIView):
     """ Вью конкретного документа из прочих """
+    permission_classes = (IsAuthenticated,)
+
     def get(self, request, file_id):
         result = get_object(file_id, OtherFile)
         serializer = OtherFileSerializer(result)

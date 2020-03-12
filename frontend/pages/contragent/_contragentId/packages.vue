@@ -21,7 +21,7 @@
             item-key="id"
             class="elevation-0"
             sort-by="id"
-            :sort-desc="true"
+            sort-desc
             disable-pagination
             disable-filtering
             calculate-widths

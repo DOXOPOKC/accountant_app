@@ -22,7 +22,7 @@
             :items="contragents"
             item-key="id"
             class="elevation-0"
-            disable-sort
+            sort-by="id"
             disable-pagination
             disable-filtering
             calculate-widths
@@ -41,6 +41,7 @@
             template(v-slot:body="{ items }")
               tbody
                 nuxt-link(tag="tr" :to="'contragent/' + item.id + '/'" v-for="item in items" :key="item.name")
+                  td {{ item.id }}
                   td {{ item.excell_name }}
                   td {{ item.physical_address }}
                   td {{ item.klass }}
@@ -80,18 +81,9 @@
 import { mapState, mapActions } from 'vuex'
 import { types } from '~/store/contragents'
 
-// const classTypes = [
-//     { 0: '' },
-//     { 1: 'Юридическое лицо без договора' },
-//     { 2: 'Юридическое лицо с договором' },
-//     { 3: 'ИЖС без договора' },
-//     { 4: 'ИЖС с договором' },
-//     { 5: 'Физическое лицо' }
-// ]
-
 export default {
-  async asyncData ({ $axios, store, params }) {
-    await store.dispatch(`contragents/${types.FETCH_CONTRAGENTS}`)
+  async asyncData ({ $axios, store, params, app }) {
+    await store.dispatch(`contragents/${types.FETCH_CONTRAGENTS}`, app)
   },
   data: () => ({
     uploaded: false,
@@ -99,6 +91,7 @@ export default {
     uploadUrl: 'http://localhost/api/contragents/',
     contragentDialogState: false,
     headers: [
+      { text: '', value: 'id' },
       {
         text: 'Название',
         align: 'left',
@@ -106,15 +99,9 @@ export default {
         value: 'excell_name'
       },
       { text: 'Факт. адрес', value: 'physical_address' },
-      {
-        text: 'Класс',
-        value: 'klass'
-      },
+      { text: 'Класс', value: 'klass' },
       { text: 'ИНН', value: 'inn' },
       { text: 'Задолжность', value: 'debt' }
-      // { text: 'Действия' }
-      // Дата последнего платежа
-      // Ответственное лицо
     ]
   }),
   computed: {

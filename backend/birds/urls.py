@@ -21,6 +21,7 @@ from django.conf import settings
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('bluebird.urls')),
+    path('api/', include('yellowbird.urls')),
 ] 
 if settings.DEBUG:
     from .swagger_api import urlpatterns as swag

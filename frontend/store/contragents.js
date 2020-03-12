@@ -1,9 +1,3 @@
-import Repository from '~/repositories/RepositoryFactory'
-
-const contragentRepository = Repository.get('contragents')
-const normsRepository = Repository.get('norms')
-const signUsersRepository = Repository.get('signUsers')
-
 export const types = {
   SET_CONTRAGENTS: 'SET_CONTRAGENTS',
   FETCH_CONTRAGENTS: 'FETCH_CONTRAGENTS',
@@ -44,7 +38,7 @@ export const mutations = {
 
 export const actions = {
   async [types.FETCH_CONTRAGENT] ({ commit }, id) {
-    const { data } = await contragentRepository.getContragent(id)
+    const data = await this.$repositories.contragents.getContragent(id)
     commit(types.SET_CONTRAGENT, data)
   },
   async [types.CREATE_CONTRAGENT] ({ dispatch }, { vueFileAgent }) {
@@ -52,7 +46,7 @@ export const actions = {
       const formData = new FormData()
       formData.append('file', vueFileAgent.filesData[0].file)
       formData.append('filename', vueFileAgent.filesData[0].file.name)
-      await contragentRepository.create(formData)
+      await this.$repositories.contragents.create(formData)
       dispatch(types.FETCH_CONTRAGENTS)
       this.$toast.success('Контрагент успешно добавлен')
     } catch (error) {
@@ -60,12 +54,12 @@ export const actions = {
     }
   },
   async [types.FETCH_CONTRAGENTS] ({ commit }) {
-    const { data } = await contragentRepository.get()
+    const data = await this.$repositories.contragents.get()
     commit(types.SET_CONTRAGENTS, data)
   },
   async [types.UPDATE_CONTRAGENT] ({ state, commit }) {
     try {
-      const { data } = await contragentRepository.update(state.detail, state.detail.id)
+      const data = await this.$repositories.contragents.update(state.detail, state.detail.id)
       commit(types.SET_CONTRAGENT, data)
       this.$toast.success('Контрагент сохранен')
     } catch (error) {
@@ -73,11 +67,11 @@ export const actions = {
     }
   },
   async [types.FETCH_NORM_LIST] ({ commit }) {
-    const { data } = await normsRepository.get()
+    const data = await this.$repositories.norms.get()
     commit(types.SET_NORM_LIST, data)
   },
   async [types.FETCH_SIGN_USERS_LIST] ({ commit }) {
-    const { data } = await signUsersRepository.get()
+    const data = await this.$repositories.signUsers.get()
     commit(types.SET_SIGN_USERS_LIST, data)
   }
 }

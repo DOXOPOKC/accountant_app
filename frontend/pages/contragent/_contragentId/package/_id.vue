@@ -19,18 +19,57 @@
           v-spacer
           v-btn(
             v-if="packageActiveStatus"
+            class="custom-transform-class text-none"
             color="error"
             @click="DEACTIVATE_PACKAGE({ contragentId: package.contragent, packageId: package.id })"
           )
             | Сделать неактивным
           v-btn(
             v-if="packageActiveStatus"
-            class="ml-2"
+            class="ml-2 custom-transform-class text-none"
             color="primary"
             @click="REGENERATE_PACKAGE({ contragentId: package.contragent, packageId: package.id })"
           )
             | Перегенерировать
+          v-btn(
+            v-if="packageActiveStatus"
+            outlined
+            class="ml-2 custom-transform-class text-none"
+            color="primary"
+            @click="packageDialogState = true"
+            disabled
+          )
+            | Добавить файл
         v-card-text
+          v-dialog(
+            v-model="packageDialogState"
+            persistent
+            max-width="600px"
+          )
+            v-card(outlined)
+              v-card-title
+                span(class="headline") Добавление файла
+              v-card-text
+                v-container(px-0 pb-0)
+                  v-row(no-gutters)
+                    v-col(cols="12")
+                      VueFileAgent(
+                        ref="vueFileAgent"
+                        v-model="filesDataForUpload"
+                        :theme="'list'"
+                        :maxFiles="1"
+                        :multiple="true"
+                        :deletable="true"
+                        :compact="true"
+                        :helpText="'Загрузите свой файл'"
+                        :errorText="{ type: 'Некоректный тип файла. Доступно только xlsx', size: 'Размер файла выше 2MB' }"
+                        @delete="fileDeleted($event)"
+                      )
+                      small *Файл должен быть с расширением .xlsx и размером меньше двух мегабайт
+              v-card-actions
+                v-spacer
+                v-btn(color="blue darken-1" text @click="packageDialogState = false") Закрыть
+                v-btn(color="blue darken-1" text @click="upload") Отправить
           v-subheader(class="subtitle-1 black--text")
             a(:href="package.contract || ''" class="blue--text") Договор
           v-subheader(class="subtitle-1 black--text")
@@ -49,31 +88,65 @@
                     v-list-item-content
                       v-list-item-title(v-text="file.file_name" :href="file.file_path || ''")
                     v-list-item-icon
-                      v-btn(fab :to="file.file_path || ''" color="blue" dark class="elevation-0" small)
+                      v-btn(
+                        outlined
+                        fab
+                        :href="file.file_path || ''"
+                        color="blue"
+                        dark
+                        class="elevation-0"
+                        small
+                        target="_blank"
+                      )
                         v-icon mdi-download
             v-col(cols="4")
-              v-list(rounded pa-0 max-width="400px")
-                v-subheader Счета
-                v-list-item(
-                  v-for="(file, i) in package.count_files"
-                  :key="i"
-                )
-                  v-list-item-content
-                    v-list-item-title(v-text="file.file_name" :href="file.file_path || ''")
-                  v-list-item-icon
-                    v-btn(fab :to="file.file_path || ''" color="blue" dark class="elevation-0" small)
+              v-list(
+                rounded
+                pa-0
+                max-width="400px"
+              )
+                v-list-item-group(color="blue")
+                  v-subheader Счета
+                  v-list-item(
+                    v-for="(file, i) in package.count_files"
+                    :key="i"
+                  )
+                    v-list-item-content
+                      v-list-item-title(v-text="file.file_name" :href="file.file_path || ''")
+                    v-list-item-icon
+                      v-btn(
+                        outlined
+                        fab
+                        :href="file.file_path || ''"
+                        color="blue"
+                        dark
+                        class="elevation-0"
+                        small
+                        target="_blank"
+                      )
                         v-icon mdi-download
             v-col(cols="4")
-              v-list(rounded pa-0 max-width="400px")
-                v-subheader Счета фактур
-                v-list-item(
-                  v-for="(file, i) in package.count_fact_files"
-                  :key="i"
-                )
-                  v-list-item-content
-                    v-list-item-title(v-text="file.file_name" :href="file.file_path || ''")
-                  v-list-item-icon
-                    v-btn(fab :to="file.file_path || ''" color="blue" dark class="elevation-0" small)
+              v-list(rounded pa-0 max-width="600px")
+                v-list-item-group(color="blue")
+                  v-subheader Счета фактур
+                  v-list-item(
+                    v-for="(file, i) in package.count_fact_files"
+                    :key="i"
+                  )
+                    v-list-item-content
+                      v-list-item-title(v-text="file.file_name" :href="file.file_path || ''")
+                    v-list-item-icon
+                      v-btn(
+                        @click.
+                        outlined
+                        fab
+                        :href="file.file_path || ''"
+                        color="blue"
+                        dark
+                        class="elevation-0"
+                        small
+                        target="_blank"
+                      )
                         v-icon mdi-download
 </template>
 
@@ -90,7 +163,10 @@ export default {
   async asyncData ({ $axios, store, params }) {
     await store.dispatch(`packages/${types.FETCH_PACKAGE}`, { contragentId: params.contragentId, packageId: params.id })
   },
-  data: () => ({}),
+  data: () => ({
+    packageDialogState: false,
+    filesDataForUpload: null
+  }),
   computed: {
     ...mapState({
       package: state => state.packages.detail,
@@ -107,7 +183,20 @@ export default {
     ...mapActions({
       REGENERATE_PACKAGE: 'packages/REGENERATE_PACKAGE',
       DEACTIVATE_PACKAGE: 'packages/DEACTIVATE_PACKAGE'
-    })
+    }),
+    upload () {
+      this.$store.dispatch('files/CREATE_FILE', {
+        vueFileAgent: this.$refs.vueFileAgent,
+        contragentId: this.$route.params.contragentId,
+        packageId: this.$route.params.id,
+        filesDataForUpload: this.filesDataForUpload
+      })
+      this.contragentDialogState = false
+      this.filesDataForUpload = null
+    },
+    fileDeleted (fileData) {
+      this.filesDataForUpload = null
+    }
   }
 }
 </script>

@@ -57,6 +57,7 @@ pymorphy2-dicts-ru = "*"
 lxml = "*"
 pypandoc = "*"
 aiohttp = "*"
+djangorestframework-simplejwt = "*"
 
 [requires]
 python_version = "3.8.1"

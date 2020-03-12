@@ -33,7 +33,8 @@ export default {
     '~/plugins/vee-validate',
     // '~/plugins/i18n',
     '~/plugins/filters.js',
-    '~/plugins/vue-file-agent'
+    '~/plugins/vue-file-agent',
+    '~/plugins/repository'
   ],
   /*
   ** Nuxt.js dev-modules
@@ -49,6 +50,7 @@ export default {
   modules: [
     // Doc: https://axios.nuxtjs.org/usage
     '@nuxtjs/axios',
+    '@nuxtjs/auth',
     '@nuxtjs/toast',
     '@nuxtjs/dotenv'
   ],
@@ -57,6 +59,30 @@ export default {
   ** See https://axios.nuxtjs.org/options
   */
   axios: {
+    baseURL: `${process.env.NUXT_ENV_PROTOCOL}://${process.env.NUXT_ENV_DOMAIN}/api`,
+    credentials: true,
+  },
+  router: {
+    middleware: ['loggedIn']
+  },
+  auth: {
+    localStorage: false,
+    cookie: {
+      options: {
+        expires: 7
+      }
+    },
+    strategies: {
+      local: {
+        endpoints: {
+          login: { url: 'user/login/', method: 'post', propertyName: 'access' },
+          logout: false,
+          user: { url: 'user/', method: 'get', propertyName: false }
+        },
+        tokenRequired: true
+      }
+    },
+    plugins: [{ src: '~/plugins/auth.js', mode: 'client' }]
   },
   /*
   ** Toats module
@@ -65,7 +91,8 @@ export default {
   toast: {
     position: 'bottom-right',
     duration: 3000,
-    register: [ // Register custom toasts
+    register: [
+      // Register custom toasts
       {
         name: 'my-error',
         message: 'Oops...Something went wrong',
