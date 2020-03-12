@@ -11,6 +11,11 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.AddField(
+            model_name='documentspackage',
+            name='price_count',
+            field=models.CharField(blank=True, max_length=255, null=True, verbose_name='Расчет стоимости'),
+        ),
         migrations.AlterField(
             model_name='contragent',
             name='current_date',
@@ -25,5 +30,10 @@ class Migration(migrations.Migration):
             model_name='signuser',
             name='tel_number',
             field=models.CharField(default='', max_length=255, verbose_name='Телефон'),
+        ),
+        migrations.AddField(
+            model_name='signuser',
+            name='city',
+            field=models.CharField(default='Кемерово', max_length=255, verbose_name='Город/населенный пункт'),
         ),
     ]
