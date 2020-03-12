@@ -3,12 +3,15 @@ import os
 import uuid
 from typing import List
 import aiohttp
+import datetime
+import shutil
 
 import jinja2
 import openpyxl
 import pdfkit
 from django.http import Http404
 from django.template.loader import render_to_string
+from django.core.exceptions import ObjectDoesNotExist
 from django_q.tasks import async_task, Task
 from docxtpl import DocxTemplate
 
@@ -17,23 +20,26 @@ from bluebird.dadata import (Result_response_from_suggestion,
                              suggestions_response_from_dict)
 from bluebird.models import (
     KLASS_TYPES,
-    ActFile,
-    ActUniqueNumber,
     Contragent,
-    CountFactFile,
-    CountFactUniqueNumber,
-    CountFile,
-    CountUniqueNumber,
-    DocumentsPackage)
+    PackFile,
+    SyncUniqueNumber,
+    PackFilesTemplate,
+    DocumentsPackage,
+    TemplateModel,
+    DocumentTypeModel,
+    SingleFilesTemplate,
+    SingleFile)
 from bluebird.serializers import ContragentFullSerializer
 from bluebird.templatetags.template_extra_filters import (
     gent_case_filter,
     pretty_date_filter,
     datv_case_filter,
     cap_first,
-    literal, proper_date_filter)
+    literal, proper_date_filter, remove_zero_at_end)
 
 from blackbird.views import calculate, round_hafz
+
+from .snippets import str_add_app, str_remove_app
 
 
 MIN_INNN_LEN = 10
@@ -130,223 +136,159 @@ def get_data(id: int):
 def generate_documents(data: List, package: DocumentsPackage,
                        recreate: bool = False):
     """ Функция пакетной генерации документов."""
-    package.contragent.create_package_and_folder()
-    package.initialize_sub_folders()
-    total = round_hafz(count_total(data), 2)
-    generate_contract(package)
-    generate_notes(total, package)
-    generate_act_count(data, package, total, recreate)
-    generate_price_count_annual(data, package, total, recreate)
-    for d in data:
+    package.contragent.create_package_and_folder()  # Создаем папку контрагента
+    package.initialize_sub_folders()  # Создаем подпапки пакета
+    total = round_hafz(count_total(data), 2)  # Считаем Итого.
 
-        generate_act(d, package, recreate)
-        generate_count(d, package, recreate)
+    generate_single_files(data, package, total, recreate)
 
-        generate_count_fact(d, package, recreate)
+    generate_pack_doc(data, package, recreate)
+
     package.contragent.debt = total
     package.contragent.save()
 
 
-def generate_act(data: dict, package: DocumentsPackage,
-                 recreate: bool = False):
-    """ Функция генерации Акта """
-    data['consumer'] = package.contragent
-    curr_date = data['curr_date']
-    if recreate:
-        # Если пересоздаем акты
-        acts = package.act_files.filter(creation_date=curr_date)
-        if len(acts):
-            # Если длинна результата не 0. Т.е. мы нашли акт на нужную дату.
-            act = acts[0]
-            unique_num = act.act_unique_number
-            file_path = str_add_app(act.file_path)
-            if os.path.exists(file_path):
-                os.remove(file_path)
-            ActFile.objects.filter(pk=act.pk).delete()
-            act.delete()
+def generate_pack_doc(data_list, package: DocumentsPackage,
+                      recreate: bool = False):
+    contragent = package.contragent
+
+    # Находим запись шаблона со списком подпакетов.
+    pack_template = PackFilesTemplate.objects.get(
+        contagent_type=contragent.klass)
+
+    # Находим экземпляры класса входящие в пакет.
+    docs = PackFile.objects.filter(object_id=package.id)
+
+    # Получаем список всех подпакетов.
+    # И создаем словарь с экземплярами классов.
+    tmp_template_doc_types_list = pack_template.documents.all()
+    tmp_templ_dict = dict()
+    for tmpl in tmp_template_doc_types_list:
+        tmp_templ_dict[str(tmpl)] = list(docs.filter(file_type=tmpl))
+
+    # Удаляем папки с файлами.
+    delete_folders(package)
+
+    if len(docs):  # Смотрим есть ли уже экземпляры класса.
+        if recreate:  # Перегенерируем пакет?
+            # Пакет перегенерируется. Экземпляры есть.
+
+            # Находим экземпляры класса не входящие в перечень шаблонов.
+            removed_docs = docs.exclude(
+                file_type__in=tmp_template_doc_types_list)
+            # Удаляем найденные записи.
+            delete_models(removed_docs)
+            for data in data_list:
+                data['consumer'] = contragent
+                curr_date = data['curr_date']
+                for doc_type in tmp_template_doc_types_list:
+                    # Берем конкретную запись на дату и тип.
+                    doc_list = docs.filter(creation_date=curr_date,
+                                           file_type=doc_type)
+
+                    # Если такая запись найдена продолжаем работать с ней.
+                    if len(doc_list):
+                        doc = doc_list[0]
+                        template = get_template(doc_type, package)
+                        if not template:
+                            return None
+                        # Если запись в словаре, то:
+                        if doc in tmp_templ_dict[str(doc_type)]:
+
+                            # Формируем путь из экземпляра.
+                            file_path = str_add_app(doc.file_path)
+
+                            # Инициализируем подпапки.
+                            doc.get_files_path(package)
+
+                            # Удаляем экземпляр из массива в словаре.
+                            tmp_templ_dict[str(doc_type)].remove(doc)
+
+                            # Создаем фаил.
+                            create_files(data, template, file_path)
+                            continue
+                    # Создаем запись по переданным данным.
+                    # Либо такого файла не найдено, что значит мы работаем с
+                    # новой датой, либо экземпляры были удалены.
+                    create_models(data, package, doc_type)
+
+            # Если после удаления найденых записей, еще остаются записи в
+            # словаре, значит из шаблона были удалены подпакеты. И именно их
+            # теперь необходимо удалить.
+            for v in tmp_templ_dict.values():
+                if len(v):
+                    for item in v:
+                        if item:
+                            item.delete()
+            return
         else:
-            # Если длинна результата 0. Т.е. актов нет. Например мы
-            # выставили новую дату, на которую нет актов.
-            unique_num = ActUniqueNumber.create()
-    else:
-        # Если мы создаем акт с нуля.
-        unique_num = ActUniqueNumber.create()
-    tmp_name = unique_num.number.replace('/', '-')
-    file_name = f'Акт №{tmp_name} от {curr_date}.pdf'
-    file_path = os.path.join(ActFile.get_files_path(package), file_name)
-    data['uniq_num_id'] = unique_num
-    text = render_to_string('act.html', context=data)
-    generate_document(text, file_path)
-    act = ActFile.objects.create(file_name=file_name,
-                                 file_path=str_remove_app(file_path),
-                                 content_object=package,
-                                 creation_date=curr_date,
-                                 act_unique_number=unique_num)
-    return act
+            # Пакет создается с 0, но при этом есть экземпляры.
+            # Такое вряд ли возможно, но на всякий случай удалим эти
+            # экземпляры.
+            delete_models(docs)
+    # Здесь мы окажемся в 3х случаях:
+    # - если мы с 0 создаем пакет;
+    # - если создаем с 0 но при этом есть записи в базе с екземплярами класса
+    # PackFile;
+    #  - если пересоздаем, но екземпляров найдено не было.
+    for data in data_list:
+        data['consumer'] = contragent
+        for doc_type in tmp_template_doc_types_list:
+            create_models(data, package, doc_type)
 
 
-def generate_count(data: dict, package: DocumentsPackage,
-                   recreate: bool = False):
-    """ Функция генерации счета на оплату """
-    data['consumer'] = package.contragent
-    curr_date = data['curr_date']
-    if recreate:
-        # Если пересоздаем счета
-        counts = package.count_files.filter(creation_date=curr_date)
-        if len(counts):
-            # Если длинна результата не 0. Т.е. мы нашли счет на нужную дату.
-            count = counts[0]
-            unique_num = count.count_unique_number
-            file_path = str_add_app(count.file_path)
-            if os.path.exists(file_path):
-                os.remove(file_path)
-            count.delete()
-        else:
-            unique_num = CountUniqueNumber.create()
-    else:
-        # Если мы создаем счет с нуля.
-        unique_num = CountUniqueNumber.create()
-    tmp_name = unique_num.number.replace('/', '-')
-    file_name = f'Счет №{tmp_name} от {curr_date}.pdf'
-    file_path = os.path.join(CountFile.get_files_path(package), file_name)
-    data['uniq_num_id'] = unique_num
-    text = render_to_string('count.html', context=data)
-    generate_document(text, file_path)
-    count = CountFile.objects.create(file_name=file_name,
-                                     file_path=str_remove_app(file_path),
-                                     content_object=package,
-                                     creation_date=curr_date,
-                                     count_unique_number=unique_num)
-    return count
-
-
-def generate_count_fact(data: dict, package: DocumentsPackage,
-                        recreate: bool = False):
-    """ Функция генерации счета фактуры """
-    data['consumer'] = package.contragent
-    curr_date = data['curr_date']
-    if recreate:
-        # Если пересоздаем счета фактуры
-        counts_f = package.count_fact_files.filter(creation_date=curr_date)
-        if len(counts_f):
-            # Если длинна результата не 0. Т.е. мы нашли счет фактуру на
-            # нужную дату.
-            count_f = counts_f[0]
-            unique_num = count_f.count_fact_unique_number
-            file_path = str_add_app(count_f.file_path)
-            if os.path.exists(file_path):
-                os.remove(file_path)
-            count_f.delete()
-        else:
-            unique_num = CountFactUniqueNumber.create()
-    else:
-        # Если мы создаем счет фактуру с нуля.
-        unique_num = CountFactUniqueNumber.create()
-    tmp_name = unique_num.number.replace('/', '-')
-    file_name = f'Счет фактура №{tmp_name} от {curr_date}.pdf'
-    file_path = os.path.join(CountFactFile.get_files_path(package), file_name)
-    data['uniq_num_id'] = unique_num
-    text = render_to_string('count_fact.html', context=data)
-    options = {'orientation': 'Landscape',
-               'page-size': 'A4',
-               'margin-top': '0.75in',
-               'margin-right': '0.75in',
-               'margin-bottom': '0.75in',
-               'margin-left': '0.75in'}
-    generate_document(text, file_path, options=options)
-    count_fact = CountFactFile.objects.create(
-        file_name=file_name,
-        file_path=str_remove_app(file_path),
+def create_models(data: dict, package: DocumentsPackage,
+                  file_type: DocumentTypeModel):
+    """ Функция создания экземпляра модели PackFile по шаблону.
+    На вход принимает:
+    data - словарь с данными на определенную дату.
+    package - пакет.
+    file_type - тип генерируемого документа.
+    """
+    template = get_template(file_type, package)
+    if not template:
+        return None
+    unique_number = SyncUniqueNumber.objects.create()
+    file_obj = PackFile.objects.create(
         content_object=package,
-        creation_date=curr_date,
-        count_fact_unique_number=unique_num)
-    return count_fact
+        creation_date=data['curr_date'],
+        unique_number=unique_number,
+        file_type=file_type)
+    file_name = f'{file_type.doc_type.title()} \
+№{unique_number} от {data["curr_date"]}.pdf'.replace('/', '-')
+    file_path = os.path.join(file_obj.get_files_path(package), file_name)
+    create_files(data, template, file_path)
+    file_obj.file_name = file_name
+    file_obj.file_path = str_remove_app(file_path)
+    file_obj.save(force_update=True)
 
 
-def generate_contract(package: DocumentsPackage):
-    """ Функция генерации контракта """
-    doc = DocxTemplate('templates/docx/contracts/ul.docx')
-    jinja_env = jinja2.Environment()
-    jinja_env.filters['gent_case_filter'] = gent_case_filter
-    jinja_env.filters['pretty_date_filter'] = pretty_date_filter
-    data = {'consumer': package.contragent, }
-    doc.render(data, jinja_env)
-    tmp_name = str(package.contragent.number_contract).replace('/', '-')
-    tmp_path = os.path.join(
-        package.get_save_path(),
-        f'Договор №{tmp_name}.docx')
-    if os.path.exists(tmp_path):
-        os.remove(tmp_path)
-    doc.save(tmp_path)
-    if os.path.isfile(tmp_path):
-        package.contract = str_remove_app(tmp_path)
-        package.save()
+def delete_folders(package: DocumentsPackage):
+    """Функция удаления папок в указанном пакете.
+    Удаляет все папки кроме папки "прочие". """
+    dir_path = package.get_save_path()
+    with os.scandir(dir_path) as it:
+        for entry in it:
+            if entry.is_dir() and not entry.name.startswith('прочие'):
+                shutil.rmtree(entry.path, True)
 
 
-def generate_notes(total, package: DocumentsPackage):
-    """ Функция генерации претензии """
-    doc = DocxTemplate('templates/docx/notes/ul_note.docx')
-    jinja_env = jinja2.Environment()
-    jinja_env.filters['datv_case_filter'] = datv_case_filter
-    jinja_env.filters['pretty_date_filter'] = pretty_date_filter
-    jinja_env.filters['capfirst'] = cap_first
-    jinja_env.filters['literal'] = literal
-    jinja_env.filters['proper_date_filter'] = proper_date_filter
-    data = {'consumer': package.contragent, 'total': total}
-    doc.render(data, jinja_env)
-    tmp_path = os.path.join(
-        package.get_save_path(),
-        f'Претензия.docx')
-    if os.path.exists(tmp_path):
-        os.remove(tmp_path)
-    doc.save(tmp_path)
-    if os.path.isfile(tmp_path):
-        package.court_note = str_remove_app(tmp_path)
-        package.save()
+def delete_models(docs):
+    """ Функия удаления моделей. На вход получает список с экземплярами
+    объектов."""
+    for doc in docs:
+        doc.delete()
 
 
-def generate_act_count(data: dict, package: DocumentsPackage, total: float,
-                       recreate: bool = False):
-    """ Функция генерации акта сверки """
-    jinja_env = jinja2.Environment(
-        loader=jinja2.FileSystemLoader('./'),
-        autoescape=jinja2.select_autoescape(['html', 'xml'])
-    )
-    jinja_env.filters['datv_case_filter'] = datv_case_filter
-    jinja_env.filters['pretty_date_filter'] = pretty_date_filter
-    jinja_env.filters['capfirst'] = cap_first
-    jinja_env.filters['literal'] = literal
-    jinja_env.filters['proper_date_filter'] = proper_date_filter
-    template = jinja_env.get_template('templates/act_count.html')
-    results = template.render({'data': data, 'consumer': package.contragent,
-                               'total': total})
-    tmp_path = os.path.join(package.get_save_path(), 'Акт сверки.pdf')
-    if recreate and os.path.exists(tmp_path):
-        os.remove(tmp_path)
-    generate_document(results, tmp_path)
-    if os.path.isfile(tmp_path):
-        package.act_count = str_remove_app(tmp_path)
-        package.save()
-
-
-def generate_price_count_annual(data: dict, package: DocumentsPackage,
-                                total: float, recreate: bool = False):
-    tmp_path = os.path.join(package.get_save_path(), 'Расчет стоимости.pdf')
-    num_mes = len(data)
-    summ_V = round_hafz(sum([float(d['V_as_precise']) for d in data]), 5)
-    summ_tax = round_hafz(sum([float(d['tax_price_precise']) for d in data]),
-                          2)
-    summ_v_o_tax = round_hafz(sum([float(d['summ_precise']) for d in data]), 2)
-    context = {'data': data, 'consumer': package.contragent, 'total': total,
-               'num_mes': num_mes, 'summ_V': summ_V, 'summ_tax': summ_tax,
-               'summ_v_o_tax': summ_v_o_tax}
-    text = render_to_string('price_count_annual.html', context=context)
-    if recreate and os.path.exists(tmp_path):
-        os.remove(tmp_path)
-    generate_document(text, tmp_path)
-    if os.path.isfile(tmp_path):
-        package.price_count = str_remove_app(tmp_path)
-        package.save()
+def create_files(data: dict, template: TemplateModel, file_path: str):
+    """ Фунция создания файлов.
+    На вход получает:
+    data - словарь с данными.
+    template - экземпляр шаблона генерации.
+    file_path - путь сохранения итогового документа в виде строки.
+    """
+    text = render_to_string(template.template_path, context=data)
+    generate_document(text, file_path)
 
 
 def generate_document(text: str, name: str, **kwargs):
@@ -354,17 +296,59 @@ def generate_document(text: str, name: str, **kwargs):
     pdfkit.from_string(text, name, **kwargs)
 
 
+def generate_single_files(data: dict, package: DocumentsPackage, total: float,
+                          recreate: bool = False):
+    document_types = SingleFilesTemplate.objects.get(
+        contagent_type=package.contragent.klass)
+    doc_types = document_types.documents.all()
+    for document_type in doc_types:
+        generate_docx_file(data, package, total, document_type, recreate)
+
+    res = SingleFile.objects.filter(object_id=package.id).exclude(
+        file_type__in=doc_types)
+    for r in res:
+        r.delete()
+
+
+def generate_docx_file(data: dict, package: DocumentsPackage, total: float,
+                       document_type_obj: int, recreate: bool = False):
+    template = get_template(document_type_obj, package)
+    if not template:
+        return None
+    doc = DocxTemplate(template.template_path)
+    jinja_env = jinja2.Environment()
+    jinja_env.filters['datv_case_filter'] = datv_case_filter
+    jinja_env.filters['gent_case_filter'] = gent_case_filter
+    jinja_env.filters['pretty_date_filter'] = pretty_date_filter
+    jinja_env.filters['capfirst'] = cap_first
+    jinja_env.filters['literal'] = literal
+    jinja_env.filters['remove_zero_at_end'] = remove_zero_at_end
+    jinja_env.filters['proper_date_filter'] = proper_date_filter
+    context = {'data': data, 'consumer': package.contragent, 'total': total}
+    doc.render(context, jinja_env)
+    tmp_name = str(package.contragent.number_contract).replace('/', '-')
+    file_name = f'{str(document_type_obj)} ({tmp_name}).docx'
+    tmp_path = os.path.join(
+        package.get_save_path(),
+        file_name)
+
+    if recreate and os.path.isfile(tmp_path):
+        os.remove(tmp_path)
+    else:
+        SingleFile.objects.create(
+            file_name=file_name,
+            file_path=str_remove_app(tmp_path),
+            content_object=package,
+            creation_date=datetime.date.today(),
+            file_type=document_type_obj)
+
+    doc.save(tmp_path)
+    return None
+
+
 def create_unique_id():
     """ Функция генерации уникального uuid """
     return str(uuid.uuid4())
-
-
-def str_remove_app(string: str):
-    return string.replace('/app', '')
-
-
-def str_add_app(string: str):
-    return string.replace('/media/', '/app/media/')
 
 
 def count_total(data: List):
@@ -395,3 +379,19 @@ def gen_async(task):
 
 def del_after_exec(task):
     Task.delete_group(task.group)
+
+
+def get_template(doc_type, package: DocumentsPackage):
+    try:
+        if isinstance(doc_type, str):
+            doc_type = DocumentTypeModel.objects.get(doc_type=doc_type)
+        if isinstance(doc_type, DocumentTypeModel):
+            template = TemplateModel.objects.get(
+                city=package.contragent.signed_user.city,
+                contragent_type=package.contragent.klass,
+                document_type=doc_type.id
+                )
+            return template
+        raise ObjectDoesNotExist()
+    except ObjectDoesNotExist:
+        return None
