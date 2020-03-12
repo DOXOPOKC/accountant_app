@@ -171,12 +171,12 @@ class OtherFilesView(APIView):
     """ Вью списка прочих документов """
     permission_classes = (IsAuthenticated,)
 
-    def get(self, request, package_id):
+    def get(self, request, pk, package_id):
         results = OtherFile.objects.filter(content_object__id=package_id)
         serializer = OtherFileSerializer(results, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    def post(self, request, package_id, file_id):
+    def post(self, request, pk, package_id, file_id):
         serializer = OtherFileSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
