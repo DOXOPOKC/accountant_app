@@ -2,8 +2,10 @@ from django.contrib import admin
 from django.shortcuts import reverse
 from django.utils.html import mark_safe
 from .models import (KLASS_TYPES, Contragent, NormativeCategory, Normative,
-                     Contract, ContractNumberClass, DocumentsPackage, ActFile,
-                     OtherFile, CountFile, CountFactFile, SignUser)
+                     Contract, ContractNumberClass, DocumentsPackage,
+                     OtherFile, PackFile, SignUser, CityModel,
+                     TemplateModel, DocumentTypeModel, SingleFilesTemplate,
+                     SingleFile, PackFilesTemplate)
 
 from django.contrib.contenttypes.admin import GenericTabularInline
 
@@ -42,22 +44,15 @@ class NormativeAdmin(admin.ModelAdmin):
     list_display = ('__str__',)
 
 
-class ActInLine(GenericTabularInline):
-    model = ActFile
+class SingleFileInLine(GenericTabularInline):
+    model = SingleFile
     extra = 1
     ct_fk_field = 'object_id'
     ct_field = 'content_type'
 
 
-class CountInLine(GenericTabularInline):
-    model = CountFile
-    extra = 1
-    ct_fk_field = 'object_id'
-    ct_field = 'content_type'
-
-
-class CountFactInLine(GenericTabularInline):
-    model = CountFactFile
+class PackFileInLine(GenericTabularInline):
+    model = PackFile
     extra = 1
     ct_fk_field = 'object_id'
     ct_field = 'content_type'
@@ -75,14 +70,42 @@ class DocumentsPackageAdmin(admin.ModelAdmin):
             'creation_date')
     list_display = sets
     list_display_links = sets
-    inlines = [ActInLine, CountInLine, CountFactInLine, OtherFileInLine, ]
+    inlines = [SingleFileInLine, PackFileInLine, OtherFileInLine, ]
 
     def contragent_name(self, obj):
         return str(obj.contragent.excell_name)
 
 
+class SingleFilesTemplateAdmin(admin.ModelAdmin):
+    filter_horizontal = ('documents',)
+    list_display = ('__str__', )
+
+
+class PackFilesTemplateAdmin(admin.ModelAdmin):
+    filter_horizontal = ('documents',)
+    list_display = ('__str__', )
+
+
 class SignUserAdmin(admin.ModelAdmin):
     sets = ('pk', 'name', 'position', 'address')
+    list_display = sets
+    list_display_links = sets
+
+
+class CityModelAdmin(admin.ModelAdmin):
+    sets = ('pk', 'name')
+    list_display = sets
+    list_display_links = sets
+
+
+class DocumentTypeModelAdmin(admin.ModelAdmin):
+    sets = ('pk', 'doc_type')
+    list_display = sets
+    list_display_links = sets
+
+
+class TemplateModelAdmin(admin.ModelAdmin):
+    sets = ('pk', 'document_type', 'contragent_type', 'city')
     list_display = sets
     list_display_links = sets
 
@@ -94,3 +117,9 @@ admin.site.register(Contract)
 admin.site.register(ContractNumberClass)
 admin.site.register(DocumentsPackage, DocumentsPackageAdmin)
 admin.site.register(SignUser, SignUserAdmin)
+admin.site.register(CityModel, CityModelAdmin)
+admin.site.register(DocumentTypeModel, DocumentTypeModelAdmin)
+admin.site.register(TemplateModel, TemplateModelAdmin)
+admin.site.register(SingleFilesTemplate, SingleFilesTemplateAdmin)
+admin.site.register(PackFilesTemplate, PackFilesTemplateAdmin)
+admin.site.register(PackFile)

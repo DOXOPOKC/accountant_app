@@ -3,6 +3,7 @@ from django.template.defaultfilters import stringfilter
 from .num2t4ru import decimal2text
 import pymorphy2
 import decimal
+import math
 
 
 register = template.Library()
@@ -11,11 +12,23 @@ register = template.Library()
 @register.filter(name='literal')
 @stringfilter
 def literal(value):
-    if bool(value) or value is not None:
+    if (bool(value) or value is not None):
+        value = float(value)
+        if not math.ceil(value % 1):
+            value = int(value)
         return decimal2text(decimal.Decimal(value),
                             int_units=((u'рубль', u'рубля', u'рублей'), 'm'),
                             exp_units=((u'копейка', u'копейки', u'копеек'),
                                        'f'))
+    return ''
+
+
+def remove_zero_at_end(value):
+    if (bool(value) or value is not None):
+        value = float(value)
+        if not math.ceil(value % 1):
+            value = int(value)
+        return value
     return ''
 
 
@@ -48,6 +61,15 @@ def gent_case_filter(value: str):
     return ''
 
 
+def plur_form(value: str):
+    if bool(value) or value is not None:
+        morph = pymorphy2.MorphAnalyzer()
+        parsed_phrase = morph.parse(value)[0]
+        plur_form = parsed_phrase.inflect({'plur'})[0]
+        return plur_form
+    return None
+
+
 def pretty_date_filter(date_value):
     if bool(date_value) or date_value is not None:
         months = ('января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
@@ -74,7 +96,13 @@ def datv_case_filter(value: str):
 
 def cap_first(value: str):
     if bool(value) or value is not None:
-        return value.capitalize()
+        return value.lower().capitalize()
+    return ''
+
+
+def all_lower(value: str):
+    if bool(value) or value is not None:
+        return value.lower()
     return ''
 
 

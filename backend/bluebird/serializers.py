@@ -1,6 +1,7 @@
 from rest_framework import serializers
-from .models import (Contragent, DocumentsPackage, OtherFile, ActFile,
-                     CountFile, CountFactFile, NormativeCategory, SignUser)
+from .models import (Contragent, DocumentsPackage, OtherFile, PackFile,
+                     NormativeCategory, SignUser,
+                     DocumentTypeModel, SingleFile, PackFilesTemplate)
 
 from django_q.models import Task
 
@@ -33,22 +34,24 @@ class ContragentFullSerializer(serializers.ModelSerializer):
                         }
 
 
-class ActFileListSerializer(serializers.ModelSerializer):
+class DocumentTypeModelSerializer(serializers.ModelSerializer):
     class Meta:
-        model = ActFile
-        fields = '__all__'
+        model = DocumentTypeModel
+        fields = ['doc_type', ]
 
 
-class CountFileListSerializer(serializers.ModelSerializer):
+class SingleFileSerializer(serializers.ModelSerializer):
+    file_type = DocumentTypeModelSerializer()
+
     class Meta:
-        model = CountFile
-        fields = '__all__'
+        model = SingleFile
+        fields = ['file_name', 'file_path', 'file_type']
 
 
-class CountFactFileListSerializer(serializers.ModelSerializer):
+class PackFileListSerializer(serializers.ModelSerializer):
     class Meta:
-        model = CountFactFile
-        fields = '__all__'
+        model = PackFile
+        fields = ['id', 'file_name', 'file_path', 'creation_date']
 
 
 class OtherFileSerializer(serializers.ModelSerializer):
@@ -58,10 +61,22 @@ class OtherFileSerializer(serializers.ModelSerializer):
 
 
 class PackageFullSerializer(serializers.ModelSerializer):
-    act_files = ActFileListSerializer(many=True)
-    count_files = CountFileListSerializer(many=True)
-    count_fact_files = CountFactFileListSerializer(many=True)
-    files = OtherFileSerializer(many=True)
+    single_files = SingleFileSerializer(many=True)
+    pack_files = serializers.SerializerMethodField()
+    other_files = OtherFileSerializer(many=True)
+
+    def get_pack_files(self, obj):
+        contragent = obj.contragent
+        pack_template = PackFilesTemplate.objects.get(
+                                            contagent_type=contragent.klass)
+
+        docs = PackFile.objects.filter(object_id=obj.id)
+        tmp_templ_dict = dict()
+        tmp_template_doc_types_list = pack_template.documents.all()
+        for tmpl in tmp_template_doc_types_list:
+            tmp_templ_dict[str(tmpl)] = PackFileListSerializer(
+                list(docs.filter(file_type=tmpl)), many=True).data
+        return tmp_templ_dict
 
     class Meta:
         model = DocumentsPackage
