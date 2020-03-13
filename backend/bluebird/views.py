@@ -48,7 +48,7 @@ class ContragentsView(APIView):
                 if data_element['klass'] == 1:
                     contract_number = ContractNumberClass.create(new=True)
                     data_element['number_contract'] = contract_number.pk
-                    data_element['current_user'] = request.user
+                    data_element['current_user'] = request.user.id
                     serializer = ContragentFullSerializer(data=data_element)
                     if serializer.is_valid(True):
                         serializer.save()
@@ -171,12 +171,12 @@ class OtherFilesView(APIView):
     """ Вью списка прочих документов """
     permission_classes = (IsAuthenticated,)
 
-    def get(self, request, package_id):
+    def get(self, request, pk, package_id):
         results = OtherFile.objects.filter(content_object__id=package_id)
         serializer = OtherFileSerializer(results, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    def post(self, request, package_id, file_id):
+    def post(self, request, pk, package_id, file_id):
         serializer = OtherFileSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
