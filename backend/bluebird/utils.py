@@ -96,7 +96,7 @@ async def get_dadata_data(contragent_inn: int):
             URL,
             data=json.dumps(data),
             headers=headers,
-            timeout=aiohttp.ClientTimeout(total=5*60)
+            timeout=aiohttp.ClientTimeout(total=10*60)
         ) as resp:
             resp.raise_for_status()
             return await resp.json()
@@ -152,9 +152,12 @@ def generate_pack_doc(data_list, package: DocumentsPackage,
                       recreate: bool = False):
     contragent = package.contragent
 
-    # Находим запись шаблона со списком подпакетов.
-    pack_template = PackFilesTemplate.objects.get(
-        contagent_type=contragent.klass)
+    try:
+        # Находим запись шаблона со списком подпакетов.
+        pack_template = PackFilesTemplate.objects.get(
+            contagent_type=contragent.klass)
+    except ObjectDoesNotExist:
+        return
 
     # Находим экземпляры класса входящие в пакет.
     docs = PackFile.objects.filter(object_id=package.id)
@@ -298,16 +301,19 @@ def generate_document(text: str, name: str, **kwargs):
 
 def generate_single_files(data: dict, package: DocumentsPackage, total: float,
                           recreate: bool = False):
-    document_types = SingleFilesTemplate.objects.get(
-        contagent_type=package.contragent.klass)
-    doc_types = document_types.documents.all()
-    for document_type in doc_types:
-        generate_docx_file(data, package, total, document_type, recreate)
+    try:
+        document_types = SingleFilesTemplate.objects.get(
+            contagent_type=package.contragent.klass)
+        doc_types = document_types.documents.all()
+        for document_type in doc_types:
+            generate_docx_file(data, package, total, document_type, recreate)
 
-    res = SingleFile.objects.filter(object_id=package.id).exclude(
-        file_type__in=doc_types)
-    for r in res:
-        r.delete()
+        res = SingleFile.objects.filter(object_id=package.id).exclude(
+            file_type__in=doc_types)
+        for r in res:
+            r.delete()
+    except ObjectDoesNotExist:
+        return
 
 
 def generate_docx_file(data: dict, package: DocumentsPackage, total: float,
