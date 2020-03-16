@@ -34,7 +34,7 @@ export function normalizePath (path = '') {
 export default function (ctx) {
   const { login, callback } = ctx.$auth.options.redirect
   console.log(ctx.$auth)
-  const pageIsInGuestMode = routeOption(ctx.route, 'auth', 'guest')
+  // const pageIsInGuestMode = routeOption(ctx.route, 'auth', 'guest')
   const insidePage = page => normalizePath(ctx.route.path) === normalizePath(page)
 
   if (ctx.$auth.$state.loggedIn) {
@@ -42,7 +42,7 @@ export default function (ctx) {
     if (!login || insidePage(login)) {
       ctx.$auth.redirect('home')
     }
-  } else if (!pageIsInGuestMode && (!callback || !insidePage(callback))) {
+  } else if (!callback || !insidePage(callback)) {
     ctx.$auth.redirect('login')
   }
 }

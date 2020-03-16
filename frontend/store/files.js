@@ -34,6 +34,7 @@ export const actions = {
       const formData = new FormData()
       formData.append('file', vueFileAgent.filesData[0].file)
       formData.append('filename', vueFileAgent.filesData[0].file.name)
+      formData.append('package_id', packageId)
       await this.$repositories.files.create(contragentId, packageId, formData)
       dispatch(types.FETCH_FILES, contragentId, packageId)
       this.$toast.success('Файл успешно добавлен')
