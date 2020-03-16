@@ -6,7 +6,7 @@ from django.contrib.contenttypes.fields import (GenericRelation,
                                                 GenericForeignKey)
 from django.contrib.contenttypes.models import ContentType
 
-from django.core.exceptions import ValidationError
+# from django.core.exceptions import ValidationError
 # from django.contrib.auth.models import User
 
 from django.conf import settings
@@ -233,7 +233,6 @@ class DocumentsPackage(models.Model):
 
     other_files = GenericRelation(OtherFile)
 
-
     def __str__(self):
         return f'Пакет {self.name_uuid}'
 
@@ -257,16 +256,6 @@ class SingleFilesTemplate(models.Model):
     contagent_type = models.IntegerField(choices=KLASS_TYPES, default=0)
     documents = models.ManyToManyField('DocumentTypeModel',
                                        related_name='document_type')
-
-#     def clean(self):
-#         for doc in self.documents:
-#             if doc.is_pack:
-#                 raise ValidationError('There is pack documents type included.\
-# Remove them')
-
-#     def save(self, *args, **kwargs):
-#         self.clean()
-#         super().save(*args, **kwargs)
 
 
 class PackFilesTemplate(models.Model):
