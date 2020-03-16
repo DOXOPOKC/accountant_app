@@ -176,7 +176,7 @@ class OtherFilesView(APIView):
         serializer = OtherFileSerializer(results, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    def post(self, request, pk, package_id, file_id):
+    def post(self, request, pk, package_id):
         serializer = OtherFileSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -188,12 +188,12 @@ class OtherFileView(APIView):
     """ Вью конкретного документа из прочих """
     permission_classes = (IsAuthenticated,)
 
-    def get(self, request, file_id):
+    def get(self, request, pk, file_id):
         result = get_object(file_id, OtherFile)
         serializer = OtherFileSerializer(result)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    def put(self, request, file_id):
+    def put(self, request, pk, file_id):
         result = get_object(file_id, OtherFile)
         serializer = OtherFileSerializer(result, data=request.data)
         if serializer.is_valid():
@@ -201,7 +201,7 @@ class OtherFileView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def delete(self, request, file_id):
+    def delete(self, request, pk, file_id):
         result = get_object(file_id, OtherFile)
         result.delete()
         return Response(status=status.HTTP_200_OK)
