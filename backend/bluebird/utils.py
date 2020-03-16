@@ -198,9 +198,23 @@ def generate_pack_doc(data_list, package: DocumentsPackage,
                         # Если запись в словаре, то:
                         if doc in tmp_templ_dict[str(doc_type)]:
 
-                            # Формируем путь из экземпляра.
-                            file_path = str_add_app(doc.file_path)
+                            # Делаем если модель файла нормальная.
+                            # Т.е. экземпляр без пути и имени нормальным не
+                            # считается.
+                            if doc.file_path and doc.file_name:
 
+                                # Формируем путь из экземпляра.
+                                file_path = str_add_app(doc.file_path)
+
+                            else:
+                                file_name = f'{doc_type.doc_type.title()} \
+№{doc.unique_number} от {data["curr_date"]}.pdf'.replace('/', '-')
+                                file_path = os.path.join(
+                                    doc.get_files_path(package),
+                                    file_name)
+                                doc.file_name = file_name
+                                doc.file_path = str_remove_app(file_path)
+                                doc.save(force_update=True)
                             # Инициализируем подпапки.
                             doc.get_files_path(package)
 
