@@ -1,10 +1,11 @@
 const strategy = 'local'
-const FALLBACK_INTERVAL = 900 * 1000 * 0.5
+const FALLBACK_INTERVAL = 6000
 
 async function refreshTokenF ($auth, $axios, token, refreshToken, store, redirect) {
   if (refreshToken) {
     try {
       const response = await $axios.post('user/login/refresh/', { refresh: refreshToken })
+      console.log(response)
       token = 'Bearer ' + response.data.access
       refreshToken = response.data.refresh
       $auth.setToken(strategy, token)

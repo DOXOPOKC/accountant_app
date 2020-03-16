@@ -37,7 +37,6 @@
             class="ml-2 custom-transform-class text-none"
             color="primary"
             @click="packageDialogState = true"
-            disabled
           )
             | Добавить файл
         v-card-text
@@ -70,12 +69,8 @@
                 v-spacer
                 v-btn(color="blue darken-1" text @click="packageDialogState = false") Закрыть
                 v-btn(color="blue darken-1" text @click="upload") Отправить
-          v-subheader(class="subtitle-1 black--text")
-            a(:href="package.contract || ''" class="blue--text") Договор
-          v-subheader(class="subtitle-1 black--text")
-            a(:href="package.court_note || ''" class="blue--text") Претензия
-          v-subheader(class="subtitle-1 black--text")
-            a(:href="package.act_count || ''" class="blue--text") Акт сверки
+          v-subheader(class="subtitle-1 black--text" v-for="file in package['single_files']")
+            a(:href="file.file_path" class="blue--text") {{ file.file_type.doc_type }}
           v-row(no-gutters)
             v-col(cols="4")
               v-list(rounded pa-0 max-width="400px")
