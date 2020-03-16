@@ -96,7 +96,7 @@ async def get_dadata_data(contragent_inn: int):
             URL,
             data=json.dumps(data),
             headers=headers,
-            timeout=aiohttp.ClientTimeout(total=5*60)
+            timeout=aiohttp.ClientTimeout(total=10*60)
         ) as resp:
             resp.raise_for_status()
             return await resp.json()
@@ -152,9 +152,12 @@ def generate_pack_doc(data_list, package: DocumentsPackage,
                       recreate: bool = False):
     contragent = package.contragent
 
-    # Находим запись шаблона со списком подпакетов.
-    pack_template = PackFilesTemplate.objects.get(
-        contagent_type=contragent.klass)
+    try:
+        # Находим запись шаблона со списком подпакетов.
+        pack_template = PackFilesTemplate.objects.get(
+            contagent_type=contragent.klass)
+    except ObjectDoesNotExist:
+        return
 
     # Находим экземпляры класса входящие в пакет.
     docs = PackFile.objects.filter(object_id=package.id)
@@ -195,9 +198,23 @@ def generate_pack_doc(data_list, package: DocumentsPackage,
                         # Если запись в словаре, то:
                         if doc in tmp_templ_dict[str(doc_type)]:
 
-                            # Формируем путь из экземпляра.
-                            file_path = str_add_app(doc.file_path)
+                            # Делаем если модель файла нормальная.
+                            # Т.е. экземпляр без пути и имени нормальным не
+                            # считается.
+                            if doc.file_path and doc.file_name:
 
+                                # Формируем путь из экземпляра.
+                                file_path = str_add_app(doc.file_path)
+
+                            else:
+                                file_name = f'{doc_type.doc_type.title()} \
+№{doc.unique_number} от {data["curr_date"]}.pdf'.replace('/', '-')
+                                file_path = os.path.join(
+                                    doc.get_files_path(package),
+                                    file_name)
+                                doc.file_name = file_name
+                                doc.file_path = str_remove_app(file_path)
+                                doc.save(force_update=True)
                             # Инициализируем подпапки.
                             doc.get_files_path(package)
 
@@ -298,16 +315,19 @@ def generate_document(text: str, name: str, **kwargs):
 
 def generate_single_files(data: dict, package: DocumentsPackage, total: float,
                           recreate: bool = False):
-    document_types = SingleFilesTemplate.objects.get(
-        contagent_type=package.contragent.klass)
-    doc_types = document_types.documents.all()
-    for document_type in doc_types:
-        generate_docx_file(data, package, total, document_type, recreate)
+    try:
+        document_types = SingleFilesTemplate.objects.get(
+            contagent_type=package.contragent.klass)
+        doc_types = document_types.documents.all()
+        for document_type in doc_types:
+            generate_docx_file(data, package, total, document_type, recreate)
 
-    res = SingleFile.objects.filter(object_id=package.id).exclude(
-        file_type__in=doc_types)
-    for r in res:
-        r.delete()
+        res = SingleFile.objects.filter(object_id=package.id).exclude(
+            file_type__in=doc_types)
+        for r in res:
+            r.delete()
+    except ObjectDoesNotExist:
+        return
 
 
 def generate_docx_file(data: dict, package: DocumentsPackage, total: float,

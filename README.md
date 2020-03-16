@@ -1,2 +1,2 @@
 # accountant_app
-ver. 0.01b
+ver. 0.01c

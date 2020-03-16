@@ -4,6 +4,7 @@ from .models import (Contragent, DocumentsPackage, OtherFile, PackFile,
                      DocumentTypeModel, SingleFile, PackFilesTemplate)
 
 from django_q.models import Task
+from django.core.exceptions import ObjectDoesNotExist
 
 
 class ContragentShortSerializer(serializers.ModelSerializer):
@@ -67,16 +68,19 @@ class PackageFullSerializer(serializers.ModelSerializer):
 
     def get_pack_files(self, obj):
         contragent = obj.contragent
-        pack_template = PackFilesTemplate.objects.get(
+        try:
+            pack_template = PackFilesTemplate.objects.get(
                                             contagent_type=contragent.klass)
 
-        docs = PackFile.objects.filter(object_id=obj.id)
-        tmp_templ_dict = dict()
-        tmp_template_doc_types_list = pack_template.documents.all()
-        for tmpl in tmp_template_doc_types_list:
-            tmp_templ_dict[str(tmpl)] = PackFileListSerializer(
-                list(docs.filter(file_type=tmpl)), many=True).data
-        return tmp_templ_dict
+            docs = PackFile.objects.filter(object_id=obj.id)
+            tmp_templ_dict = dict()
+            tmp_template_doc_types_list = pack_template.documents.all()
+            for tmpl in tmp_template_doc_types_list:
+                tmp_templ_dict[str(tmpl)] = PackFileListSerializer(
+                    list(docs.filter(file_type=tmpl)), many=True).data
+            return tmp_templ_dict
+        except ObjectDoesNotExist:
+            return dict()
 
     class Meta:
         model = DocumentsPackage

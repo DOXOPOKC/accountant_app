@@ -258,15 +258,15 @@ class SingleFilesTemplate(models.Model):
     documents = models.ManyToManyField('DocumentTypeModel',
                                        related_name='document_type')
 
-    def clean(self):
-        for doc in self.documents:
-            if doc.is_pack:
-                raise ValidationError('There is pack documents type included.\
-Remove them')
+#     def clean(self):
+#         for doc in self.documents:
+#             if doc.is_pack:
+#                 raise ValidationError('There is pack documents type included.\
+# Remove them')
 
-    def save(self, *args, **kwargs):
-        self.clean()
-        super().save(*args, **kwargs)
+#     def save(self, *args, **kwargs):
+#         self.clean()
+#         super().save(*args, **kwargs)
 
 
 class PackFilesTemplate(models.Model):
