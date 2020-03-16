@@ -197,7 +197,7 @@ class OtherFilesView(APIView):
     parser_classes = (MultiPartParser,)
 
     def get(self, request, pk, package_id):
-        results = OtherFile.objects.filter(content_object__id=package_id)
+        results = OtherFile.objects.filter(object_id=package_id)
         serializer = OtherFileSerializer(results, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
