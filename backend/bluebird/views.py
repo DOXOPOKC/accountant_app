@@ -222,12 +222,12 @@ class OtherFileView(APIView):
     permission_classes = (IsAuthenticated,)
     parser_classes = (FileUploadParser,)
 
-    def get(self, request, pk, file_id):
+    def get(self, request, pk, package_id, file_id):
         result = get_object(file_id, OtherFile)
         serializer = OtherFileSerializer(result)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    def put(self, request, pk, file_id):
+    def put(self, request, pk, package_id, file_id):
         result = get_object(file_id, OtherFile)
         serializer = OtherFileSerializer(result, data=request.data)
         if serializer.is_valid():
@@ -235,7 +235,7 @@ class OtherFileView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def delete(self, request, pk, file_id):
+    def delete(self, request, pk, package_id, file_id):
         result = get_object(file_id, OtherFile)
         result.delete()
         return Response(status=status.HTTP_200_OK)
