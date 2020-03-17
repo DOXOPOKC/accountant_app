@@ -77,7 +77,7 @@
                 v-list-item-group(color="blue")
                   v-subheader Акты
                   v-list-item(
-                    v-for="(file, i) in package.act_files"
+                    v-for="(file, i) in  package.pack_files['Акт']"
                     :key="i"
                   )
                     v-list-item-content
@@ -103,7 +103,7 @@
                 v-list-item-group(color="blue")
                   v-subheader Счета
                   v-list-item(
-                    v-for="(file, i) in package.count_files"
+                    v-for="(file, i) in package.pack_files['Счет']"
                     :key="i"
                   )
                     v-list-item-content
@@ -125,7 +125,7 @@
                 v-list-item-group(color="blue")
                   v-subheader Счета фактур
                   v-list-item(
-                    v-for="(file, i) in package.count_fact_files"
+                    v-for="(file, i) in  package.pack_files['Счет-фактура']"
                     :key="i"
                   )
                     v-list-item-content
