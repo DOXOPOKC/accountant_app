@@ -58,7 +58,7 @@ class PackFileListSerializer(serializers.ModelSerializer):
 class OtherFileSerializer(serializers.ModelSerializer):
     class Meta:
         model = OtherFile
-        fields = '__all__'
+        fields = ['id', 'file_name', 'file_path', 'creation_date', ]
 
 
 class PackageFullSerializer(serializers.ModelSerializer):

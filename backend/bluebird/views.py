@@ -1,23 +1,47 @@
+import datetime
+
 from django_q.tasks import (
-    async_task, fetch_group, Task)
-from rest_framework import status
+    Task,
+    async_task,
+    fetch_group)
+from rest_framework import \
+    status
 from rest_framework.parsers import (
-    FileUploadParser, MultiPartParser)
-from rest_framework.response import Response
-from rest_framework.views import APIView
+    FileUploadParser,
+    MultiPartParser)
+from rest_framework.permissions import \
+    IsAuthenticated
+from rest_framework.response import \
+    Response
+from rest_framework.views import \
+    APIView
 
 from bluebird.models import (
-    ContractNumberClass, Contragent, DocumentsPackage, NormativeCategory,
-    OtherFile, SignUser)
+    ContractNumberClass,
+    Contragent,
+    DocumentsPackage,
+    DocumentTypeModel,
+    NormativeCategory,
+    OtherFile,
+    SignUser)
 from bluebird.serializers import (
-    ContragentFullSerializer, ContragentShortSerializer, NormSerializer,
-    OtherFileSerializer, PackageFullSerializer, PackageShortSerializer,
-    TaskSerializer, SignUserSerializer)
+    ContragentFullSerializer,
+    ContragentShortSerializer,
+    NormSerializer,
+    OtherFileSerializer,
+    PackageFullSerializer,
+    PackageShortSerializer,
+    SignUserSerializer,
+    TaskSerializer)
 from bluebird.utils import (
-    calc_create_gen_async, create_unique_id, get_data, get_object,
+    calc_create_gen_async,
+    create_unique_id,
+    get_data,
+    get_object,
     parse_from_file)
 
-from rest_framework.permissions import IsAuthenticated
+from .snippets import \
+    str_remove_app
 
 
 class ContragentsView(APIView):
@@ -170,30 +194,40 @@ class NormsView(APIView):
 class OtherFilesView(APIView):
     """ Вью списка прочих документов """
     permission_classes = (IsAuthenticated,)
+    parser_classes = (MultiPartParser,)
 
     def get(self, request, pk, package_id):
-        results = OtherFile.objects.filter(content_object__id=package_id)
+        results = OtherFile.objects.filter(object_id=package_id)
         serializer = OtherFileSerializer(results, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    def post(self, request, pk, package_id, file_id):
-        serializer = OtherFileSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def post(self, request, pk, package_id):
+        package = get_object(package_id, DocumentsPackage)
+        file_obj = request.data['file']
+        doc_type = DocumentTypeModel.objects.get(doc_type="Прочие")
+        file_instance = OtherFile.objects.create(
+            file_obj=file_obj,
+            content_object=package,
+            file_type=doc_type,
+            creation_date=datetime.date.today(),
+            file_name=file_obj.name
+        )
+        file_instance.save()
+        file_instance.file_path = str_remove_app(file_instance.file_obj.path)
+        return Response(file_instance.save(), status=status.HTTP_200_OK)
 
 
 class OtherFileView(APIView):
     """ Вью конкретного документа из прочих """
     permission_classes = (IsAuthenticated,)
+    parser_classes = (FileUploadParser,)
 
-    def get(self, request, file_id):
+    def get(self, request, pk, package_id, file_id):
         result = get_object(file_id, OtherFile)
         serializer = OtherFileSerializer(result)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    def put(self, request, file_id):
+    def put(self, request, pk, package_id, file_id):
         result = get_object(file_id, OtherFile)
         serializer = OtherFileSerializer(result, data=request.data)
         if serializer.is_valid():
@@ -201,7 +235,7 @@ class OtherFileView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def delete(self, request, file_id):
+    def delete(self, request, pk, package_id, file_id):
         result = get_object(file_id, OtherFile)
         result.delete()
         return Response(status=status.HTTP_200_OK)
