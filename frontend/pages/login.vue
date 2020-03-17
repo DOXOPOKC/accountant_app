@@ -62,12 +62,6 @@ export default {
     async login () {
       try {
         const self = this
-        // const resp = await this.$auth.login({
-        //   data: {
-        //     username: this.username,
-        //     password: this.password
-        //   }
-        // })
         const resp = await this.$axios.post('user/login/', {
           username: this.username,
           password: this.password
@@ -78,11 +72,8 @@ export default {
         self.$auth.ctx.app.$axios.setHeader('Authorization', 'Bearer ' + resp.data.access)
         self.$axios.get('user/').then((resp) => { self.$auth.setUser(resp.data); self.$router.push('/') })
       } catch (error) {
-        if (error.response) {
-          self.usernameErrors = []
-          self.passwordErrors = []
-          const status = error.response.status
-          if (status === 404) { self.usernameErrors = ['That user does not exist'] } else if (status === 401) { self.passwordErrors = ['Invalid password'] }
+        if (error) {
+          this.$toast.error('Ошибка! Неверное имя пользователя или пароль!')
         }
       }
     }
