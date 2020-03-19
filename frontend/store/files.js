@@ -24,7 +24,7 @@ export const mutations = {
 
 export const actions = {
   // Возвращает список файлов
-  async [types.FETCH_FILES] ({ commit }, contragentId, packageId) {
+  async [types.FETCH_FILES] ({ commit }, { contragentId, packageId }) {
     const data = await this.$repositories.files.get(contragentId, packageId)
     commit(types.SET_FILES, data)
   },
@@ -36,7 +36,7 @@ export const actions = {
       formData.append('filename', vueFileAgent.filesData[0].file.name)
       formData.append('package_id', packageId)
       await this.$repositories.files.create(contragentId, packageId, formData)
-      dispatch(types.FETCH_FILES, contragentId, packageId)
+      dispatch(types.FETCH_FILES, { contragentId, packageId })
       this.$toast.success('Файл успешно добавлен')
     } catch (error) {
       this.$toast.error('Ошибка! Некорректный файл')
