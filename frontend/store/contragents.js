@@ -39,6 +39,9 @@ export const mutations = {
 export const actions = {
   async [types.FETCH_CONTRAGENT] ({ commit }, id) {
     const data = await this.$repositories.contragents.getContragent(id)
+    if (data.other_files) {
+      this.commit(types.SET_FILES, data.other_files)
+    }
     commit(types.SET_CONTRAGENT, data)
   },
   async [types.CREATE_CONTRAGENT] ({ dispatch }, { vueFileAgent }) {

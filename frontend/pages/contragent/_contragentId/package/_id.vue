@@ -72,6 +72,28 @@
           v-subheader(class="subtitle-1 black--text" v-for="file in package['single_files']")
             a(:href="file.file_path" class="blue--text") {{ file.file_type.doc_type }}
           v-row(no-gutters)
+            v-col(cols="12")
+              v-list(rounded pa-0 max-width="400px")
+                v-list-item-group(color="blue")
+                  v-subheader Другие файлы
+                  v-list-item(
+                    v-for="(file, i) in  otherFiles"
+                    :key="i"
+                  )
+                    v-list-item-content
+                      v-list-item-title(v-text="file.file_name" :href="file.file_path || ''")
+                    v-list-item-icon
+                      v-btn(
+                        outlined
+                        fab
+                        :href="file.file_path || ''"
+                        color="blue"
+                        dark
+                        class="elevation-0"
+                        small
+                        target="_blank"
+                      )
+                        v-icon mdi-download
             v-col(cols="4")
               v-list(rounded pa-0 max-width="400px")
                 v-list-item-group(color="blue")
@@ -165,7 +187,8 @@ export default {
   computed: {
     ...mapState({
       package: state => state.packages.detail,
-      packageActiveStatus: state => state.packages.detail.is_active
+      packageActiveStatus: state => state.packages.detail.is_active,
+      otherFiles: state => state.files.list
     })
   },
   mounted () {
