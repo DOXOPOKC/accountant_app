@@ -250,12 +250,14 @@ def generate_pack_doc(data_list, package: DocumentsPackage,
     #  - если пересоздаем, но екземпляров найдено не было.
     for data in data_list:
         data['consumer'] = contragent
+        unique_number = SyncUniqueNumber.objects.create()
         for doc_type in tmp_template_doc_types_list:
-            create_models(data, package, doc_type)
+            create_models(data, package, doc_type, unique_number)
 
 
 def create_models(data: dict, package: DocumentsPackage,
-                  file_type: DocumentTypeModel):
+                  file_type: DocumentTypeModel,
+                  unique_number: SyncUniqueNumber):
     """ Функция создания экземпляра модели PackFile по шаблону.
     На вход принимает:
     data - словарь с данными на определенную дату.
@@ -265,7 +267,6 @@ def create_models(data: dict, package: DocumentsPackage,
     template = get_template(file_type, package)
     if not template:
         return None
-    unique_number = SyncUniqueNumber.objects.create()
     file_obj = PackFile.objects.create(
         content_object=package,
         creation_date=data['curr_date'],
@@ -352,15 +353,18 @@ def generate_docx_file(data: dict, package: DocumentsPackage, total: float,
         package.get_save_path(),
         file_name)
 
-    if recreate and os.path.isfile(tmp_path):
-        os.remove(tmp_path)
-    else:
+    res = SingleFile.objects.filter(object_id=package.id,
+                                    file_type=document_type_obj.id)
+    if not len(res):
         SingleFile.objects.create(
-            file_name=file_name,
-            file_path=str_remove_app(tmp_path),
-            content_object=package,
-            creation_date=datetime.date.today(),
-            file_type=document_type_obj)
+                file_name=file_name,
+                file_path=str_remove_app(tmp_path),
+                content_object=package,
+                creation_date=datetime.date.today(),
+                file_type=document_type_obj)
+    else:
+        if recreate and os.path.isfile(tmp_path):
+            os.remove(tmp_path)
 
     doc.save(tmp_path)
     return None
