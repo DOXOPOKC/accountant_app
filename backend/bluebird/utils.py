@@ -20,6 +20,7 @@ from bluebird.dadata import (Result_response_from_suggestion,
                              suggestions_response_from_dict)
 from bluebird.models import (
     KLASS_TYPES,
+    DOC_TYPE,
     Contragent,
     PackFile,
     SyncUniqueNumber,
@@ -35,7 +36,7 @@ from bluebird.templatetags.template_extra_filters import (
     pretty_date_filter,
     datv_case_filter,
     cap_first,
-    literal, proper_date_filter, remove_zero_at_end)
+    literal, proper_date_filter, remove_zero_at_end, sum_imp)
 
 from blackbird.views import calculate, round_hafz
 
@@ -183,6 +184,8 @@ def generate_pack_doc(data_list, package: DocumentsPackage,
             delete_models(removed_docs)
             for data in data_list:
                 data['consumer'] = contragent
+                data['sign_user_document'] = (
+                    DOC_TYPE[contragent.signed_user.document][1])
                 curr_date = data['curr_date']
                 for doc_type in tmp_template_doc_types_list:
                     # Берем конкретную запись на дату и тип.
@@ -208,7 +211,7 @@ def generate_pack_doc(data_list, package: DocumentsPackage,
 
                             else:
                                 file_name = f'{doc_type.doc_type.title()} \
-№{doc.unique_number} от {data["curr_date"]}.pdf'.replace('/', '-')
+ №{doc.unique_number} от {data["curr_date"]}.pdf'.replace('/', '-')
                                 file_path = os.path.join(
                                     doc.get_files_path(package),
                                     file_name)
@@ -227,7 +230,8 @@ def generate_pack_doc(data_list, package: DocumentsPackage,
                     # Создаем запись по переданным данным.
                     # Либо такого файла не найдено, что значит мы работаем с
                     # новой датой, либо экземпляры были удалены.
-                    create_models(data, package, doc_type)
+                    unique_number = SyncUniqueNumber.objects.create()
+                    create_models(data, package, doc_type, unique_number)
 
             # Если после удаления найденых записей, еще остаются записи в
             # словаре, значит из шаблона были удалены подпакеты. И именно их
@@ -250,12 +254,16 @@ def generate_pack_doc(data_list, package: DocumentsPackage,
     #  - если пересоздаем, но екземпляров найдено не было.
     for data in data_list:
         data['consumer'] = contragent
+        data['sign_user_document'] = (
+                    DOC_TYPE[contragent.signed_user.document][1])
+        unique_number = SyncUniqueNumber.objects.create()
         for doc_type in tmp_template_doc_types_list:
-            create_models(data, package, doc_type)
+            create_models(data, package, doc_type, unique_number)
 
 
 def create_models(data: dict, package: DocumentsPackage,
-                  file_type: DocumentTypeModel):
+                  file_type: DocumentTypeModel,
+                  unique_number: SyncUniqueNumber):
     """ Функция создания экземпляра модели PackFile по шаблону.
     На вход принимает:
     data - словарь с данными на определенную дату.
@@ -265,14 +273,13 @@ def create_models(data: dict, package: DocumentsPackage,
     template = get_template(file_type, package)
     if not template:
         return None
-    unique_number = SyncUniqueNumber.objects.create()
     file_obj = PackFile.objects.create(
         content_object=package,
         creation_date=data['curr_date'],
         unique_number=unique_number,
         file_type=file_type)
     file_name = f'{file_type.doc_type.title()} \
-№{unique_number} от {data["curr_date"]}.pdf'.replace('/', '-')
+ №{unique_number} от {data["curr_date"]}.pdf'.replace('/', '-')
     file_path = os.path.join(file_obj.get_files_path(package), file_name)
     create_files(data, template, file_path)
     file_obj.file_name = file_name
@@ -344,6 +351,7 @@ def generate_docx_file(data: dict, package: DocumentsPackage, total: float,
     jinja_env.filters['literal'] = literal
     jinja_env.filters['remove_zero_at_end'] = remove_zero_at_end
     jinja_env.filters['proper_date_filter'] = proper_date_filter
+    jinja_env.filters['sum_imp'] = sum_imp
     context = {'data': data, 'consumer': package.contragent, 'total': total}
     doc.render(context, jinja_env)
     tmp_name = str(package.contragent.number_contract).replace('/', '-')
@@ -352,15 +360,18 @@ def generate_docx_file(data: dict, package: DocumentsPackage, total: float,
         package.get_save_path(),
         file_name)
 
-    if recreate and os.path.isfile(tmp_path):
-        os.remove(tmp_path)
-    else:
+    res = SingleFile.objects.filter(object_id=package.id,
+                                    file_type=document_type_obj.id)
+    if not len(res):
         SingleFile.objects.create(
-            file_name=file_name,
-            file_path=str_remove_app(tmp_path),
-            content_object=package,
-            creation_date=datetime.date.today(),
-            file_type=document_type_obj)
+                file_name=file_name,
+                file_path=str_remove_app(tmp_path),
+                content_object=package,
+                creation_date=datetime.date.today(),
+                file_type=document_type_obj)
+    else:
+        if recreate and os.path.isfile(tmp_path):
+            os.remove(tmp_path)
 
     doc.save(tmp_path)
     return None

@@ -62,11 +62,11 @@ class ContragentsView(APIView):
                 result = parse_from_file(file)
             except Exception:
                 return Response('Структура файла не верна.\
-Пожалуста используйте правильную форму.', status=status.HTTP_400_BAD_REQUEST)
+ Пожалуста используйте правильную форму.', status=status.HTTP_400_BAD_REQUEST)
             if not result:
                 # Если фаил есть но он "пустой"
                 return Response('Выбраный фаил пуст или содержит информацию,\
-не соотвествующую формату.', status=status.HTTP_400_BAD_REQUEST)
+ не соотвествующую формату.', status=status.HTTP_400_BAD_REQUEST)
             group_id = create_unique_id()
             for data_element in result:
                 if data_element['klass'] == 1:
@@ -84,7 +84,7 @@ class ContragentsView(APIView):
         else:
             # Если файла нет
             return Response('В запросе не найден фаил.\
-Пожалуйста, выберите фаил.', status=status.HTTP_400_BAD_REQUEST)
+ Пожалуйста, выберите фаил.', status=status.HTTP_400_BAD_REQUEST)
 
 
 class ContragentView(APIView):
