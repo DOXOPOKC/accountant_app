@@ -27,6 +27,9 @@ class Formula(models.Model):
                 + f'Действует с {self.since_date.strftime("%d.%m.%Y")} '
                 + f'по {self.up_to_date.strftime("%d.%m.%Y")}.')
 
+    class Meta:
+        verbose_name_plural = "Формулы"
+
 
 class Tariff(models.Model):
     since_date = models.DateField(null=True, blank=True)
@@ -37,3 +40,6 @@ class Tariff(models.Model):
         return (f'Тариф {self.tariff}р., действующий с'
                 + f' {self.since_date.strftime("%d.%m.%Y")} по'
                 + f' {self.up_to_date.strftime("%d.%m.%Y")}.')
+
+    class Meta:
+        verbose_name_plural = "Тарифы"

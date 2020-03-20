@@ -5,7 +5,6 @@ import pymorphy2
 import decimal
 import math
 
-
 register = template.Library()
 
 
@@ -75,8 +74,8 @@ def pretty_date_filter(date_value):
         months = ('января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
                   'июля', 'августа', 'сентября', 'октября', 'ноября',
                   'декабря')
-        return f'"{date_value.day}" {months[date_value.month-1]} \
-{date_value.year}'
+        return f'"{date_value.day}" {months[date_value.month-1]}\
+ {date_value.year}'
     return ''
 
 
@@ -110,3 +109,12 @@ def proper_date_filter(date_value):
     if bool(date_value) or date_value is not None:
         return f'{date_value.day:02}.{date_value.month:02}.{date_value.year}'
     return ''
+
+
+def sum_imp(data: dict, field: str = None, start: float = 0.0):
+    for d in data:
+        if field:
+            start += float(d.get(field, 0.0))
+        else:
+            start += float(d)
+    return start

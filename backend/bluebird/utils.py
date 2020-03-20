@@ -35,7 +35,7 @@ from bluebird.templatetags.template_extra_filters import (
     pretty_date_filter,
     datv_case_filter,
     cap_first,
-    literal, proper_date_filter, remove_zero_at_end)
+    literal, proper_date_filter, remove_zero_at_end, sum_imp)
 
 from blackbird.views import calculate, round_hafz
 
@@ -208,7 +208,7 @@ def generate_pack_doc(data_list, package: DocumentsPackage,
 
                             else:
                                 file_name = f'{doc_type.doc_type.title()} \
-№{doc.unique_number} от {data["curr_date"]}.pdf'.replace('/', '-')
+ №{doc.unique_number} от {data["curr_date"]}.pdf'.replace('/', '-')
                                 file_path = os.path.join(
                                     doc.get_files_path(package),
                                     file_name)
@@ -273,7 +273,7 @@ def create_models(data: dict, package: DocumentsPackage,
         unique_number=unique_number,
         file_type=file_type)
     file_name = f'{file_type.doc_type.title()} \
-№{unique_number} от {data["curr_date"]}.pdf'.replace('/', '-')
+ №{unique_number} от {data["curr_date"]}.pdf'.replace('/', '-')
     file_path = os.path.join(file_obj.get_files_path(package), file_name)
     create_files(data, template, file_path)
     file_obj.file_name = file_name
@@ -345,6 +345,7 @@ def generate_docx_file(data: dict, package: DocumentsPackage, total: float,
     jinja_env.filters['literal'] = literal
     jinja_env.filters['remove_zero_at_end'] = remove_zero_at_end
     jinja_env.filters['proper_date_filter'] = proper_date_filter
+    jinja_env.filters['sum_imp'] = sum_imp
     context = {'data': data, 'consumer': package.contragent, 'total': total}
     doc.render(context, jinja_env)
     tmp_name = str(package.contragent.number_contract).replace('/', '-')

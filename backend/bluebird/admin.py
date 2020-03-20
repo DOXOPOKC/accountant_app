@@ -9,6 +9,8 @@ from .models import (KLASS_TYPES, Contragent, NormativeCategory, Normative,
 
 from django.contrib.contenttypes.admin import GenericTabularInline
 
+from .forms import TemplateModelForm
+
 
 class ContragentAdmin(admin.ModelAdmin):
     sets = ('pk', 'excell_name', 'inn', 'display_contragent')
@@ -75,6 +77,18 @@ class DocumentsPackageAdmin(admin.ModelAdmin):
     def contragent_name(self, obj):
         return str(obj.contragent.excell_name)
 
+    actions = ["mark_not_active", "mark_active"]
+
+    def mark_not_active(self, request, queryset):
+        queryset.update(is_active=False)
+    mark_not_active.short_description = "Пометить выбранные пакеты документов\
+        как неактивные"
+
+    def mark_active(self, request, queryset):
+        queryset.update(is_active=True)
+    mark_active.short_description = "Пометить выбранные пакеты документов как\
+        активные"
+
 
 class SingleFilesTemplateAdmin(admin.ModelAdmin):
     filter_horizontal = ('documents',)
@@ -105,6 +119,7 @@ class DocumentTypeModelAdmin(admin.ModelAdmin):
 
 
 class TemplateModelAdmin(admin.ModelAdmin):
+    form = TemplateModelForm
     sets = ('pk', 'document_type', 'contragent_type', 'city')
     list_display = sets
     list_display_links = sets
