@@ -64,7 +64,7 @@
 		>
 			<tbody>
 				<tr>
-					<td colspan="4"><p class="ft10">Акт № {{ uniq_num_id }}  от {{ curr_date|date:"d E Y" }}г.</p></td>
+					<td colspan="4"><p class="ft10">Акт № {{ consumer.number_contract }}  от {{ curr_date|date:"d E Y" }}г.</p></td>
 				</tr>
 				<tr>
 					<td>
@@ -164,11 +164,11 @@
 						<p class="ft14"><b>ИСПОЛНИТЕЛЬ</b></p>
 						<p class="ft12"><b>ООО &#34;ЭкоТек&#34;</b></p>
 						<p style="padding: 20px 0 0 0;" class="ft12"><b>____________________________</b></p>
-						<p class="ft18">Гвоздева&nbsp;М.Л.&nbsp;Доверенность<br/>б/н&nbsp;от&nbsp;01.10.2019г.</p>
+						<p class="ft18">{{ consumer.signed_user.name }}&nbsp;{{ sign_user_document }}<br/>б/н {{ consumer.signed_user.doc_number }}&nbsp;от&nbsp;{{ consumer.signed_user.doc_date|date:"d E Y" }}г.</p>
 					</td>
-					<td colspan="1" style="padding: 0;">
-						<p style="margin: 0 0 40px 0;" class="ft14"><b>ЗАКАЗЧИК</b></p>
-						<p style="margin: 0 0 20px 0;" class="ft13">ИП&nbsp;Капустин&nbsp;Антон&nbsp;Александрович</p>
+					<td colspan="1" style="padding: -20px;">
+						<p style="margin: 0 0 0px 0;" class="ft14"><b>ЗАКАЗЧИК</b></p>
+						<p style="margin: 0 0 20px 0;" class="ft13">{{ consumer.excell_name }}</p>
 						<p style="margin: 0 0 20px 0;" class="ft13">________________________________</p>
 					</td>
 				</tr>
@@ -190,7 +190,7 @@
 		>
 			<tbody>
 				<tr>
-					<td colspan="4"><p class="ft10">Акт № {{uniq_num_id}}  от {{ curr_date|date:"d E Y"}}г.</p></td>
+					<td colspan="4"><p class="ft10">Акт № {{ consumer.number_contract }}  от {{ curr_date|date:"d E Y"}}г.</p></td>
 				</tr>
 				<tr>
 					<td>
@@ -290,11 +290,11 @@
 						<p class="ft14"><b>ИСПОЛНИТЕЛЬ</b></p>
 						<p class="ft12"><b>ООО &#34;ЭкоТек&#34;</b></p>
 						<p style="padding: 20px 0 0 0;" class="ft12"><b>____________________________</b></p>
-						<p class="ft18">Гвоздева&nbsp;М.Л.&nbsp;Доверенность<br/>б/н&nbsp;от&nbsp;01.10.2019г.</p>
+						<p class="ft18">{{ consumer.signed_user.name }}&nbsp;{{ sign_user_document }}<br/>б/н {{ consumer.signed_user.doc_number }}&nbsp;от&nbsp;{{ consumer.signed_user.doc_date|date:"d E Y" }}г.</p>
 					</td>
 					<td colspan="1" style="padding: 0;">
-						<p style="margin: 0 0 40px 0;" class="ft14"><b>ЗАКАЗЧИК</b></p>
-						<p style="margin: 0 0 20px 0;" class="ft13">ИП&nbsp;Капустин&nbsp;Антон&nbsp;Александрович</p>
+						<p style="margin: 0 0 0px 0;" class="ft14"><b>ЗАКАЗЧИК</b></p>
+						<p style="margin: 0 0 20px 0;" class="ft13">{{ consumer.excell_name }}</p>
 						<p style="margin: 0 0 20px 0;" class="ft13">________________________________</p>
 					</td>
 				</tr>

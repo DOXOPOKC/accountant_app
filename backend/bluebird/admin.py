@@ -92,6 +92,7 @@ class DocumentsPackageAdmin(admin.ModelAdmin):
 
 class SingleFilesTemplateAdmin(admin.ModelAdmin):
     filter_horizontal = ('documents',)
+    list_display_links = ('__str__', )
     list_display = ('__str__', )
 
 

@@ -20,6 +20,7 @@ from bluebird.dadata import (Result_response_from_suggestion,
                              suggestions_response_from_dict)
 from bluebird.models import (
     KLASS_TYPES,
+    DOC_TYPE,
     Contragent,
     PackFile,
     SyncUniqueNumber,
@@ -183,6 +184,8 @@ def generate_pack_doc(data_list, package: DocumentsPackage,
             delete_models(removed_docs)
             for data in data_list:
                 data['consumer'] = contragent
+                data['sign_user_document'] = (
+                    DOC_TYPE[contragent.signed_user.document][1])
                 curr_date = data['curr_date']
                 for doc_type in tmp_template_doc_types_list:
                     # Берем конкретную запись на дату и тип.
@@ -227,7 +230,8 @@ def generate_pack_doc(data_list, package: DocumentsPackage,
                     # Создаем запись по переданным данным.
                     # Либо такого файла не найдено, что значит мы работаем с
                     # новой датой, либо экземпляры были удалены.
-                    create_models(data, package, doc_type)
+                    unique_number = SyncUniqueNumber.objects.create()
+                    create_models(data, package, doc_type, unique_number)
 
             # Если после удаления найденых записей, еще остаются записи в
             # словаре, значит из шаблона были удалены подпакеты. И именно их
@@ -250,6 +254,8 @@ def generate_pack_doc(data_list, package: DocumentsPackage,
     #  - если пересоздаем, но екземпляров найдено не было.
     for data in data_list:
         data['consumer'] = contragent
+        data['sign_user_document'] = (
+                    DOC_TYPE[contragent.signed_user.document][1])
         unique_number = SyncUniqueNumber.objects.create()
         for doc_type in tmp_template_doc_types_list:
             create_models(data, package, doc_type, unique_number)

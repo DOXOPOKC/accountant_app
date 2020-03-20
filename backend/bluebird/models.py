@@ -273,6 +273,9 @@ class SingleFilesTemplate(models.Model):
     documents = models.ManyToManyField('DocumentTypeModel',
                                        related_name='document_type')
 
+    def __str__(self):
+        return KLASS_TYPES[self.contagent_type][1]
+
     class Meta:
         verbose_name_plural = "Шаблоны единичных файлов"
 
@@ -281,6 +284,9 @@ class PackFilesTemplate(models.Model):
     contagent_type = models.IntegerField(choices=KLASS_TYPES, default=0)
     documents = models.ManyToManyField('DocumentTypeModel',
                                        related_name='document_type_pack')
+
+    def __str__(self):
+        return KLASS_TYPES[self.contagent_type][1]
 
     class Meta:
         verbose_name_plural = "Шаблоны наборов файлов"

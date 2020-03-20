@@ -52,7 +52,7 @@
 			</tr>
 			<tr style="height: 10px;">
 				<td style="padding: 0 0 0 0;" colspan="2">
-					<p style="white-space:nowrap" class="ft10"><b>Счет&#160;на&#160;оплату&#160;№&#160;{{ uniq_num_id }}&#160;от&#160;{{ curr_date|date:"d E Y"}}г.</b></p>
+					<p style="white-space:nowrap" class="ft10"><b>Счет&#160;на&#160;оплату&#160;№&#160;{{ consumer.number_contract }}&#160;от&#160;{{ curr_date|date:"d E Y"}}г.</b></p>
 					<hr />
 				</td>
 			</tr>
@@ -149,12 +149,12 @@
 				<td style="padding: 0;">
 					<p style="white-space:nowrap" class="ft14">Руководитель</p>
 					<p style="padding: 20px 0 0 0;white-space:nowrap" class="ft12"><b>____________________________</b></p>
-					<p style="padding: 0 0 0 0;white-space:nowrap" class="ft18">Гвоздева&#160;М.Л.&#160;Доверенность<br/>б/н&#160;от&#160;01.10.2019г.</p>
+					<p style="padding: 0 0 0 0;white-space:nowrap" class="ft18">{{ consumer.signed_user.name }}&#160;{{ sign_user_document }}<br/>б/н {{ consumer.signed_user.doc_number }}&#160;от&#160;{{ consumer.signed_user.doc_date|date:"d E Y" }}г.</p>
 				</td>
 				<td style="padding: 0 0 0 500px;">
 					<p style="white-space:nowrap;padding: 0 90px 0 0;" class="ft14">Бухгалтер</p>
 					<p style="padding: 20px 0 0 0;white-space:nowrap" class="ft12"><b>____________________________</b></p>
-					<p style="white-space:nowrap" class="ft18">Гвоздева&#160;М.Л.&#160;Доверенность<br/>б/н&#160;от&#160;01.10.2019г.</p>
+					<p style="white-space:nowrap" class="ft18">{{ consumer.signed_user.name }}&#160;{{ sign_user_document }}<br/>б/н {{ consumer.signed_user.doc_number }}&#160;от&#160;{{ consumer.signed_user.doc_date|date:"d E Y" }}г.</p>
 				</td>
 			</tr>
 		</table>
