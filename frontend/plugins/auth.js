@@ -1,5 +1,5 @@
 const strategy = 'local'
-const FALLBACK_INTERVAL = 180000
+const FALLBACK_INTERVAL = 2180000
 
 async function refreshTokenF ($auth, $axios, token, refreshToken, store, redirect) {
   if (refreshToken) {

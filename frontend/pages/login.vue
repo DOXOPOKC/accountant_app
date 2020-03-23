@@ -66,10 +66,12 @@ export default {
           username: this.username,
           password: this.password
         })
-        self.$auth.setToken('local', 'Bearer ' + resp.data.access)
-        self.$auth.setRefreshToken('local', resp.data.refresh)
-        self.$axios.setHeader('Authorization', 'Bearer ' + resp.data.access)
-        self.$auth.ctx.app.$axios.setHeader('Authorization', 'Bearer ' + resp.data.access)
+        const { access, refresh } = resp.data
+        self.$auth.setToken('local', 'Bearer ' + access)
+        self.$auth.setRefreshToken('local', refresh)
+        // self.$axios.setHeader('Authorization', 'Bearer ' + access)
+        self.$axios.setToken(access, 'Bearer')
+        // self.$auth.ctx.app.$axios.setHeader('Authorization', 'Bearer ' + access)
         self.$axios.get('user/').then((resp) => { self.$auth.setUser(resp.data); self.$router.push('/') })
       } catch (error) {
         if (error) {
