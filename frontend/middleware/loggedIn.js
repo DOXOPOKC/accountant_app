@@ -1,10 +1,7 @@
 export const routeOption = (route, key, value) => {
-  console.log(route)
-  console.log(key, value)
   return route.matched.some((m) => {
     if (process.client) {
       // Client
-      console.log(m)
       return Object.values(m.components).some(
         component => component.options && component.options[key] === value
       )
@@ -33,7 +30,6 @@ export function normalizePath (path = '') {
 
 export default function (ctx) {
   const { login, callback } = ctx.$auth.options.redirect
-  console.log(ctx.$auth)
   // const pageIsInGuestMode = routeOption(ctx.route, 'auth', 'guest')
   const insidePage = page => normalizePath(ctx.route.path) === normalizePath(page)
 

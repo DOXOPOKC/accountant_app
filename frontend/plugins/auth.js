@@ -5,10 +5,9 @@ async function refreshTokenF ($auth, $axios, token, refreshToken, store, redirec
   if (refreshToken) {
     try {
       const response = await $axios.post('user/login/refresh/', { refresh: refreshToken })
-      console.log(response)
       token = 'Bearer ' + response.data.access
       refreshToken = response.data.refresh || refreshToken
-      $auth.setToken(strategy, token)
+      // $auth.setToken(strategy, token)
       $axios.setToken(token)
       $auth.setRefreshToken(strategy, refreshToken)
       return decodeToken.call(this, token).exp
@@ -32,6 +31,8 @@ export default function ({ app, store, redirect }) {
       refreshToken = $auth.getRefreshToken(strategy)
       if (refreshToken) {
         await refreshTokenF($auth, $axios, token, refreshToken, store, redirect)
+        // console.log(Object.assign(err.config, $axios.defaults.headers.common))
+        err.config.headers = $axios.defaults.headers.common
         return $axios(err.config)
       } else {
         $auth.logout()
