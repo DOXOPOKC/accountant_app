@@ -58,6 +58,11 @@ lxml = "*"
 pypandoc = "*"
 aiohttp = "*"
 djangorestframework-simplejwt = "*"
+channels = "*"
+channels-redis = "*"
+daphne = "*"
+cryptography = "*"
+cffi = "*"
 
 [requires]
 python_version = "3.8.1"

@@ -96,6 +96,14 @@ services:
       private_network:
         ipv4_address: 172.25.0.7
 
+  redis:
+    image: redis
+    ports: 
+      - 6379:6379
+    networks:
+      private_network:
+        ipv4_address: 172.25.0.8
+
 networks: 
   private_network:
     ipam: 

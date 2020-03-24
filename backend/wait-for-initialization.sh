@@ -43,9 +43,11 @@ if [[ ${DEBUG} == 'TRUE' ]] || [[ ${DEBUG} == 'True' ]] || [[ ${DEBUG} == '1' ]]
     echo >&2 "Starting debug server..."
     exec python3 manage.py runserver 0.0.0.0:8000
 else
-    echo >&2 "Starting Gunicorn..."
-    exec gunicorn birds.wsgi:application \
-      -k egg:meinheld#gunicorn_worker \
-      --name birds --bind 0.0.0.0:8000 --workers 3 \
+    # echo >&2 "Starting Gunicorn..."
+    # exec gunicorn birds.wsgi:application \
+    #   -k egg:meinheld#gunicorn_worker \
+    #   --name birds --bind 0.0.0.0:8000 --workers 3 \
+    echo >&2 "Starting Daphne..."
+    exec daphne -b 0.0.0.0 -p 8000 birds.asgi:application
       "$@"
 fi

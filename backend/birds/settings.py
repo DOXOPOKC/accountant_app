@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'rest_framework',
+    'channels',
     'django_q',
     'drf_yasg',
     'yellowbird',
@@ -56,6 +57,7 @@ INSTALLED_APPS = [
 ]
 
 AUTH_USER_MODEL = 'yellowbird.User'
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -163,6 +165,19 @@ CACHES = {
         'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
         'LOCATION': '127.0.0.1:11211',
     }
+}
+
+CHANNEL_REDIS_HOST = ('172.25.0.8', 6379)
+
+ASGI_APPLICATION = "birds.routing.application"
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [CHANNEL_REDIS_HOST],
+            "symmetric_encryption_keys": [SECRET_KEY],
+        },
+    },
 }
 
 
