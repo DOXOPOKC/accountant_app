@@ -181,6 +181,17 @@ CHANNEL_LAYERS = {
 }
 
 
+SWAGGER_SETTINGS = {
+   'SECURITY_DEFINITIONS': {
+      'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header'
+      }
+   }
+}
+
+
 Q_CLUSTER = {
     'name': 'DjangORM',
     'workers': 4,

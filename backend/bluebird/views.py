@@ -4,9 +4,14 @@ from django_q.tasks import (
     Task,
     async_task,
     fetch_group)
+
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
+
 from rest_framework import \
     status
 from rest_framework.parsers import (
+    FormParser,
     FileUploadParser,
     MultiPartParser)
 from rest_framework.permissions import \
@@ -44,16 +49,28 @@ from .snippets import \
     str_remove_app
 
 
+DOCUMENT_UPLOAD_PARAM = openapi.Parameter(
+    name="file",
+    in_=openapi.IN_FORM,
+    type=openapi.TYPE_FILE,
+    required=True,
+    description="Document data"
+)
+
+
 class ContragentsView(APIView):
     """ Вью для списка контрагентов """
-    parser_class = [FileUploadParser, MultiPartParser]
+    parser_classes = [FormParser, FileUploadParser, MultiPartParser]
     permission_classes = (IsAuthenticated,)
 
+    @swagger_auto_schema(responses={200: ContragentShortSerializer(many=True)})
     def get(self, request):
         conrtagents = Contragent.objects.all()
         serializer = ContragentShortSerializer(conrtagents, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    # @parser_classes((FormParser, FileUploadParser, MultiPartParser))
+    @swagger_auto_schema(manual_parameters=[DOCUMENT_UPLOAD_PARAM, ])
     def post(self, request, format=None):
         file = request.FILES['file']
         if file:

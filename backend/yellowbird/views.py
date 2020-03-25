@@ -6,6 +6,7 @@ from .serializers import UserShortSerializer
 
 
 class UserView(APIView):
+
     def get(self, request):
         user = request.user or None
         serializer = UserShortSerializer(user)
