@@ -9,7 +9,9 @@ from .models import (KLASS_TYPES, Contragent, NormativeCategory, Normative,
 
 from django.contrib.contenttypes.admin import GenericTabularInline
 
-from .forms import TemplateModelForm
+from .forms import (TemplateModelForm,
+                    PackFilesTemplateAdminForm,
+                    SingleFilesTemplateAdminForm)
 
 
 class DuplicateElementsMixin:
@@ -107,12 +109,14 @@ class DocumentsPackageAdmin(admin.ModelAdmin):
 
 
 class SingleFilesTemplateAdmin(admin.ModelAdmin):
+    form = SingleFilesTemplateAdminForm
     filter_horizontal = ('documents',)
     list_display_links = ('__str__', )
     list_display = ('__str__', )
 
 
 class PackFilesTemplateAdmin(admin.ModelAdmin):
+    form = PackFilesTemplateAdminForm 
     filter_horizontal = ('documents',)
     list_display = ('__str__', )
 
