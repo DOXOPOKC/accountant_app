@@ -311,8 +311,11 @@ def create_files(data: dict, template: TemplateModel, file_path: str):
     template - экземпляр шаблона генерации.
     file_path - путь сохранения итогового документа в виде строки.
     """
-    text = render_to_string(template.template_path, context=data)
-    generate_document(text, file_path)
+    if os.path.isfile(template.template_path):
+        text = render_to_string(template.template_path, context=data)
+        generate_document(text, file_path)
+    else:
+        raise ObjectDoesNotExist('Template path does not exist.')
 
 
 def generate_document(text: str, name: str, **kwargs):
@@ -334,7 +337,7 @@ def generate_single_files(data: dict, package: DocumentsPackage, total: float,
         for r in res:
             r.delete()
     except ObjectDoesNotExist:
-        return
+        return Http404
 
 
 def generate_docx_file(data: dict, package: DocumentsPackage, total: float,
@@ -425,4 +428,4 @@ def get_template(doc_type, package: DocumentsPackage):
             return template
         raise ObjectDoesNotExist()
     except ObjectDoesNotExist:
-        return None
+        return Http404
