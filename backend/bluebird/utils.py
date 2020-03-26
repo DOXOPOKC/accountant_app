@@ -415,17 +415,13 @@ def del_after_exec(task):
     Task.delete_group(task.group)
 
 
-def get_template(doc_type, package: DocumentsPackage):
+def get_template(doc_type: DocumentTypeModel, package: DocumentsPackage):
     try:
-        if isinstance(doc_type, str):
-            doc_type = DocumentTypeModel.objects.get(doc_type=doc_type)
-        if isinstance(doc_type, DocumentTypeModel):
-            template = TemplateModel.objects.get(
-                city=package.contragent.signed_user.city,
-                contragent_type=package.contragent.klass,
-                document_type=doc_type.id
-                )
-            return template
-        raise ObjectDoesNotExist()
+        template = TemplateModel.objects.get(
+            city=package.contragent.signed_user.city,
+            contragent_type=package.contragent.klass,
+            document_type=doc_type.id
+            )
+        return template
     except ObjectDoesNotExist:
         return Http404
