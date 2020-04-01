@@ -56,13 +56,13 @@
             contragent-current-user
         v-card-actions(class="px-10 py-6")
           v-btn(
-            @click="contragentSubmit(GENERATE_PACKAGE)"
+            @click="contragentGenerateSubmit"
           )
             | Сгенерировать пакет
           v-spacer
           v-btn(
             color="primary"
-            @click="contragentSubmit(UPDATE_CONTRAGENT)"
+            @click="contragentUpdateSubmit"
           )
             | Сохранить
 </template>
@@ -160,10 +160,19 @@ export default {
       UPDATE_CONTRAGENT: 'contragents/UPDATE_CONTRAGENT',
       GENERATE_PACKAGE: 'packages/GENERATE_PACKAGE'
     }),
-    contragentSubmit (method) {
+    contragentUpdateSubmit () {
       this.$refs.observer.validate().then((result) => {
+        console.log(result)
         if (result) {
-          method()
+          this.UPDATE_CONTRAGENT()
+        }
+      })
+    },
+    contragentGenerateSubmit () {
+      this.$refs.observer.validate().then((result) => {
+        console.log(result)
+        if (result) {
+          this.GENERATE_PACKAGE()
         }
       })
     }
