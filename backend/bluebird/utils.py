@@ -125,7 +125,7 @@ def get_data(id: int):
                         serializer.save()
                         return {'inn': contragent.inn, 'status': "OK"}
             return {'inn': contragent.inn, 'status': "Not OK",
-                    'errors': serializer.errors}
+                    'errors': 'Contragent not active.'}
         else:
             return {'inn': contragent.inn,
                     'status': "0 length suggestion, something wrong."}
