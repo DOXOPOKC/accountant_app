@@ -125,7 +125,7 @@ def get_data(id: int):
                         serializer.save()
                         return {'inn': contragent.inn, 'status': "OK"}
             return {'inn': contragent.inn, 'status': "Not OK",
-                    'errors': serializer.errors}
+                    'errors': 'Contragent not active.'}
         else:
             return {'inn': contragent.inn,
                     'status': "0 length suggestion, something wrong."}
@@ -311,8 +311,11 @@ def create_files(data: dict, template: TemplateModel, file_path: str):
     template - экземпляр шаблона генерации.
     file_path - путь сохранения итогового документа в виде строки.
     """
-    text = render_to_string(template.template_path, context=data)
-    generate_document(text, file_path)
+    if os.path.isfile(template.template_path):
+        text = render_to_string(template.template_path, context=data)
+        generate_document(text, file_path)
+    else:
+        raise ObjectDoesNotExist('Template path does not exist.')
 
 
 def generate_document(text: str, name: str, **kwargs):
@@ -334,7 +337,7 @@ def generate_single_files(data: dict, package: DocumentsPackage, total: float,
         for r in res:
             r.delete()
     except ObjectDoesNotExist:
-        return
+        return Http404
 
 
 def generate_docx_file(data: dict, package: DocumentsPackage, total: float,
@@ -412,17 +415,13 @@ def del_after_exec(task):
     Task.delete_group(task.group)
 
 
-def get_template(doc_type, package: DocumentsPackage):
+def get_template(doc_type: DocumentTypeModel, package: DocumentsPackage):
     try:
-        if isinstance(doc_type, str):
-            doc_type = DocumentTypeModel.objects.get(doc_type=doc_type)
-        if isinstance(doc_type, DocumentTypeModel):
-            template = TemplateModel.objects.get(
-                city=package.contragent.signed_user.city,
-                contragent_type=package.contragent.klass,
-                document_type=doc_type.id
-                )
-            return template
-        raise ObjectDoesNotExist()
+        template = TemplateModel.objects.get(
+            city=package.contragent.signed_user.city,
+            contragent_type=package.contragent.klass,
+            document_type=doc_type.id
+            )
+        return template
     except ObjectDoesNotExist:
-        return None
+        return Http404

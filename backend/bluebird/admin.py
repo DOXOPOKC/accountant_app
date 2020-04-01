@@ -9,7 +9,21 @@ from .models import (KLASS_TYPES, Contragent, NormativeCategory, Normative,
 
 from django.contrib.contenttypes.admin import GenericTabularInline
 
-from .forms import TemplateModelForm
+from .forms import (TemplateModelForm,
+                    PackFilesTemplateAdminForm,
+                    SingleFilesTemplateAdminForm)
+
+
+class DuplicateElementsMixin:
+    """"""
+
+    def duplicate(self, request, queryset):
+        for obj in queryset:
+            obj.pk = None
+            obj.save()
+        return
+
+    duplicate.short_description = 'Копировать выбранные елементы'
 
 
 class ContragentAdmin(admin.ModelAdmin):
@@ -37,13 +51,17 @@ class ContragentAdmin(admin.ModelAdmin):
         return "-"
 
 
-class NormativeCategoryAdmin(admin.ModelAdmin):
+class NormativeCategoryAdmin(admin.ModelAdmin, DuplicateElementsMixin):
     filter_horizontal = ('normative',)
     list_display = ('__str__',)
 
+    actions = ['duplicate', ]
 
-class NormativeAdmin(admin.ModelAdmin):
+
+class NormativeAdmin(admin.ModelAdmin, DuplicateElementsMixin):
     list_display = ('__str__',)
+
+    actions = ['duplicate', ]
 
 
 class SingleFileInLine(GenericTabularInline):
@@ -91,39 +109,49 @@ class DocumentsPackageAdmin(admin.ModelAdmin):
 
 
 class SingleFilesTemplateAdmin(admin.ModelAdmin):
+    form = SingleFilesTemplateAdminForm
     filter_horizontal = ('documents',)
     list_display_links = ('__str__', )
     list_display = ('__str__', )
 
 
 class PackFilesTemplateAdmin(admin.ModelAdmin):
+    form = PackFilesTemplateAdminForm 
     filter_horizontal = ('documents',)
     list_display = ('__str__', )
 
 
-class SignUserAdmin(admin.ModelAdmin):
+class SignUserAdmin(admin.ModelAdmin, DuplicateElementsMixin):
     sets = ('pk', 'name', 'position', 'address')
     list_display = sets
     list_display_links = sets
 
+    actions = ['duplicate', ]
 
-class CityModelAdmin(admin.ModelAdmin):
+
+class CityModelAdmin(admin.ModelAdmin, DuplicateElementsMixin):
     sets = ('pk', 'name')
     list_display = sets
     list_display_links = sets
 
+    actions = ['duplicate', ]
 
-class DocumentTypeModelAdmin(admin.ModelAdmin):
+
+class DocumentTypeModelAdmin(admin.ModelAdmin, DuplicateElementsMixin):
     sets = ('pk', 'doc_type')
     list_display = sets
     list_display_links = sets
 
+    actions = ['duplicate', ]
 
-class TemplateModelAdmin(admin.ModelAdmin):
+
+class TemplateModelAdmin(admin.ModelAdmin, DuplicateElementsMixin):
     form = TemplateModelForm
     sets = ('pk', 'document_type', 'contragent_type', 'city')
     list_display = sets
     list_display_links = sets
+
+    actions = ['duplicate', ]
 
 
 admin.site.register(Contragent, ContragentAdmin)
