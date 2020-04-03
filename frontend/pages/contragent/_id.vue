@@ -165,18 +165,16 @@ export default {
         console.log(this.$refs)
         console.log(this.contragent)
         if (result) {
-          // this.UPDATE_CONTRAGENT()
+          this.UPDATE_CONTRAGENT()
         }
-        this.UPDATE_CONTRAGENT()
       })
     },
     contragentGenerateSubmit () {
       this.$refs.observer.validate().then((result) => {
         console.log(this.$refs)
         if (result) {
-          // this.GENERATE_PACKAGE()
+          this.GENERATE_PACKAGE()
         }
-        this.GENERATE_PACKAGE()
       })
     }
   }
