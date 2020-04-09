@@ -26,6 +26,7 @@
           ) Посмотреть пакеты
         v-card-text
           v-form
+            contragent-is-func
             contragent-class
             contragent-excell-name
             contragent-dadata-name
@@ -36,7 +37,6 @@
             contragent-inn
             contragent-kpp
             contragent-ogrn
-            contragent-is-func
             contragent-okved
             contragent-opf
             contragent-rs

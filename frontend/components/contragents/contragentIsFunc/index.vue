@@ -1,13 +1,19 @@
 <template lang="pug">
   v-col(cols="12")
     v-select(
-      disabled
+      dark
+      dense
+      filled
+      readonly
+      :items="statusList"
       item-text="text"
       item-value="value"
       v-model="is_func"
-      :items="statusList"
       label="Статус"
+      :background-color="is_func ? 'primary' : 'error'"
     )
+      template(slot="append")
+        span
 </template>
 
 <script>

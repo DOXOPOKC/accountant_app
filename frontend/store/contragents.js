@@ -18,7 +18,8 @@ export const state = () => ({
   normList: [],
   signUsers: [],
   list: [],
-  detail: {}
+  detail: {},
+  excelTemplateLink: ''
 })
 
 export const mutations = {
@@ -27,6 +28,7 @@ export const mutations = {
   },
   [types.SET_CONTRAGENTS] (state, contragents) {
     state.list = contragents
+    state.excelTemplateLink = 'static/template.xlsx'
   },
   [types.SET_NORM_LIST] (state, normList) {
     state.normList = normList

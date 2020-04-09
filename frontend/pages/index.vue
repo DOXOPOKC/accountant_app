@@ -33,10 +33,11 @@
                 v-toolbar-title Контрагенты
                 v-spacer
                 v-btn(
+                  v-if="excelTemplateLink"
                   outlined
                   class="mt-2 mr-2 text-none"
                   color="primary"
-                  href="static/template.xlsx"
+                  :href="excelTemplateLink"
                   target="_blank"
                 ) Скачать Excel
                 v-btn(
@@ -113,7 +114,8 @@ export default {
   }),
   computed: {
     ...mapState({
-      contragents: state => state.contragents.list
+      contragents: state => state.contragents.list,
+      excelTemplateLink: state => state.contragents.excelTemplateLink
     })
   },
   methods: {
