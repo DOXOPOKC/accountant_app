@@ -34,7 +34,14 @@
                 v-spacer
                 v-btn(
                   outlined
-                  class="mt-2 text-capitalize"
+                  class="mt-2 mr-2 text-none"
+                  color="primary"
+                  href="static/template.xlsx"
+                  target="_blank"
+                ) Скачать Excel
+                v-btn(
+                  outlined
+                  class="mt-2 text-none"
                   color="primary"
                   @click="contragentDialogState = true"
                 ) Добавить контрагента
