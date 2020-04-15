@@ -1,70 +1,68 @@
 <template lang="pug">
   v-row(
-    class="fill-height"
-    justify="center"
-    align="start"
     no-gutters
   )
     v-col(
-      xs12
-      sm8
-      md6
+      cols="6"
     )
       v-card(
         flat
         exact
       )
-      ValidationObserver(ref="observer" v-slot="{ passes }")
-        v-card-title(class="headline font-weight-light px-10")
-          | Контрагент № {{ contragent.id }}
-          v-spacer
-          v-btn(
-            outlined
-            class="text-capitalize"
-            color="primary"
-            :to="'/contragent/' + $route.params.id + '/packages/'"
-          ) Посмотреть пакеты
-        v-card-text
-          v-form
+        ValidationObserver(ref="observer" v-slot="{ handleSubmit }")
+          v-card-title(class="headline font-weight-light px-0")
+            | Контрагент № {{ contragent.id }}
+            v-spacer
             contragent-is-func
-            contragent-class
-            contragent-excell-name
-            contragent-dadata-name
-            contragent-director-status
-            contragent-director-name
-            contragent-legal-address
-            contragent-physical-address
-            contragent-inn
-            contragent-kpp
-            contragent-ogrn
-            contragent-okved
-            contragent-opf
-            contragent-rs
-            contragent-ks
-            contragent-bank
-            contragent-bik
-            contragent-creation-date
-            contragent-contract-accept-date
-            contragent-current-date
-            contragent-current-contract-date
-            contragent-debt
-            contragent-number-contract
-            contragent-norm-value
-            contragent-stat-value
-            contragent-platform
-            contragent-signed-user
-            contragent-current-user
-        v-card-actions(class="px-10 py-6")
-          v-btn(
-            @click="contragentGenerateSubmit"
-          )
-            | Сгенерировать пакет
-          v-spacer
-          v-btn(
-            color="primary"
-            @click="contragentUpdateSubmit"
-          )
-            | Сохранить
+          v-card-text(class="px-0")
+            v-form
+              v-row(no-gutters)
+                contragent-class
+                contragent-excell-name
+                contragent-dadata-name
+                contragent-director-status
+                contragent-director-name
+                contragent-legal-address
+                contragent-physical-address
+                contragent-inn
+                contragent-kpp
+                contragent-ogrn
+                contragent-okved
+                contragent-opf
+                contragent-rs
+                contragent-ks
+                contragent-bank
+                contragent-bik
+                contragent-creation-date
+                contragent-contract-accept-date
+                contragent-current-date
+                contragent-current-contract-date
+                contragent-debt
+                contragent-number-contract
+                contragent-norm-value
+                contragent-stat-value
+                contragent-platform
+                contragent-signed-user
+                contragent-current-user
+          v-card-actions(class="px-10 py-6")
+            v-btn(
+              @click="handleSubmit(GENERATE_PACKAGE)"
+            )
+              | Сгенерировать пакет
+            v-spacer
+            v-btn(
+              color="primary"
+              @click="handleSubmit(UPDATE_CONTRAGENT)"
+            )
+              | Сохранить
+    v-col(
+      cols="6"
+    )
+      v-card(
+        flat
+        exact
+      )
+        packages-list
 </template>
 
 <script>
@@ -101,8 +99,11 @@ import contragentRs from '@/components/contragents/contragentRs'
 import contragentSignedUser from '@/components/contragents/contragentSignedUser'
 import contragentStatValue from '@/components/contragents/contragentStatValue'
 
+import packagesList from '@/components/packages'
+
 export default {
   components: {
+    packagesList,
     ValidationProvider,
     ValidationObserver,
     contragentBank,
@@ -159,24 +160,7 @@ export default {
     ...mapActions({
       UPDATE_CONTRAGENT: 'contragents/UPDATE_CONTRAGENT',
       GENERATE_PACKAGE: 'packages/GENERATE_PACKAGE'
-    }),
-    contragentUpdateSubmit () {
-      this.$refs.observer.validate().then((result) => {
-        console.log(this.$refs)
-        console.log(this.contragent)
-        if (result) {
-          this.UPDATE_CONTRAGENT()
-        }
-      })
-    },
-    contragentGenerateSubmit () {
-      this.$refs.observer.validate().then((result) => {
-        console.log(this.$refs)
-        if (result) {
-          this.GENERATE_PACKAGE()
-        }
-      })
-    }
+    })
   }
 }
 </script>
