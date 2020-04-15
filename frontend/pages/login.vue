@@ -71,8 +71,7 @@ export default {
         const { access, refresh } = resp.data
         self.$auth.setToken('local', 'Bearer ' + access)
         self.$auth.setRefreshToken('local', refresh)
-        // self.$axios.setHeader('Authorization', 'Bearer ' + access)
-        self.$axios.setToken(access, 'Bearer')
+        self.$axios.setHeader('Authorization', 'Bearer ' + access)
         // self.$auth.ctx.app.$axios.setHeader('Authorization', 'Bearer ' + access)
         self.$axios.get('user/').then((resp) => { self.$auth.setUser(resp.data); self.$router.push('/') })
       } catch (error) {
