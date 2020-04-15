@@ -7,7 +7,7 @@ async function refreshTokenF ($auth, $axios, token, refreshToken, store, redirec
       const response = await $axios.post('user/login/refresh/', { refresh: refreshToken })
       token = response.data.access
       refreshToken = response.data.refresh || refreshToken
-      $axios.setToken(token)
+      $axios.setToken(token, 'Bearer')
       $auth.setToken('local', 'Bearer ' + token)
       $auth.setRefreshToken(strategy, refreshToken)
       return decodeToken.call(this, token).exp
