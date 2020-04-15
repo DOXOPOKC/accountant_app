@@ -60,7 +60,7 @@ export default {
   */
   axios: {
     baseURL: `${process.env.NUXT_ENV_PROTOCOL}://${process.env.NUXT_ENV_DOMAIN}/api`,
-    credentials: true,
+    credentials: true
   },
   router: {
     middleware: ['loggedIn']
