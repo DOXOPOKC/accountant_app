@@ -1,5 +1,5 @@
 <template lang="pug">
-  v-col(cols="12")
+  v-col(cols="3")
     v-text-field(
       v-model="okved"
       label="ОКВЕД"

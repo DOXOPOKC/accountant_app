@@ -1,8 +1,10 @@
 <template lang="pug">
   v-col(cols="12")
-    v-text-field(
-      disabled
-      v-model="legal_address"
+    v-textarea(
+      readonly
+      auto-grow
+      rows="1"
+      v-model="legalAddress"
       label="Юридический адрес"
     )
 </template>
@@ -11,7 +13,7 @@
 export default {
   data: () => ({}),
   computed: {
-    legal_address: {
+    legalAddress: {
       set (legalAddress) {
         this.$store.commit('contragents/SET_CONTRAGENT', { legal_address: legalAddress })
       },
