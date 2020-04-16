@@ -7,9 +7,9 @@ verify_ssl = true
 pycodestyle = "*"
 flake8 = "*"
 pyflakes = "*"
-ptvsd = "*"
 
 [packages]
+ptvsd = "*"
 drf-yasg = "*"
 djangorestframework = "*"
 django-filter = "*"
@@ -58,6 +58,7 @@ lxml = "*"
 pypandoc = "*"
 aiohttp = "*"
 djangorestframework-simplejwt = "*"
+pillow = "*"
 
 [requires]
 python_version = "3.8.1"

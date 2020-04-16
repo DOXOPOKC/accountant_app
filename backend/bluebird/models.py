@@ -145,9 +145,17 @@ class SignUser(models.Model):
     city = models.ForeignKey('CityModel', on_delete=models.CASCADE,
                              blank=True, null=True)
     tel_number = models.CharField('Телефон', max_length=255, default='')
+    sign = models.ImageField('Подпись', upload_to='signs/',
+                             blank=True, null=True)
 
     def __str__(self):
         return self.name
+
+    def save(self, *args, **kwargs):
+        instance = SignUser.objects.get(id=self.id)
+        if self.sign != instance.sign and instance.sign:
+            os.remove(instance.sign.url)
+        super().save(*args, **kwargs)
 
     class Meta:
         verbose_name_plural = "Отвественные лица с правом подписи"
