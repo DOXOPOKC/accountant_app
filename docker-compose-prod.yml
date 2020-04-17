@@ -7,6 +7,7 @@ services:
     image: postgres
     volumes: 
       - db_data:/var/lib/postgresql/data
+      - db_backup:/var/backups/
     networks: 
       private_network:
         ipv4_address: 172.25.0.2
@@ -89,4 +90,8 @@ networks:
 
 volumes:
   db_data:
+    external: True
+  db_backup:
+    external: True
   media_data:
+    external: True

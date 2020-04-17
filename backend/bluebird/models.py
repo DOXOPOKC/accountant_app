@@ -129,6 +129,9 @@ class Contragent(models.Model):
     def __str__(self):
         return f'{self.excell_name}'
 
+    class Meta:
+        verbose_name_plural = "Контрагенты"
+
 
 class SignUser(models.Model):
     name = models.CharField('ФИО отвественного лица', max_length=255)
@@ -142,9 +145,20 @@ class SignUser(models.Model):
     city = models.ForeignKey('CityModel', on_delete=models.CASCADE,
                              blank=True, null=True)
     tel_number = models.CharField('Телефон', max_length=255, default='')
+    sign = models.ImageField('Подпись', upload_to='signs/',
+                             blank=True, null=True)
 
     def __str__(self):
         return self.name
+
+    def save(self, *args, **kwargs):
+        instance = SignUser.objects.get(id=self.id)
+        if self.sign != instance.sign and instance.sign:
+            os.remove(instance.sign.url)
+        super().save(*args, **kwargs)
+
+    class Meta:
+        verbose_name_plural = "Отвественные лица с правом подписи"
 
 
 class AbstractFileModel(models.Model):
@@ -176,6 +190,9 @@ class SingleFile(AbstractFileModel):
     def __str__(self):
         return str(self.file_type)
 
+    class Meta:
+        verbose_name_plural = "Единичные файлы"
+
 
 class PackFile(AbstractFileModel):
     unique_number = models.ForeignKey('SyncUniqueNumber',
@@ -184,6 +201,7 @@ class PackFile(AbstractFileModel):
 
     class Meta:
         abstract = False
+        verbose_name_plural = "Фаилы набора"
 
     def initialize_folder(self, path: str):
         if self.file_type:
@@ -208,6 +226,9 @@ class OtherFile(AbstractFileModel):
     file_obj = models.FileField('Произвольные файлы',
                                 upload_to=other_files_directory_path,
                                 max_length=500)
+
+    class Meta:
+        verbose_name_plural = "Прочие файлы"
 
 
 class DocumentsPackage(models.Model):
@@ -251,17 +272,32 @@ class DocumentsPackage(models.Model):
     def initialize_sub_folders(self):
         os.makedirs(str(self.get_save_path()), exist_ok=True)
 
+    class Meta:
+        verbose_name_plural = "Пакеты документов"
+
 
 class SingleFilesTemplate(models.Model):
     contagent_type = models.IntegerField(choices=KLASS_TYPES, default=0)
     documents = models.ManyToManyField('DocumentTypeModel',
                                        related_name='document_type')
 
+    def __str__(self):
+        return KLASS_TYPES[self.contagent_type][1]
+
+    class Meta:
+        verbose_name_plural = "Шаблоны единичных файлов"
+
 
 class PackFilesTemplate(models.Model):
     contagent_type = models.IntegerField(choices=KLASS_TYPES, default=0)
     documents = models.ManyToManyField('DocumentTypeModel',
                                        related_name='document_type_pack')
+
+    def __str__(self):
+        return KLASS_TYPES[self.contagent_type][1]
+
+    class Meta:
+        verbose_name_plural = "Шаблоны наборов файлов"
 
 
 class NormativeCategory(models.Model):
@@ -280,6 +316,9 @@ class NormativeCategory(models.Model):
     def print_norm_type(self):
         return NORM_TYPE[self.norm_type][1]
 
+    class Meta:
+        verbose_name_plural = "Категории нормативов"
+
 
 class Normative(models.Model):
     """ Класс норматива """
@@ -295,6 +334,9 @@ class Normative(models.Model):
                 + f' действующий с {self.since_date.strftime("%d.%m.%Y")}'
                 + f' по {self.up_to_date.strftime("%d.%m.%Y")}')
 
+    class Meta:
+        verbose_name_plural = "Нормативы"
+
 
 class Contract(models.Model):
     """ Класс контракта. Нужен что бы получать уникальный номер контракта.
@@ -305,6 +347,9 @@ class Contract(models.Model):
 
     def __str__(self):
         return f'{self.pk:06}-{(self.date_field).year}/ТКО/01'
+
+    class Meta:
+        verbose_name_plural = "Сгенерированые номера договоров"
 
 
 class ContractNumberClass(models.Model):
@@ -353,11 +398,17 @@ class ContractNumberClass(models.Model):
     def __str__(self):
         return self.contract_number
 
+    class Meta:
+        verbose_name_plural = "Номера договоров"
+
 
 class SyncUniqueNumber(models.Model):
 
     def __str__(self):
         return f'{self.pk:08}/01'
+
+    class Meta:
+        verbose_name_plural = "Номера документов"
 
 
 class CityModel(models.Model):
@@ -365,6 +416,9 @@ class CityModel(models.Model):
 
     def __str__(self):
         return self.name
+
+    class Meta:
+        verbose_name_plural = "Города"
 
 
 class TemplateModel(models.Model):
@@ -378,7 +432,10 @@ class TemplateModel(models.Model):
 
     def __str__(self):
         return f'{str(self.document_type)}|\
-{KLASS_TYPES[self.contragent_type][1]}|{self.city}'
+ {KLASS_TYPES[self.contragent_type][1]}|{self.city}'
+
+    class Meta:
+        verbose_name_plural = "Шаблоны документов"
 
 
 class DocumentTypeModel(models.Model):
@@ -388,3 +445,6 @@ class DocumentTypeModel(models.Model):
 
     def __str__(self):
         return self.doc_type
+
+    class Meta:
+        verbose_name_plural = "Типы документов"

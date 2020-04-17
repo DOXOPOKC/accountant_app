@@ -5,12 +5,13 @@
 		<title></title>
 
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+		<meta name="pdfkit-orientation" content="Landscape"/>
 		<br/>
 		<style type="text/css">
 			body {
 				box-sizing: border-box;
 				padding: 0;
-				margin: 0;
+				margin: 20px 0 0 20px;
 			}
 			p {margin: 0; padding: 0;}
 			.ft10{font-size:7px;font-family:Times;color:#000000;font-weight: 500;}
@@ -43,7 +44,7 @@
 		>
 			<tr>
 				<th rowspan="2" colspan="3" >
-					<p class="ft12" style="text-align: initial;">Счет-фактура&nbsp;№&nbsp;{{ uniq_num_id }}&nbsp;&nbsp;&nbsp;от&nbsp;{{ curr_date|date:"d E Y" }}&nbsp;г.</p>
+					<p class="ft12" style="text-align: initial;">Счет-фактура&nbsp;№&nbsp;{{ consumer.number_contract }}&nbsp;&nbsp;&nbsp;от&nbsp;{{ curr_date|date:"d E Y" }}&nbsp;г.</p>
 				</th>
 				<th></th>
 				<th></th>
@@ -155,20 +156,22 @@
 					<p class="ft17">Руководитель&nbsp;организации<br/>или&nbsp;иное&nbsp;уполномоченное&nbsp;лицо</p>
 				</td>
 				<td style="vertical-align: bottom;">
+					<p>{% if consumer.signed_user.sign %}<img src="{{ consumer.signed_user.sign.url }}" style="display: inline; position: absolute;z-index: 1;left: 320px;top:490px; max-width: 100px; height: auto;"/>{% endif %}</p>
 					<p style="width:50px;text-align:center;border-top:1px solid black" class="ft10">(подпись)</p>
 				</td>
 				<td style="vertical-align: baseline;">
-					<p class="ft16">Гвоздева&nbsp;М.Л.&nbsp;<br/>Доверенность&nbsp;б/н&nbsp;<br/>от&nbsp;01.10.2019г.</p>
+					<p class="ft16">{{ consumer.signed_user.name }}&nbsp;<br/>{{ sign_user_document }}&nbsp;б/н {{ consumer.signed_user.doc_number }}&nbsp;<br/>от&nbsp;{{ consumer.signed_user.doc_date|date:"d E Y" }}г.</p>
 					<p style="width:100px;text-align:center;border-top:1px solid black;" class="ft10">(ф.и.о.)</p>
 				</td>
 				<td style="vertical-align: baseline;">
 					<p class="ft17">Главный&nbsp;бухгалтер<br/>или&nbsp;иное&nbsp;<br/>уполномоченное&nbsp;лицо</p>
 				</td>
 				<td style="vertical-align: bottom;">
+					<p>{% if consumer.signed_user.sign %}<img src="{{ consumer.signed_user.sign.url }}" style="display: inline; position: absolute;z-index: 1;left: 870px;top:490px; max-width: 100px; height: auto;"/>{% endif %}</p>
 					<p style="width:50px;text-align:center;border-top:1px solid black" class="ft10">(подпись)</p>
 				</td>
 				<td style="vertical-align: baseline;">
-					<p class="ft16">Гвоздева&nbsp;М.Л.&nbsp;<br/>Доверенность&nbsp;б/н&nbsp;от&nbsp;<br/>01.10.2019г.</p>
+					<p class="ft16">{{ consumer.signed_user.name }}&nbsp;<br/>{{ sign_user_document }}&nbsp;б/н {{ consumer.signed_user.doc_number }}&nbsp;от&nbsp;<br/>{{ consumer.signed_user.doc_date|date:"d E Y" }}г.</p>
 					<p style="width:100px;text-align:center;border-top:1px solid black" class="ft10">(ф.и.о.)</p>
 				</td>
 			</tr>

@@ -18,7 +18,8 @@ export const state = () => ({
   normList: [],
   signUsers: [],
   list: [],
-  detail: {}
+  detail: {},
+  excelTemplateLink: ''
 })
 
 export const mutations = {
@@ -27,6 +28,7 @@ export const mutations = {
   },
   [types.SET_CONTRAGENTS] (state, contragents) {
     state.list = contragents
+    state.excelTemplateLink = (contragents.length) ? 'media/template.xlsx' : ''
   },
   [types.SET_NORM_LIST] (state, normList) {
     state.normList = normList
@@ -39,6 +41,9 @@ export const mutations = {
 export const actions = {
   async [types.FETCH_CONTRAGENT] ({ commit }, id) {
     const data = await this.$repositories.contragents.getContragent(id)
+    if (data.other_files) {
+      this.commit(types.SET_FILES, data.other_files)
+    }
     commit(types.SET_CONTRAGENT, data)
   },
   async [types.CREATE_CONTRAGENT] ({ dispatch }, { vueFileAgent }) {

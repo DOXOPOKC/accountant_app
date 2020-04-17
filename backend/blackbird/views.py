@@ -69,7 +69,7 @@ def calculate(since_date, up_to_date, stat_value, norm_value, *args, **kwargs):
         raise AttributeError()
 
     result = []
-    start_day = since_date.day
+    start_day = since_date.day - 1
 
     for dt in month_year_iter(since_date.month, since_date.year,
                               up_to_date.month, up_to_date.year,):

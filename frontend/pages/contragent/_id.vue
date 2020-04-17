@@ -25,7 +25,8 @@
             :to="'/contragent/' + $route.params.id + '/packages/'"
           ) Посмотреть пакеты
         v-card-text
-          v-form(@keyup.enter="UPDATE_CONTRAGENT")
+          v-form
+            contragent-is-func
             contragent-class
             contragent-excell-name
             contragent-dadata-name
@@ -36,7 +37,6 @@
             contragent-inn
             contragent-kpp
             contragent-ogrn
-            contragent-is-func
             contragent-okved
             contragent-opf
             contragent-rs
@@ -56,13 +56,13 @@
             contragent-current-user
         v-card-actions(class="px-10 py-6")
           v-btn(
-            @click="GENERATE_PACKAGE"
+            @click="contragentGenerateSubmit"
           )
             | Сгенерировать пакет
           v-spacer
           v-btn(
             color="primary"
-            @click="UPDATE_CONTRAGENT"
+            @click="contragentUpdateSubmit"
           )
             | Сохранить
 </template>
@@ -159,7 +159,24 @@ export default {
     ...mapActions({
       UPDATE_CONTRAGENT: 'contragents/UPDATE_CONTRAGENT',
       GENERATE_PACKAGE: 'packages/GENERATE_PACKAGE'
-    })
+    }),
+    contragentUpdateSubmit () {
+      this.$refs.observer.validate().then((result) => {
+        console.log(this.$refs)
+        console.log(this.contragent)
+        if (result) {
+          this.UPDATE_CONTRAGENT()
+        }
+      })
+    },
+    contragentGenerateSubmit () {
+      this.$refs.observer.validate().then((result) => {
+        console.log(this.$refs)
+        if (result) {
+          this.GENERATE_PACKAGE()
+        }
+      })
+    }
   }
 }
 </script>

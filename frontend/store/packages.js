@@ -44,7 +44,6 @@ export const actions = {
     try {
       const data = await this.$repositories.packages.getPackage(contragentId, packageId)
       commit(types.SET_PACKAGE, data)
-      console.log(data)
       this.commit('tasks/SET_TASK', data.name_uuid)
       this.dispatch('tasks/FETCH_TASKS', { contragentId, packageId })
     } catch (error) {

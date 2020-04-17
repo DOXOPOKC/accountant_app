@@ -5,10 +5,9 @@ async function refreshTokenF ($auth, $axios, token, refreshToken, store, redirec
   if (refreshToken) {
     try {
       const response = await $axios.post('user/login/refresh/', { refresh: refreshToken })
-      console.log(response)
       token = 'Bearer ' + response.data.access
       refreshToken = response.data.refresh || refreshToken
-      $auth.setToken(strategy, token)
+      // $auth.setToken(strategy, token)
       $axios.setToken(token)
       $auth.setRefreshToken(strategy, refreshToken)
       return decodeToken.call(this, token).exp
@@ -20,18 +19,20 @@ async function refreshTokenF ($auth, $axios, token, refreshToken, store, redirec
   }
 }
 
-export default async function ({ app, store, redirect }) {
+export default function ({ app, store, redirect }) {
   const { $axios, $auth } = app
   let token
   let refreshToken
 
   $axios.onError(async (err) => {
-    if (!err.config.retry && err.response.status === 401 && !err.config.url.endsWith('/token') && !err.config.url.endsWith('/refresh')) {
+    if (!err.config.retry && err.response.status === 401) {
       err.config.retry = true
       token = $auth.getToken(strategy)
       refreshToken = $auth.getRefreshToken(strategy)
       if (refreshToken) {
         await refreshTokenF($auth, $axios, token, refreshToken, store, redirect)
+        // console.log(Object.assign(err.config, $axios.defaults.headers.common))
+        err.config.headers = $axios.defaults.headers.common
         return $axios(err.config)
       } else {
         $auth.logout()
@@ -41,26 +42,11 @@ export default async function ({ app, store, redirect }) {
     return Promise.reject(err)
   })
 
-  token = $auth.getToken(strategy)
-  refreshToken = $auth.getRefreshToken(strategy)
-  let refreshInterval = FALLBACK_INTERVAL
-  if (token && refreshToken) {
-    const tokenParsed = decodeToken.call(this, token)
-    refreshInterval = (tokenParsed.exp * 1000 - Date.now()) * 0.75
-
-    if (refreshInterval < 10000 && refreshInterval > 0) {
-      refreshInterval = 10000
-    }
-    if (refreshInterval < 0) {
-      refreshInterval = (await refreshTokenF($auth, $axios, token, refreshToken, store, redirect) * 1000 - Date.now()) * 0.75
-      $auth.fetchUserOnce()
-    }
-  }
   setInterval(async function () {
     token = $auth.getToken(strategy)
     refreshToken = $auth.getRefreshToken(strategy)
     await refreshTokenF($auth, $axios, token, refreshToken, store, redirect)
-  }, refreshInterval)
+  }, FALLBACK_INTERVAL)
 }
 
 function decodeToken (str) {

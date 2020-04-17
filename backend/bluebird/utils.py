@@ -13,13 +13,15 @@ from django.http import Http404
 from django.template.loader import render_to_string
 from django.core.exceptions import ObjectDoesNotExist
 from django_q.tasks import async_task, Task
-from docxtpl import DocxTemplate
+from docxtpl import DocxTemplate, InlineImage
+from docx.shared import Mm
 
 
 from bluebird.dadata import (Result_response_from_suggestion,
                              suggestions_response_from_dict)
 from bluebird.models import (
     KLASS_TYPES,
+    DOC_TYPE,
     Contragent,
     PackFile,
     SyncUniqueNumber,
@@ -35,7 +37,7 @@ from bluebird.templatetags.template_extra_filters import (
     pretty_date_filter,
     datv_case_filter,
     cap_first,
-    literal, proper_date_filter, remove_zero_at_end)
+    literal, proper_date_filter, remove_zero_at_end, sum_imp)
 
 from blackbird.views import calculate, round_hafz
 
@@ -124,7 +126,7 @@ def get_data(id: int):
                         serializer.save()
                         return {'inn': contragent.inn, 'status': "OK"}
             return {'inn': contragent.inn, 'status': "Not OK",
-                    'errors': serializer.errors}
+                    'errors': 'Contragent not active.'}
         else:
             return {'inn': contragent.inn,
                     'status': "0 length suggestion, something wrong."}
@@ -183,6 +185,8 @@ def generate_pack_doc(data_list, package: DocumentsPackage,
             delete_models(removed_docs)
             for data in data_list:
                 data['consumer'] = contragent
+                data['sign_user_document'] = (
+                    DOC_TYPE[contragent.signed_user.document][1])
                 curr_date = data['curr_date']
                 for doc_type in tmp_template_doc_types_list:
                     # Берем конкретную запись на дату и тип.
@@ -208,7 +212,7 @@ def generate_pack_doc(data_list, package: DocumentsPackage,
 
                             else:
                                 file_name = f'{doc_type.doc_type.title()} \
-№{doc.unique_number} от {data["curr_date"]}.pdf'.replace('/', '-')
+ №{doc.unique_number} от {data["curr_date"]}.pdf'.replace('/', '-')
                                 file_path = os.path.join(
                                     doc.get_files_path(package),
                                     file_name)
@@ -227,7 +231,8 @@ def generate_pack_doc(data_list, package: DocumentsPackage,
                     # Создаем запись по переданным данным.
                     # Либо такого файла не найдено, что значит мы работаем с
                     # новой датой, либо экземпляры были удалены.
-                    create_models(data, package, doc_type)
+                    unique_number = SyncUniqueNumber.objects.create()
+                    create_models(data, package, doc_type, unique_number)
 
             # Если после удаления найденых записей, еще остаются записи в
             # словаре, значит из шаблона были удалены подпакеты. И именно их
@@ -250,12 +255,16 @@ def generate_pack_doc(data_list, package: DocumentsPackage,
     #  - если пересоздаем, но екземпляров найдено не было.
     for data in data_list:
         data['consumer'] = contragent
+        data['sign_user_document'] = (
+                    DOC_TYPE[contragent.signed_user.document][1])
+        unique_number = SyncUniqueNumber.objects.create()
         for doc_type in tmp_template_doc_types_list:
-            create_models(data, package, doc_type)
+            create_models(data, package, doc_type, unique_number)
 
 
 def create_models(data: dict, package: DocumentsPackage,
-                  file_type: DocumentTypeModel):
+                  file_type: DocumentTypeModel,
+                  unique_number: SyncUniqueNumber):
     """ Функция создания экземпляра модели PackFile по шаблону.
     На вход принимает:
     data - словарь с данными на определенную дату.
@@ -265,15 +274,15 @@ def create_models(data: dict, package: DocumentsPackage,
     template = get_template(file_type, package)
     if not template:
         return None
-    unique_number = SyncUniqueNumber.objects.create()
     file_obj = PackFile.objects.create(
         content_object=package,
         creation_date=data['curr_date'],
         unique_number=unique_number,
         file_type=file_type)
     file_name = f'{file_type.doc_type.title()} \
-№{unique_number} от {data["curr_date"]}.pdf'.replace('/', '-')
+ №{unique_number} от {data["curr_date"]}.pdf'.replace('/', '-')
     file_path = os.path.join(file_obj.get_files_path(package), file_name)
+    
     create_files(data, template, file_path)
     file_obj.file_name = file_name
     file_obj.file_path = str_remove_app(file_path)
@@ -304,8 +313,11 @@ def create_files(data: dict, template: TemplateModel, file_path: str):
     template - экземпляр шаблона генерации.
     file_path - путь сохранения итогового документа в виде строки.
     """
-    text = render_to_string(template.template_path, context=data)
-    generate_document(text, file_path)
+    if os.path.isfile(template.template_path):
+        text = render_to_string(template.template_path, context=data)
+        generate_document(text, file_path)
+    else:
+        raise ObjectDoesNotExist('Template path does not exist.')
 
 
 def generate_document(text: str, name: str, **kwargs):
@@ -327,7 +339,7 @@ def generate_single_files(data: dict, package: DocumentsPackage, total: float,
         for r in res:
             r.delete()
     except ObjectDoesNotExist:
-        return
+        return Http404
 
 
 def generate_docx_file(data: dict, package: DocumentsPackage, total: float,
@@ -336,6 +348,7 @@ def generate_docx_file(data: dict, package: DocumentsPackage, total: float,
     if not template:
         return None
     doc = DocxTemplate(template.template_path)
+    
     jinja_env = jinja2.Environment()
     jinja_env.filters['datv_case_filter'] = datv_case_filter
     jinja_env.filters['gent_case_filter'] = gent_case_filter
@@ -344,7 +357,11 @@ def generate_docx_file(data: dict, package: DocumentsPackage, total: float,
     jinja_env.filters['literal'] = literal
     jinja_env.filters['remove_zero_at_end'] = remove_zero_at_end
     jinja_env.filters['proper_date_filter'] = proper_date_filter
+    jinja_env.filters['sum_imp'] = sum_imp
     context = {'data': data, 'consumer': package.contragent, 'total': total}
+    if package.contragent.signed_user.sign:
+        context['sign'] = InlineImage(doc, package.contragent.signed_user.sign,
+                                      width=Mm(27))
     doc.render(context, jinja_env)
     tmp_name = str(package.contragent.number_contract).replace('/', '-')
     file_name = f'{str(document_type_obj)} ({tmp_name}).docx'
@@ -352,15 +369,18 @@ def generate_docx_file(data: dict, package: DocumentsPackage, total: float,
         package.get_save_path(),
         file_name)
 
-    if recreate and os.path.isfile(tmp_path):
-        os.remove(tmp_path)
-    else:
+    res = SingleFile.objects.filter(object_id=package.id,
+                                    file_type=document_type_obj.id)
+    if not len(res):
         SingleFile.objects.create(
-            file_name=file_name,
-            file_path=str_remove_app(tmp_path),
-            content_object=package,
-            creation_date=datetime.date.today(),
-            file_type=document_type_obj)
+                file_name=file_name,
+                file_path=str_remove_app(tmp_path),
+                content_object=package,
+                creation_date=datetime.date.today(),
+                file_type=document_type_obj)
+    else:
+        if recreate and os.path.isfile(tmp_path):
+            os.remove(tmp_path)
 
     doc.save(tmp_path)
     return None
@@ -401,17 +421,13 @@ def del_after_exec(task):
     Task.delete_group(task.group)
 
 
-def get_template(doc_type, package: DocumentsPackage):
+def get_template(doc_type: DocumentTypeModel, package: DocumentsPackage):
     try:
-        if isinstance(doc_type, str):
-            doc_type = DocumentTypeModel.objects.get(doc_type=doc_type)
-        if isinstance(doc_type, DocumentTypeModel):
-            template = TemplateModel.objects.get(
-                city=package.contragent.signed_user.city,
-                contragent_type=package.contragent.klass,
-                document_type=doc_type.id
-                )
-            return template
-        raise ObjectDoesNotExist()
+        template = TemplateModel.objects.get(
+            city=package.contragent.signed_user.city,
+            contragent_type=package.contragent.klass,
+            document_type=doc_type.id
+            )
+        return template
     except ObjectDoesNotExist:
-        return None
+        return Http404
