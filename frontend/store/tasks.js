@@ -39,7 +39,6 @@ export const actions = {
         ]))
         const tasks = responses[1]
         const contragentPackage = responses[2]
-        console.log(tasks, contragentPackage)
         if (!tasks.length) { commit(types.REMOVE_TASK_UID) }
         commit(types.SET_TASKS, tasks)
         this.commit('packages/SET_PACKAGE', contragentPackage)

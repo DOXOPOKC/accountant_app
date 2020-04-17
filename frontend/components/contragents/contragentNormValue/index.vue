@@ -1,5 +1,5 @@
 <template lang="pug">
-  v-col(cols="12")
+  v-col(cols="4")
     ValidationProvider(rules="required" v-slot="{ errors }")
       v-select(
         item-text="name"

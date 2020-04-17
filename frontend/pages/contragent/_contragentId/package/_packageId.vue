@@ -15,10 +15,13 @@
         exact
       )
         v-card-title(class="headline font-weight-light px-10")
-          | Пакет № {{ package.id }}
+          span Пакет № {{ package.id }}
           v-spacer
           v-btn(
             v-if="packageActiveStatus"
+            text
+            tile
+            outlined
             class="custom-transform-class text-none"
             color="error"
             @click="DEACTIVATE_PACKAGE({ contragentId: package.contragent, packageId: package.id })"
@@ -26,6 +29,9 @@
             | Сделать неактивным
           v-btn(
             v-if="packageActiveStatus"
+            text
+            tile
+            outlined
             class="ml-2 custom-transform-class text-none"
             color="primary"
             @click="REGENERATE_PACKAGE({ contragentId: package.contragent, packageId: package.id })"
@@ -33,12 +39,25 @@
             | Перегенерировать
           v-btn(
             v-if="packageActiveStatus"
+            text
+            tile
             outlined
             class="ml-2 custom-transform-class text-none"
             color="primary"
             @click="packageDialogState = true"
           )
             | Добавить файл
+        v-card-subtitle
+          v-breadcrumbs(:items="breadcrumbsTesrt")
+            template(v-slot:item="{ item }")
+              v-breadcrumbs-item(
+                v-if="item.href"
+              )
+                nuxt-link(:to="item.href") {{ item.text.toUpperCase() }}
+              v-breadcrumbs-item(
+                v-else
+                :disabled="item.disabled"
+              ) {{ item.text.toUpperCase() }}
         v-card-text
           v-dialog(
             v-model="packageDialogState"
@@ -69,10 +88,21 @@
                 v-spacer
                 v-btn(color="blue darken-1" text @click="packageDialogState = false") Закрыть
                 v-btn(color="blue darken-1" text @click="upload") Отправить
-          v-subheader(class="subtitle-1 black--text" v-for="file in package['single_files']")
-            a(:href="file.file_path" class="blue--text") {{ file.file_type.doc_type }}
+          v-list(two-line subheader)
+            v-title(inset)
+            v-list-item(
+              v-for="(file, i) in package['single_files']"
+              :key="i"
+              :href="file.file_path"
+            )
+              v-list-item-avatar
+                v-icon(
+                  class="grey lighten-1 white--text"
+                ) mdi-file
+              v-list-item-content
+                v-list-item-title(v-text="file.file_type.doc_type")
           v-row(no-gutters)
-            v-col(cols="12")
+            v-col(cols="12" v-if="otherFiles.length")
               v-list(rounded pa-0 max-width="400px")
                 v-list-item-group(color="blue")
                   v-subheader Другие файлы
@@ -170,7 +200,6 @@
 <script>
 import { mapState, mapActions } from 'vuex'
 import { ValidationProvider, ValidationObserver } from 'vee-validate'
-import { types } from '~/store/packages'
 
 export default {
   components: {
@@ -178,23 +207,30 @@ export default {
     ValidationObserver
   },
   async asyncData ({ $axios, store, params }) {
-    await store.dispatch(`packages/${types.FETCH_PACKAGE}`, { contragentId: params.contragentId, packageId: params.id })
+    await store.dispatch('packages/FETCH_PACKAGE', { contragentId: params.packageId, packageId: params.packageId })
+    await store.dispatch('files/FETCH_FILES', { contragentId: params.packageId, packageId: params.packageId })
   },
   data: () => ({
     packageDialogState: false,
-    filesDataForUpload: null
+    filesDataForUpload: null,
+    breadcrumbsTesrt: [
+      {
+        text: 'Пакеты',
+        disabled: false,
+        href: `/contragent/${1}`
+      },
+      {
+        text: `Пакет ${1}`,
+        disabled: true,
+        href: ''
+      }
+    ]
   }),
   computed: {
     ...mapState({
       package: state => state.packages.detail,
       packageActiveStatus: state => state.packages.detail.is_active,
       otherFiles: state => state.files.list
-    })
-  },
-  mounted () {
-    this.$nextTick(() => {
-      this.$nuxt.$loading.start()
-      setTimeout(() => this.$nuxt.$loading.finish(), 20000)
     })
   },
   methods: {
@@ -206,7 +242,7 @@ export default {
       this.$store.dispatch('files/CREATE_FILE', {
         vueFileAgent: this.$refs.vueFileAgent,
         contragentId: this.$route.params.contragentId,
-        packageId: this.$route.params.id,
+        packageId: this.$route.params.packageId,
         filesDataForUpload: this.filesDataForUpload
       })
       this.contragentDialogState = false
