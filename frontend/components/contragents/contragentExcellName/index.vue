@@ -1,7 +1,7 @@
 <template lang="pug">
   v-col(cols="12")
     v-text-field(
-      v-model="excell_name"
+      v-model="excellName"
       label="Наименование"
     )
 </template>
@@ -10,7 +10,7 @@
 export default {
   data: () => ({}),
   computed: {
-    excell_name: {
+    excellName: {
       set (excellName) {
         this.$store.commit('contragents/SET_CONTRAGENT', { excell_name: excellName })
       },

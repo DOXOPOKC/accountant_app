@@ -1,5 +1,5 @@
 <template lang="pug">
-  v-col(cols="6")
+  v-col(cols="3")
     v-menu(
       ref="menu"
       v-model="menu"
@@ -12,14 +12,13 @@
       template(v-slot:activator="{ on }")
         ValidationProvider(rules="required" v-slot="{ errors }")
           v-text-field(
-            disabled
             v-model="creation_date"
             label="Дата создания юр. лица"
             readonly
             v-on="on"
             :error-messages="errors"
           )
-      v-date-picker(v-model="creation_date" no-title scrollable disabled)
+      v-date-picker(v-model="creation_date" no-title scrollable readonly)
         v-spacer
         v-btn(text color="primary" @click="menu = false") Cancel
         v-btn(text color="primary" @click="$refs.menu.save(creation_date)") OK

@@ -1,5 +1,5 @@
 <template lang="pug">
-  v-col(cols="6")
+  v-col(cols="3")
     v-menu(
       ref="menu"
       v-model="menu"

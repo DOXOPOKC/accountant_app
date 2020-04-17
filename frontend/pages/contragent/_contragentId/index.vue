@@ -6,7 +6,7 @@
     class="fill-height"
   )
     v-card-title(class="headline font-weight-light")
-      | Пакеты контрагента № {{ $route.params.id }}
+      | Пакеты контрагента № {{ $route.params.contragentId }}
     v-card-text(class="pa-0")
       v-data-table(
         :headers="headers"
@@ -26,7 +26,6 @@
               td(v-if="item.is_active")
                 v-chip(color="green" dark) {{ item.id }}
               td(v-else color="red") {{ item.id }}
-              td {{ item.contragent }}
               td {{ item.creation_date | dateFormat }}
   v-card(
     v-else
@@ -52,7 +51,6 @@ export default {
         sortable: false,
         value: 'id'
       },
-      { text: 'Контрагент', value: 'contragent' },
       { text: 'Дата создания', value: 'creation_date' }
       // { text: 'Действия' }
       // Дата последнего платежа

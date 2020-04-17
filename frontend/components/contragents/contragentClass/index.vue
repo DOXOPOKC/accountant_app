@@ -2,7 +2,7 @@
   v-col(cols="12")
     v-select(
       readonly
-      v-model="klass"
+      v-model="contragentClass"
       :items="classTypes"
       label="Класс контрагента"
     )
@@ -21,9 +21,9 @@ export default {
     ]
   }),
   computed: {
-    klass: {
-      set (klass) {
-        this.$store.commit('contragents/SET_CONTRAGENT', { klass })
+    contragentClass: {
+      set (contragentClass) {
+        this.$store.commit('contragents/SET_CONTRAGENT', { klass: contragentClass })
       },
       get () {
         return this.$store.state.contragents.detail.klass
