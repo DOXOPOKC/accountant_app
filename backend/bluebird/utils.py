@@ -13,7 +13,8 @@ from django.http import Http404
 from django.template.loader import render_to_string
 from django.core.exceptions import ObjectDoesNotExist
 from django_q.tasks import async_task, Task
-from docxtpl import DocxTemplate
+from docxtpl import DocxTemplate, InlineImage
+from docx.shared import Mm
 
 
 from bluebird.dadata import (Result_response_from_suggestion,
@@ -281,6 +282,7 @@ def create_models(data: dict, package: DocumentsPackage,
     file_name = f'{file_type.doc_type.title()} \
  №{unique_number} от {data["curr_date"]}.pdf'.replace('/', '-')
     file_path = os.path.join(file_obj.get_files_path(package), file_name)
+    
     create_files(data, template, file_path)
     file_obj.file_name = file_name
     file_obj.file_path = str_remove_app(file_path)
@@ -346,6 +348,7 @@ def generate_docx_file(data: dict, package: DocumentsPackage, total: float,
     if not template:
         return None
     doc = DocxTemplate(template.template_path)
+    
     jinja_env = jinja2.Environment()
     jinja_env.filters['datv_case_filter'] = datv_case_filter
     jinja_env.filters['gent_case_filter'] = gent_case_filter
@@ -356,6 +359,9 @@ def generate_docx_file(data: dict, package: DocumentsPackage, total: float,
     jinja_env.filters['proper_date_filter'] = proper_date_filter
     jinja_env.filters['sum_imp'] = sum_imp
     context = {'data': data, 'consumer': package.contragent, 'total': total}
+    if package.contragent.signed_user.sign:
+        context['sign'] = InlineImage(doc, package.contragent.signed_user.sign,
+                                      width=Mm(27))
     doc.render(context, jinja_env)
     tmp_name = str(package.contragent.number_contract).replace('/', '-')
     file_name = f'{str(document_type_obj)} ({tmp_name}).docx'

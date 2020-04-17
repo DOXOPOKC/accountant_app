@@ -122,11 +122,16 @@ class PackFilesTemplateAdmin(admin.ModelAdmin):
 
 
 class SignUserAdmin(admin.ModelAdmin, DuplicateElementsMixin):
-    sets = ('pk', 'name', 'position', 'address')
+    sets = ('pk', 'name', 'position', 'address', "is_sign")
     list_display = sets
     list_display_links = sets
 
     actions = ['duplicate', ]
+
+    def is_sign(self, obj):
+        return bool(obj.sign)
+
+    is_sign.boolean = True
 
 
 class CityModelAdmin(admin.ModelAdmin, DuplicateElementsMixin):
