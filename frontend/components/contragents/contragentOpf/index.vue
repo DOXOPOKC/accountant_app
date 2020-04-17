@@ -1,5 +1,5 @@
 <template lang="pug">
-  v-col(cols="12")
+  v-col(cols="2")
     v-text-field(
       v-model="opf"
       label="ОПФ"

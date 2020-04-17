@@ -1,8 +1,8 @@
 <template lang="pug">
-  v-col(cols="12")
+  v-col(cols="3")
     ValidationProvider(rules="required" v-slot="{ errors }")
       v-text-field(
-        v-model="stat_value"
+        v-model="statValue"
         label="Количественный показатель"
         :error-messages="errors"
       )
@@ -17,7 +17,7 @@ export default {
   },
   data: () => ({}),
   computed: {
-    stat_value: {
+    statValue: {
       set (statValue) {
         this.$store.commit('contragents/SET_CONTRAGENT', { stat_value: statValue })
       },

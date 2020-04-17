@@ -1,7 +1,7 @@
 <template lang="pug">
   v-col(cols="12")
     v-text-field(
-      disabled
+      readonly
       v-model="dadata_name"
       label="Юридическое наименование"
     )

@@ -18,7 +18,10 @@ export const state = () => ({
   normList: [],
   signUsers: [],
   list: [],
-  detail: {},
+  detail: {
+    is_func: false,
+    class: null
+  },
   excelTemplateLink: ''
 })
 
