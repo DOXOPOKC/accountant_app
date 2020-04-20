@@ -155,7 +155,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 
 TOP_DIR = os.path.dirname(BASE_DIR)
 
-MEDIA_URL = '/app/media/'
+MEDIA_URL = '/app/media/' if DEBUG else '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
 

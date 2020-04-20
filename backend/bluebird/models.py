@@ -1,19 +1,29 @@
 import datetime
-import uuid
 import os
+import uuid
+from os.path import \
+    exists
 
-from django.contrib.contenttypes.fields import (GenericRelation,
-                                                GenericForeignKey)
-from django.contrib.contenttypes.models import ContentType
+from django.conf import \
+    settings
+from django.contrib.contenttypes.fields import (
+    GenericForeignKey,
+    GenericRelation)
+from django.contrib.contenttypes.models import \
+    ContentType
+from django.db import \
+    models
+
+from bluebird.templatetags.template_extra_filters import \
+    plur_form
+
+from .snippets import \
+    str_add_app
 
 # from django.core.exceptions import ValidationError
 # from django.contrib.auth.models import User
 
-from django.conf import settings
-from django.db import models
 
-from .snippets import str_add_app
-from bluebird.templatetags.template_extra_filters import plur_form
 
 
 KLASS_TYPES = [
@@ -154,7 +164,8 @@ class SignUser(models.Model):
     def save(self, *args, **kwargs):
         instance = SignUser.objects.get(id=self.id)
         if self.sign != instance.sign and instance.sign:
-            os.remove(instance.sign.url)
+            if os.path.exists(instance.sign.url):
+                os.remove(instance.sign.url)
         super().save(*args, **kwargs)
 
     class Meta:
