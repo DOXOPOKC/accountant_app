@@ -33,6 +33,7 @@ export const actions = {
   async [types.GENERATE_PACKAGE] ({ commit, dispatch, rootState }) {
     try {
       const data = await this.$repositories.packages.create(rootState.contragents.detail.id, rootState.contragents.detail)
+      dispatch(types.FETCH_PACKAGES, rootState.contragents.detail.id)
       this.commit('tasks/SET_TASK', data)
       this.$toast.success('Пакет успешно сгенерирован')
     } catch (error) {
