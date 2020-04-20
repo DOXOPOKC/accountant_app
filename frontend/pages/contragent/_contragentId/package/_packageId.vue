@@ -48,16 +48,13 @@
           )
             | Добавить файл
         v-card-subtitle
-          v-breadcrumbs(:items="breadcrumbsTesrt")
-            template(v-slot:item="{ item }")
-              v-breadcrumbs-item(
-                v-if="item.href"
-              )
-                nuxt-link(:to="item.href") {{ item.text.toUpperCase() }}
-              v-breadcrumbs-item(
-                v-else
-                :disabled="item.disabled"
-              ) {{ item.text.toUpperCase() }}
+          v-breadcrumbs
+            v-breadcrumbs-item
+              nuxt-link(:to="'/contragent/' + $route.params.contragentId") Пакеты
+            span &nbsp;/&nbsp;
+            v-breadcrumbs-item(
+              disabled
+            ) Пакет {{ $route.params.packageId }}
         v-card-text
           v-dialog(
             v-model="packageDialogState"
@@ -89,7 +86,6 @@
                 v-btn(color="blue darken-1" text @click="packageDialogState = false") Закрыть
                 v-btn(color="blue darken-1" text @click="upload") Отправить
           v-list(two-line subheader)
-            v-title(inset)
             v-list-item(
               v-for="(file, i) in package['single_files']"
               :key="i"
@@ -207,24 +203,12 @@ export default {
     ValidationObserver
   },
   async asyncData ({ $axios, store, params }) {
-    await store.dispatch('packages/FETCH_PACKAGE', { contragentId: params.packageId, packageId: params.packageId })
-    await store.dispatch('files/FETCH_FILES', { contragentId: params.packageId, packageId: params.packageId })
+    await store.dispatch('packages/FETCH_PACKAGE', { contragentId: params.contragentId, packageId: params.packageId })
+    await store.dispatch('files/FETCH_FILES', { contragentId: params.contragentId, packageId: params.packageId })
   },
   data: () => ({
     packageDialogState: false,
-    filesDataForUpload: null,
-    breadcrumbsTesrt: [
-      {
-        text: 'Пакеты',
-        disabled: false,
-        href: `/contragent/${1}`
-      },
-      {
-        text: `Пакет ${1}`,
-        disabled: true,
-        href: ''
-      }
-    ]
+    filesDataForUpload: null
   }),
   computed: {
     ...mapState({
