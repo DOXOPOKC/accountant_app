@@ -235,23 +235,23 @@
                       )
                         v-icon(small) mdi-download
                     span Скачать
-                  v-dialog(v-model="packageFileWarningDialog" persistent max-width="360")
-                    template(v-slot:activator="{ on: dialog }")
-                      v-tooltip(bottom)
-                        template(v-slot:activator="{ on: tooltip }")
-                          v-btn(
-                            icon
-                            v-on="{ ...dialog, ...tooltip }"
-                            color="red"
-                          )
-                            v-icon(small) mdi-close
-                        span Удалить
-                    v-card
-                      v-card-title(class="headline") Удалить выбранный файл?
-                      v-card-actions
-                        v-spacer
-                        v-btn(color="green darken-1" text @click="packageFileWarningDialog = false") Отменить
-                        v-btn(color="green darken-1" text @click="deleteFile(item)") Удалить
+                  v-tooltip(bottom)
+                    template(v-slot:activator="{ on: tooltip }")
+                      v-btn(
+                        icon
+                        v-on="tooltip"
+                        @click.stop="openPackageFileWarningDialog(item)"
+                        color="red"
+                      )
+                        v-icon(small) mdi-close
+                    span Удалить
+      v-dialog(v-model="packageFileWarningDialog" max-width="360")
+        v-card
+          v-card-title(class="headline") Удалить выбранный файл?
+          v-card-actions
+            v-spacer
+            v-btn(color="green darken-1" text @click="closePackageFileWarningDialog") Отменить
+            v-btn(color="green darken-1" text @click="deleteFile") Удалить
 </template>
 
 <script>
@@ -271,6 +271,7 @@ export default {
     packageDialogState: false,
     packageFileWarningDialog: false,
     filesDataForUpload: null,
+    currentItemId: null,
     tab: null,
     headers: [
       {
@@ -317,16 +318,24 @@ export default {
       this.packageDialogState = false
       this.filesDataForUpload = null
     },
-    deleteFile (item) {
+    deleteFile () {
       this.DELETE_FILE({
         contragentId: this.$route.params.contragentId,
         packageId: this.$route.params.packageId,
-        fileId: item.id
+        fileId: this.currentItemId
       })
-      this.packageFileWarningDialog = false
+      this.closePackageFileWarningDialog()
+      this.currentItemId = null
     },
     fileDeleted (fileData) {
       this.filesDataForUpload = null
+    },
+    closePackageFileWarningDialog () {
+      this.packageFileWarningDialog = false
+    },
+    openPackageFileWarningDialog (item) {
+      this.packageFileWarningDialog = true
+      this.currentItemId = item.id
     }
   }
 }

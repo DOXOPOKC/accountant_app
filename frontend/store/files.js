@@ -46,9 +46,9 @@ export const actions = {
     try {
       await this.$repositories.files.delete(contragentId, packageId, fileId)
       dispatch(types.FETCH_FILES, { contragentId, packageId })
-      this.$toast.success('Файл успешно добавлен')
+      this.$toast.success('Файл успешно удален')
     } catch (error) {
-      this.$toast.error('Ошибка! Некорректный файл')
+      this.$toast.error('Ошибка!')
     }
   }
 }
