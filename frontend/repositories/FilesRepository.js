@@ -5,7 +5,7 @@ export default $axios => resource => ({
   },
   // Содержимое файла
   getFile (contragentId, fileId, packageId) {
-    return $axios.$get(`${resource}/${contragentId}/packages/${packageId}/other-files/${fileId}`)
+    return $axios.$get(`${resource}/${contragentId}/packages/${packageId}/other-files/${fileId}/`)
   },
   // Добавление нового файла
   create (contragentId, packageId, payload) {
@@ -13,10 +13,10 @@ export default $axios => resource => ({
   },
   // Обновления файла
   update (contragentId, packageId, fileId, payload) {
-    return $axios.$put(`${resource}/${contragentId}/packages/${packageId}/other-files/${fileId}`, payload)
+    return $axios.$put(`${resource}/${contragentId}/packages/${packageId}/other-files/${fileId}/`, payload)
   },
   // Удаление файла
   delete (contragentId, packageId, fileId) {
-    return $axios.$delete(`${resource}/${contragentId}/packages/${packageId}/other-files/${fileId}`)
+    return $axios.$delete(`${resource}/${contragentId}/packages/${packageId}/other-files/${fileId}/`)
   }
 })

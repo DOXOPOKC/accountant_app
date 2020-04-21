@@ -235,6 +235,24 @@
                       )
                         v-icon(small) mdi-download
                     span Скачать
+                  v-dialog(v-model="packageFileWarningDialog" persistent max-width="290")
+                    template(v-slot:activator="{ on: dialog }")
+                      v-tooltip(bottom)
+                        template(v-slot:activator="{ on: tooltip }")
+                          v-btn(
+                            icon
+                            v-on="{ ...dialog, ...tooltip }"
+                            color="red"
+                          )
+                            v-icon(small) mdi-download
+                        span Удалить
+                    v-card
+                      v-card-title(class="headline") Use Google's location service?
+                      v-card-text Let Google help apps determine location. This means sending anonymous location data to Google, even when no apps are running.
+                      v-card-actions
+                        v-spacer
+                        v-btn(color="green darken-1" text @click="packageFileWarningDialog = false") Disagree
+                        v-btn(color="green darken-1" text @click="deleteFile(item)") Agree
 </template>
 
 <script>
@@ -252,6 +270,7 @@ export default {
   },
   data: () => ({
     packageDialogState: false,
+    packageFileWarningDialog: false,
     filesDataForUpload: null,
     tab: null,
     headers: [
@@ -286,7 +305,8 @@ export default {
   methods: {
     ...mapActions({
       REGENERATE_PACKAGE: 'packages/REGENERATE_PACKAGE',
-      DEACTIVATE_PACKAGE: 'packages/DEACTIVATE_PACKAGE'
+      DEACTIVATE_PACKAGE: 'packages/DEACTIVATE_PACKAGE',
+      DELETE_FILE: 'files/DELETE_FILE'
     }),
     upload () {
       this.$store.dispatch('files/CREATE_FILE', {
@@ -297,6 +317,14 @@ export default {
       })
       this.packageDialogState = false
       this.filesDataForUpload = null
+    },
+    deleteFile (item) {
+      this.DELETE_FILE({
+        contragentId: this.$route.params.contragentId,
+        packageId: this.$route.params.packageId,
+        fileId: item.id
+      })
+      this.packageFileWarningDialog = false
     },
     fileDeleted (fileData) {
       this.filesDataForUpload = null
