@@ -88,6 +88,28 @@
             )
               v-data-table(
                 :headers="headers"
+                :items="package.single_files"
+                :items-per-page="5"
+                class="elevation-0"
+              )
+                template(v-slot:item.actions="{ item }")
+                  v-tooltip(bottom)
+                    template(v-slot:activator="{ on }")
+                      v-btn(
+                        icon
+                        v-on="on"
+                        color="blue"
+                        :href="item.file_path || ''"
+                        target="_blank"
+                      )
+                        v-icon(small) mdi-download
+                    span Скачать
+          v-tab-item
+            v-card(
+              flat
+            )
+              v-data-table(
+                :headers="headers"
                 :items="package.pack_files['Акт']"
                 :items-per-page="5"
                 class="elevation-0"
@@ -104,8 +126,6 @@
                       )
                         v-icon(small) mdi-download
                     span Скачать
-                template(v-slot:no-data)
-                  v-btn(color="primary" @click="initialize") Reset
           v-tab-item
             v-card(
               flat
@@ -252,7 +272,7 @@ export default {
       // Ответственное лицо
     ],
     items: [
-      'Акты', 'Счета', 'Счета фактур', 'Другие файлы'
+      'Основные файлы', 'Акты', 'Счета', 'Счета фактур', 'Другие файлы'
     ],
     menu: [
       { icon: 'home', title: 'Link A' },
