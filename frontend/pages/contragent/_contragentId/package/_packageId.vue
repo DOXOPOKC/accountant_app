@@ -14,183 +14,244 @@
         flat
         exact
       )
-        v-card-title(class="headline font-weight-light px-10")
-          span Пакет № {{ package.id }}
+        v-toolbar(elevation="0")
+          v-btn(icon class="hidden-xs-only" :to="'/contragent/' + $route.params.contragentId")
+            v-icon mdi-arrow-left
+          v-toolbar-title Пакет № {{ package.id }}
           v-spacer
-          v-btn(
-            v-if="packageActiveStatus"
-            text
-            tile
-            outlined
-            class="custom-transform-class text-none"
-            color="error"
-            @click="DEACTIVATE_PACKAGE({ contragentId: package.contragent, packageId: package.id })"
-          )
-            | Сделать неактивным
-          v-btn(
-            v-if="packageActiveStatus"
-            text
-            tile
-            outlined
-            class="ml-2 custom-transform-class text-none"
-            color="primary"
-            @click="REGENERATE_PACKAGE({ contragentId: package.contragent, packageId: package.id })"
-          )
-            | Перегенерировать
-          v-btn(
-            v-if="packageActiveStatus"
-            text
-            tile
-            outlined
-            class="ml-2 custom-transform-class text-none"
-            color="primary"
-            @click="packageDialogState = true"
-          )
-            | Добавить файл
-        v-card-subtitle
-          v-breadcrumbs
-            v-breadcrumbs-item
-              nuxt-link(:to="'/contragent/' + $route.params.contragentId") Пакеты
-            span &nbsp;/&nbsp;
-            v-breadcrumbs-item(
-              disabled
-            ) Пакет {{ $route.params.packageId }}
-        v-card-text
-          v-dialog(
-            v-model="packageDialogState"
-            persistent
-            max-width="600px"
-          )
-            v-card(outlined)
-              v-card-title
-                span(class="headline") Добавление файла
-              v-card-text
-                v-container(px-0 pb-0)
-                  v-row(no-gutters)
-                    v-col(cols="12")
-                      VueFileAgent(
-                        ref="vueFileAgent"
-                        v-model="filesDataForUpload"
-                        :theme="'list'"
-                        :maxFiles="1"
-                        :multiple="true"
-                        :deletable="true"
-                        :compact="true"
-                        :helpText="'Загрузите свой файл'"
-                        :errorText="{ type: 'Некоректный тип файла. Доступно только xlsx', size: 'Размер файла выше 2MB' }"
-                        @delete="fileDeleted($event)"
-                      )
-                      small *Файл должен быть с расширением .xlsx и размером меньше двух мегабайт
-              v-card-actions
-                v-spacer
-                v-btn(color="blue darken-1" text @click="packageDialogState = false") Закрыть
-                v-btn(color="blue darken-1" text @click="upload") Отправить
-          v-list(two-line subheader)
-            v-list-item(
-              v-for="(file, i) in package['single_files']"
-              :key="i"
-              :href="file.file_path"
+          v-toolbar-items(class="hidden-sm-and-down" color="indigo" dark fixed)
+            v-btn(
+              v-if="packageActiveStatus"
+              text
+              tile
+              class="custom-transform-class text-none"
+              color="error"
+              @click="DEACTIVATE_PACKAGE({ contragentId: package.contragent, packageId: package.id })"
             )
-              v-list-item-avatar
-                v-icon(
-                  class="grey lighten-1 white--text"
-                ) mdi-file
-              v-list-item-content
-                v-list-item-title(v-text="file.file_type.doc_type")
-          v-row(no-gutters)
-            v-col(cols="12" v-if="otherFiles.length")
-              v-list(rounded pa-0 max-width="400px")
-                v-list-item-group(color="blue")
-                  v-subheader Другие файлы
-                  v-list-item(
-                    v-for="(file, i) in  otherFiles"
-                    :key="i"
-                  )
-                    v-list-item-content
-                      v-list-item-title(v-text="file.file_name" :href="file.file_path || ''")
-                    v-list-item-icon
-                      v-btn(
-                        outlined
-                        fab
-                        :href="file.file_path || ''"
-                        color="blue"
-                        dark
-                        class="elevation-0"
-                        small
-                        target="_blank"
-                      )
-                        v-icon mdi-download
-            v-col(cols="4")
-              v-list(rounded pa-0 max-width="400px")
-                v-list-item-group(color="blue")
-                  v-subheader Акты
-                  v-list-item(
-                    v-for="(file, i) in  package.pack_files['Акт']"
-                    :key="i"
-                  )
-                    v-list-item-content
-                      v-list-item-title(v-text="file.file_name" :href="file.file_path || ''")
-                    v-list-item-icon
-                      v-btn(
-                        outlined
-                        fab
-                        :href="file.file_path || ''"
-                        color="blue"
-                        dark
-                        class="elevation-0"
-                        small
-                        target="_blank"
-                      )
-                        v-icon mdi-download
-            v-col(cols="4")
-              v-list(
-                rounded
-                pa-0
-                max-width="400px"
+              | Сделать неактивным
+            v-btn(
+              v-if="packageActiveStatus"
+              text
+              tile
+              class="ml-2 custom-transform-class text-none"
+              color="primary"
+              @click="REGENERATE_PACKAGE({ contragentId: package.contragent, packageId: package.id })"
+            )
+              | Перегенерировать
+          v-menu
+            template(v-slot:activator="{ on }")
+              v-btn(
+                class="hidden-md-and-up"
+                icon
+                v-on="on"
               )
-                v-list-item-group(color="blue")
-                  v-subheader Счета
-                  v-list-item(
-                    v-for="(file, i) in package.pack_files['Счет']"
-                    :key="i"
-                  )
-                    v-list-item-content
-                      v-list-item-title(v-text="file.file_name" :href="file.file_path || ''")
-                    v-list-item-icon
+                v-icon mdi-dots-vertical
+            v-list
+              v-list-item
+                v-btn(
+                  v-if="packageActiveStatus"
+                  text
+                  tile
+                  outlined
+                  class="custom-transform-class text-none"
+                  color="error"
+                  @click="DEACTIVATE_PACKAGE({ contragentId: package.contragent, packageId: package.id })"
+                )
+                  | Сделать неактивным
+              v-list-item
+                v-btn(
+                  v-if="packageActiveStatus"
+                  text
+                  tile
+                  outlined
+                  class="ml-2 custom-transform-class text-none"
+                  color="primary"
+                  @click="REGENERATE_PACKAGE({ contragentId: package.contragent, packageId: package.id })"
+                )
+                  | Перегенерировать
+        v-card-title(class="headline font-weight-light px-10")
+        v-tabs(
+          v-model="tab"
+          background-color="transparent"
+          color="primary"
+          grow
+        )
+          v-tab(
+            v-for="item in items"
+            :key="item"
+          )
+            | {{ item }}
+        v-tabs-items(v-model="tab")
+          v-tab-item
+            v-card(
+              flat
+            )
+              v-data-table(
+                :headers="headers"
+                :items="package.single_files"
+                :items-per-page="5"
+                class="elevation-0"
+              )
+                template(v-slot:item.actions="{ item }")
+                  v-tooltip(bottom)
+                    template(v-slot:activator="{ on }")
                       v-btn(
-                        outlined
-                        fab
-                        :href="file.file_path || ''"
+                        icon
+                        v-on="on"
                         color="blue"
-                        dark
-                        class="elevation-0"
-                        small
+                        :href="item.file_path || ''"
                         target="_blank"
                       )
-                        v-icon mdi-download
-            v-col(cols="4")
-              v-list(rounded pa-0 max-width="600px")
-                v-list-item-group(color="blue")
-                  v-subheader Счета фактур
-                  v-list-item(
-                    v-for="(file, i) in  package.pack_files['Счет-фактура']"
-                    :key="i"
-                  )
-                    v-list-item-content
-                      v-list-item-title(v-text="file.file_name" :href="file.file_path || ''")
-                    v-list-item-icon
+                        v-icon(small) mdi-download
+                    span Скачать
+          v-tab-item
+            v-card(
+              flat
+            )
+              v-data-table(
+                :headers="headers"
+                :items="package.pack_files['Акт']"
+                :items-per-page="5"
+                class="elevation-0"
+              )
+                template(v-slot:item.actions="{ item }")
+                  v-tooltip(bottom)
+                    template(v-slot:activator="{ on }")
                       v-btn(
-                        @click.
-                        outlined
-                        fab
-                        :href="file.file_path || ''"
+                        icon
+                        v-on="on"
                         color="blue"
-                        dark
-                        class="elevation-0"
-                        small
+                        :href="item.file_path || ''"
                         target="_blank"
                       )
-                        v-icon mdi-download
+                        v-icon(small) mdi-download
+                    span Скачать
+          v-tab-item
+            v-card(
+              flat
+            )
+              v-data-table(
+                :headers="headers"
+                :items="package.pack_files['Счет']"
+                :items-per-page="5"
+                class="elevation-0"
+              )
+                template(v-slot:item.actions="{ item }")
+                  v-tooltip(bottom)
+                    template(v-slot:activator="{ on }")
+                      v-btn(
+                        icon
+                        v-on="on"
+                        color="blue"
+                        :href="item.file_path || ''"
+                        target="_blank"
+                      )
+                        v-icon(small) mdi-download
+                    span Скачать
+          v-tab-item
+            v-card(
+              flat
+            )
+              v-data-table(
+                :headers="headers"
+                :items="package.pack_files['Счет-фактура']"
+                :items-per-page="5"
+                class="elevation-0"
+              )
+                template(v-slot:item.actions="{ item }")
+                  v-tooltip(bottom)
+                    template(v-slot:activator="{ on }")
+                      v-btn(
+                        icon
+                        v-on="on"
+                        color="blue"
+                        :href="item.file_path || ''"
+                        target="_blank"
+                      )
+                        v-icon(small) mdi-download
+                    span Скачать
+          v-tab-item
+            v-card(
+              flat
+            )
+              v-data-table(
+                :headers="headers"
+                :items="otherFiles"
+                :items-per-page="-1"
+                class="elevation-0"
+                hide-default-footer
+              )
+                template(v-slot:footer)
+                  v-toolbar(flat color="white")
+                    v-spacer
+                    v-dialog(
+                      v-model="packageDialogState"
+                      persistent
+                      max-width="600px"
+                    )
+                      template(v-slot:activator="{ on }")
+                        v-btn(
+                          text
+                          tile
+                          outlined
+                          class="ml-2 custom-transform-class text-none"
+                          color="primary"
+                          v-on="on"
+                        )
+                          | Добавить файл
+                      v-card(outlined)
+                        v-card-title
+                          span(class="headline") Добавление файла
+                        v-card-text
+                          v-container(px-0 pb-0)
+                            v-row(no-gutters)
+                              v-col(cols="12")
+                                VueFileAgent(
+                                  ref="vueFileAgent"
+                                  v-model="filesDataForUpload"
+                                  :theme="'list'"
+                                  :maxFiles="1"
+                                  :multiple="true"
+                                  :deletable="true"
+                                  :compact="true"
+                                  :helpText="'Загрузите свой файл'"
+                                  :errorText="{ type: 'Некоректный тип файла. Доступно только xlsx', size: 'Размер файла выше 2MB' }"
+                                  @delete="fileDeleted($event)"
+                                )
+                                small *Файл должен быть с расширением .xlsx и размером меньше двух мегабайт
+                        v-card-actions
+                          v-spacer
+                          v-btn(color="blue darken-1" text @click="packageDialogState = false") Закрыть
+                          v-btn(color="blue darken-1" text @click="upload") Отправить
+                template(v-slot:item.actions="{ item }")
+                  v-tooltip(bottom)
+                    template(v-slot:activator="{ on }")
+                      v-btn(
+                        icon
+                        v-on="on"
+                        color="blue"
+                        :href="item.file_path || ''"
+                        target="_blank"
+                      )
+                        v-icon(small) mdi-download
+                    span Скачать
+                  v-tooltip(bottom)
+                    template(v-slot:activator="{ on: tooltip }")
+                      v-btn(
+                        icon
+                        v-on="tooltip"
+                        @click.stop="openPackageFileWarningDialog(item)"
+                        color="red"
+                      )
+                        v-icon(small) mdi-close
+                    span Удалить
+      v-dialog(v-model="packageFileWarningDialog" max-width="360")
+        v-card
+          v-card-title(class="headline") Удалить выбранный файл?
+          v-card-actions
+            v-spacer
+            v-btn(color="green darken-1" text @click="closePackageFileWarningDialog") Отменить
+            v-btn(color="green darken-1" text @click="deleteFile") Удалить
 </template>
 
 <script>
@@ -208,7 +269,31 @@ export default {
   },
   data: () => ({
     packageDialogState: false,
-    filesDataForUpload: null
+    packageFileWarningDialog: false,
+    filesDataForUpload: null,
+    currentItemId: null,
+    tab: null,
+    headers: [
+      {
+        text: 'Номер',
+        align: 'center',
+        sortable: false,
+        value: 'id'
+      },
+      { text: 'Имя', value: 'file_name' },
+      { text: 'Дата создания', value: 'creation_date' },
+      { text: 'Действия', value: 'actions', align: 'center', sortable: false }
+      // Дата последнего платежа
+      // Ответственное лицо
+    ],
+    items: [
+      'Основные файлы', 'Акты', 'Счета', 'Счета фактур', 'Другие файлы'
+    ],
+    menu: [
+      { icon: 'home', title: 'Link A' },
+      { icon: 'info', title: 'Link B' },
+      { icon: 'warning', title: 'Link C' }
+    ]
   }),
   computed: {
     ...mapState({
@@ -220,7 +305,8 @@ export default {
   methods: {
     ...mapActions({
       REGENERATE_PACKAGE: 'packages/REGENERATE_PACKAGE',
-      DEACTIVATE_PACKAGE: 'packages/DEACTIVATE_PACKAGE'
+      DEACTIVATE_PACKAGE: 'packages/DEACTIVATE_PACKAGE',
+      DELETE_FILE: 'files/DELETE_FILE'
     }),
     upload () {
       this.$store.dispatch('files/CREATE_FILE', {
@@ -229,11 +315,27 @@ export default {
         packageId: this.$route.params.packageId,
         filesDataForUpload: this.filesDataForUpload
       })
-      this.contragentDialogState = false
+      this.packageDialogState = false
       this.filesDataForUpload = null
+    },
+    deleteFile () {
+      this.DELETE_FILE({
+        contragentId: this.$route.params.contragentId,
+        packageId: this.$route.params.packageId,
+        fileId: this.currentItemId
+      })
+      this.closePackageFileWarningDialog()
+      this.currentItemId = null
     },
     fileDeleted (fileData) {
       this.filesDataForUpload = null
+    },
+    closePackageFileWarningDialog () {
+      this.packageFileWarningDialog = false
+    },
+    openPackageFileWarningDialog (item) {
+      this.packageFileWarningDialog = true
+      this.currentItemId = item.id
     }
   }
 }

@@ -25,32 +25,6 @@
           v-card-text(class="pa-0")
             v-form
               v-row(no-gutters)
-                //- contragent-class
-                //- contragent-excell-name
-                //- contragent-dadata-name
-                //- contragent-director-status
-                //- contragent-director-name
-                //- contragent-legal-address
-                //- contragent-physical-address
-                //- contragent-inn
-                //- contragent-kpp
-                //- contragent-ogrn
-                //- contragent-okved
-                //- contragent-opf
-                //- contragent-rs
-                //- contragent-ks
-                //- contragent-bank
-                //- contragent-bik
-                //- contragent-creation-date
-                //- contragent-contract-accept-date
-                //- contragent-current-date
-                //- contragent-current-contract-date
-                //- contragent-debt
-                //- contragent-number-contract
-                //- contragent-norm-value
-                //- contragent-stat-value
-                //- contragent-platform
-                //- contragent-signed-user
                 v-expansion-panels(
                   v-model="panel"
                   accordion
@@ -101,7 +75,7 @@
                         contragent-stat-value
                         contragent-platform
                         contragent-signed-user
-          v-card-actions(class="px-6 pt-0")
+          v-card-actions(class="px-6 pt-2")
             v-spacer
             v-btn(
               text
@@ -235,7 +209,7 @@ export default {
       { value: 4, text: 'ИЖС с договором' },
       { value: 5, text: 'Физическое лицо' }
     ],
-    panel: [0, 1, 2, 3]
+    panel: [0, 3]
   }),
   computed: {
     ...mapState({
