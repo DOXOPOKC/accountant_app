@@ -235,7 +235,7 @@
                       )
                         v-icon(small) mdi-download
                     span Скачать
-                  v-dialog(v-model="packageFileWarningDialog" persistent max-width="290")
+                  v-dialog(v-model="packageFileWarningDialog" persistent max-width="360")
                     template(v-slot:activator="{ on: dialog }")
                       v-tooltip(bottom)
                         template(v-slot:activator="{ on: tooltip }")
@@ -244,15 +244,14 @@
                             v-on="{ ...dialog, ...tooltip }"
                             color="red"
                           )
-                            v-icon(small) mdi-download
+                            v-icon(small) mdi-close
                         span Удалить
                     v-card
-                      v-card-title(class="headline") Use Google's location service?
-                      v-card-text Let Google help apps determine location. This means sending anonymous location data to Google, even when no apps are running.
+                      v-card-title(class="headline") Удалить выбранный файл?
                       v-card-actions
                         v-spacer
-                        v-btn(color="green darken-1" text @click="packageFileWarningDialog = false") Disagree
-                        v-btn(color="green darken-1" text @click="deleteFile(item)") Agree
+                        v-btn(color="green darken-1" text @click="packageFileWarningDialog = false") Отменить
+                        v-btn(color="green darken-1" text @click="deleteFile(item)") Удалить
 </template>
 
 <script>
