@@ -29,7 +29,7 @@ export const actions = {
     commit(types.SET_FILES, data)
   },
   // Добавление нового файла
-  async [types.CREATE_FILE] ({ commit, dispatch, rootState }, { vueFileAgent, contragentId, packageId }) {
+  async [types.CREATE_FILE] ({ commit, dispatch }, { vueFileAgent, contragentId, packageId }) {
     try {
       const formData = new FormData()
       formData.append('file', vueFileAgent.filesData[0].file)
@@ -40,6 +40,15 @@ export const actions = {
       this.$toast.success('Файл успешно добавлен')
     } catch (error) {
       this.$toast.error('Ошибка! Некорректный файл')
+    }
+  },
+  async [types.DELETE_FILE] ({ commit, dispatch }, { contragentId, packageId, fileId }) {
+    try {
+      await this.$repositories.files.delete(contragentId, packageId, fileId)
+      dispatch(types.FETCH_FILES, { contragentId, packageId })
+      this.$toast.success('Файл успешно удален')
+    } catch (error) {
+      this.$toast.error('Ошибка!')
     }
   }
 }

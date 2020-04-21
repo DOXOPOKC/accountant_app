@@ -27,15 +27,11 @@
                 v-chip(color="green" dark) {{ item.id }}
               td(v-else color="red") {{ item.id }}
               td {{ item.creation_date | dateFormat }}
-  v-card(
-    v-else
-    class="mx-auto my-0"
-    max-width="250"
-    color="warning"
-    dark
-    tile
-  )
-    v-card-text(dark class="my-4 text-center title font-weight-regular") Сгенерируйте пакет!
+  v-row(v-else justify="center" align="center" class="fill-height")
+    v-chip(
+      :ripple="false"
+    )
+      | Сгенерируйте пакет
 </template>
 
 <script>
