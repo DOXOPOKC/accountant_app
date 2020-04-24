@@ -23,7 +23,7 @@ from bluebird.models import (
     DocumentTypeModel,
     NormativeCategory,
     OtherFile,
-    SignUser)
+    SignUser, STRATEGIES, State, Event)
 from bluebird.serializers import (
     ContragentFullSerializer,
     ContragentShortSerializer,
@@ -50,7 +50,18 @@ class ContragentsView(APIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request):
-        conrtagents = Contragent.objects.all()
+        if request.user.is_superuser and request.user.is_staff:
+            conrtagents = STRATEGIES[
+                'Все'
+                ]().execute_list_strategy(request.user)
+        elif request.user.is_staff and not request.user.is_superuser:
+            conrtagents = STRATEGIES[
+                'Все по отделу'
+                ]().execute_list_strategy(request.user)
+        elif not request.user.is_staff and not request.user.is_superuser:
+            conrtagents = STRATEGIES[
+                request.user.department.strategy
+                ]().execute_list_strategy(request.user)
         serializer = ContragentShortSerializer(conrtagents, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -62,17 +73,19 @@ class ContragentsView(APIView):
                 result = parse_from_file(file)
             except Exception:
                 return Response('Структура файла не верна.\
- Пожалуста используйте правильную форму.', status=status.HTTP_400_BAD_REQUEST)
+                Пожалуста используйте правильную форму.',
+                status=status.HTTP_400_BAD_REQUEST)
             if not result:
                 # Если фаил есть но он "пустой"
                 return Response('Выбраный фаил пуст или содержит информацию,\
- не соотвествующую формату.', status=status.HTTP_400_BAD_REQUEST)
+                не соотвествующую формату.',
+                status=status.HTTP_400_BAD_REQUEST)
             group_id = create_unique_id()
             for data_element in result:
                 if data_element['klass'] == 1:
                     contract_number = ContractNumberClass.create(new=True)
                     data_element['number_contract'] = contract_number.pk
-                    data_element['current_user'] = request.user.id
+                    data_element['current_user'] = None  # request.user.id
                     serializer = ContragentFullSerializer(data=data_element)
                     if serializer.is_valid(True):
                         serializer.save()
@@ -84,7 +97,8 @@ class ContragentsView(APIView):
         else:
             # Если файла нет
             return Response('В запросе не найден фаил.\
- Пожалуйста, выберите фаил.', status=status.HTTP_400_BAD_REQUEST)
+            Пожалуйста, выберите фаил.',
+            status=status.HTTP_400_BAD_REQUEST)
 
 
 class ContragentView(APIView):
@@ -92,7 +106,18 @@ class ContragentView(APIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request, pk):
-        obj = get_object(pk, Contragent)
+        if request.user.is_superuser and request.user.is_staff:
+            obj = STRATEGIES[
+                'Все'
+                ]().execute_single_strategy(pk, request.user)
+        elif request.user.is_staff and not request.user.is_superuser:
+            obj = STRATEGIES[
+                'Все по отделу'
+                ]().execute_single_strategy(pk, request.user)
+        elif not request.user.is_staff and not request.user.is_superuser:
+            obj = STRATEGIES[
+                request.user.department.strategy
+                ]().execute_single_strategy(pk, request.user)
         serializer = ContragentFullSerializer(obj)
         return Response(serializer.data)
 
@@ -129,6 +154,9 @@ class PackagesView(APIView):
             group_id = pack.name_uuid
             async_task(calc_create_gen_async, contragent, pack,
                        group=group_id)
+
+            contragent.current_user = request.user
+            contragent.save()
             return Response(group_id, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -160,11 +188,22 @@ class PackageView(APIView):
 
     def delete(self, request, pk, package_id):
         package = get_object(package_id, DocumentsPackage)
-        if package.is_active:
-            package.is_active = False
-            package.save()
+        event_id = request.get('event', None)
+        if not event_id:
+            package.set_inactive()
             return Response(status=status.HTTP_200_OK)
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+        else:
+            event = Event.objects.get(id=event_id)
+            if event.from_state == package.package_state:
+                package.change_state_to(event.to_state)
+                if not any([
+                    True for dept in event.from_state.departments.all(
+                        ) if dept in event.to_state.departments.all()]):
+                    package.contragent.set_current_user_to_none()
+                if event.to_state.is_final_state:
+                    package.set_inactive()
+                return Response(status=status.HTTP_200_OK)
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 class TasksView(APIView):

@@ -1,7 +1,8 @@
 from rest_framework import serializers
 from .models import (Contragent, DocumentsPackage, OtherFile, PackFile,
                      NormativeCategory, SignUser,
-                     DocumentTypeModel, SingleFile, PackFilesTemplate)
+                     DocumentTypeModel, SingleFile, PackFilesTemplate, State,
+                     Event)
 
 from django_q.models import Task
 from django.core.exceptions import ObjectDoesNotExist
@@ -18,7 +19,7 @@ class PackageShortSerializer(serializers.ModelSerializer):
     class Meta:
         model = DocumentsPackage
         fields = ['id', 'name_uuid', 'contragent', 'is_active',
-                  'creation_date']
+                  'creation_date', 'package_state_date', 'package_state']
 
 
 class ContragentFullSerializer(serializers.ModelSerializer):
@@ -61,7 +62,29 @@ class OtherFileSerializer(serializers.ModelSerializer):
         fields = ['id', 'file_name', 'file_path', 'creation_date', ]
 
 
+class EventSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Event
+        fields = '__all__'
+
+
+class StateSerializer(serializers.ModelSerializer):
+    events = serializers.SerializerMethodField()
+
+    def get_events(self, obj):
+        events = EventSerializer(obj.get_linked_events(), many=True).data
+        if len(events):
+            return events
+        return dict()
+
+    class Meta:
+        model = State
+        fields = ['id', 'name_state', 'departments', 'is_initial_state',
+                  'is_final_state', 'events']
+
+
 class PackageFullSerializer(serializers.ModelSerializer):
+    package_state = StateSerializer(many=False)
     single_files = SingleFileSerializer(many=True)
     pack_files = serializers.SerializerMethodField()
     other_files = OtherFileSerializer(many=True)

@@ -1,30 +1,22 @@
 import datetime
 import os
 import uuid
-from os.path import \
-    exists
+from abc import ABC, abstractmethod
 
-from django.conf import \
-    settings
-from django.contrib.contenttypes.fields import (
-    GenericForeignKey,
-    GenericRelation)
-from django.contrib.contenttypes.models import \
-    ContentType
-from django.db import \
-    models
+from django.conf import settings
+from django.db.models import Q
+from django.contrib.contenttypes.fields import (GenericForeignKey,
+                                                GenericRelation)
+from django.contrib.contenttypes.models import ContentType
+from django.db import models
 
-from bluebird.templatetags.template_extra_filters import \
-    plur_form
+from bluebird.templatetags.template_extra_filters import plur_form
 
-from .snippets import \
-    str_add_app
+from .snippets import str_add_app
+# from django.http.response import Http404
 
 # from django.core.exceptions import ValidationError
 # from django.contrib.auth.models import User
-
-
-
 
 KLASS_TYPES = [
         (0, 'Пусто'),
@@ -135,6 +127,18 @@ class Contragent(models.Model):
         return os.path.join(os.path.join(settings.MEDIA_ROOT,
                                          KLASS_TYPES[self.klass][1]),
                             f'{self.pk} {self.excell_name}')
+
+    def get_all_packages(self):
+        return DocumentsPackage.objects.filter(contragent=self.pk) or None
+
+    def get_active_package(self):
+        res = DocumentsPackage.objects.filter(contragent=self.pk,
+                                              is_active=True)
+        return list(res)[0] if len(res) else None
+
+    def set_current_user_to_none(self):
+        self.current_user = None
+        self.save()
 
     def __str__(self):
         return f'{self.excell_name}'
@@ -259,6 +263,12 @@ class DocumentsPackage(models.Model):
     is_active = models.BooleanField('Активный пакет', default=True)
     creation_date = models.DateField('Дата создания пакета', auto_now_add=True)
 
+    package_state = models.ForeignKey('State', on_delete=models.CASCADE,
+                                      null=True, blank=True)
+
+    package_state_date = models.DateField('Дата последнего действия',
+                                          null=True, blank=True)
+
     single_files = GenericRelation(SingleFile)
 
     pack_files = GenericRelation(PackFile)
@@ -282,6 +292,15 @@ class DocumentsPackage(models.Model):
 
     def initialize_sub_folders(self):
         os.makedirs(str(self.get_save_path()), exist_ok=True)
+
+    def set_inactive(self):
+        self.is_active = False
+        self.save()
+
+    def change_state_to(self, new_state):
+        self.package_state = new_state
+        self.package_state_date = datetime.date.today()
+        self.save()
 
     class Meta:
         verbose_name_plural = "Пакеты документов"
@@ -459,3 +478,159 @@ class DocumentTypeModel(models.Model):
 
     class Meta:
         verbose_name_plural = "Типы документов"
+
+
+#########
+# State #
+#########
+
+class State(models.Model):
+    name_state = models.CharField('Состояние', max_length=255)
+    departments = models.ManyToManyField('yellowbird.Department',
+                                         verbose_name='Отделы',
+                                         related_name='available_states')
+    is_initial_state = models.BooleanField('Начальное состояние',
+                                           default=False)
+    is_final_state = models.BooleanField('Конечное состояние', default=False)
+
+    def get_linked_events(self):
+        return Event.objects.filter(from_state=self.id)
+
+    def is_permitted(self, dept_id):
+        return dept_id in self.departments_set
+
+    def __str__(self):
+        return self.name_state
+
+    class Meta:
+        verbose_name_plural = 'Состояния'
+
+
+class Event(models.Model):
+    name_event = models.CharField('Событие', max_length=255)
+    from_state = models.ForeignKey(State, on_delete=models.CASCADE,
+                                   verbose_name='Исходное состояние',
+                                   blank=True, null=True,
+                                   related_name='begin_states')
+    to_state = models.ForeignKey(State, on_delete=models.CASCADE,
+                                 verbose_name='Конечное состояние',
+                                 blank=True, null=True,
+                                 related_name='end_states')
+
+    def __str__(self):
+        return self.name_event
+
+    class Meta:
+        verbose_name_plural = 'События'
+
+##############
+# Strategies #
+##############
+
+
+class ListStrategy(ABC):
+
+    @abstractmethod
+    def execute_list_strategy(self, user):
+        raise NotImplementedError
+
+    @abstractmethod
+    def execute_single_strategy(self, pk, user):
+        raise NotImplementedError
+
+
+class OnlyEmptyRecords(ListStrategy):
+    def execute_list_strategy(self, user):
+        contragents = Contragent.objects.filter(current_user=None)
+        return contragents
+
+    def execute_single_strategy(self, pk, user):
+        try:
+            return Contragent.objects.get(pk=pk, current_user=None)
+        except Contragent.DoesNotExist:
+            return None
+
+
+class OnlyMyRecordsStrategy(ListStrategy):
+
+    def execute_list_strategy(self, user):
+        contragents = Contragent.objects.filter(current_user=user)
+        return contragents
+
+    def execute_single_strategy(self, pk, user):
+        try:
+            return Contragent.objects.get(pk=pk, current_user=user)
+        except Contragent.DoesNotExist:
+            return None
+
+
+class AllRecords(ListStrategy):
+    def execute_list_strategy(self, user):
+        contragents = Contragent.objects.all()
+        return contragents
+
+    def execute_single_strategy(self, pk, user):
+        try:
+            return Contragent.objects.get(pk=pk)
+        except Contragent.DoesNotExist:
+            return None
+
+
+class AllInDepartmentRecords(ListStrategy):
+    def execute_list_strategy(self, user):
+        contragents = Contragent.objects.filter(
+            current_user__department=user.department
+        )
+        return contragents
+
+    def execute_single_strategy(self, pk, user):
+        try:
+            contragent = Contragent.objects.get(pk=pk)
+            if contragent.current_user.department == user.department:
+                return contragent
+            else:
+                return None
+        except Contragent.DoesNotExist:
+            return None
+
+
+class MyAndEmptyRecordsStrategy(ListStrategy):
+
+    def execute_list_strategy(self, user):
+        res = list()
+        contragents = Contragent.objects.filter(
+            Q(current_user=user) | Q(current_user=None))
+        for c in contragents:
+            tmp_pack = c.get_active_package()
+            if tmp_pack:
+                tmp_state = tmp_pack.package_state
+                if tmp_state:
+                    if user.department in tmp_state.departments.all():
+                        res.append(c)
+            else:
+                res.append(c)
+        return res
+
+    def execute_single_strategy(self, pk, user):
+        try:
+            contragent = Contragent.objects.get(pk=pk, current_user=user)
+            tmp_pack = contragent.get_active_package()
+            if tmp_pack:
+                tmp_state = tmp_pack.package_state
+                if tmp_state:
+                    if user.department in tmp_state.departments.all():
+                        return contragent
+            return None
+        except Contragent.DoesNotExist:
+            return None
+
+
+STRATEGIES_LIST = ['Мои записи и пустые', 'Все по отделу', 'Все',
+                   'Только мои записи', 'Только пустые записи']
+
+STRATEGIES_TUPLES = list(enumerate(STRATEGIES_LIST))
+
+STRATEGIES_FUNCTIONS = [MyAndEmptyRecordsStrategy, AllInDepartmentRecords,
+                        AllRecords, OnlyMyRecordsStrategy, OnlyEmptyRecords]
+
+STRATEGIES = dict(zip(STRATEGIES_LIST, STRATEGIES_FUNCTIONS))
