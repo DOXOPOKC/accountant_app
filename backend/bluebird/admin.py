@@ -5,13 +5,15 @@ from .models import (KLASS_TYPES, Contragent, NormativeCategory, Normative,
                      Contract, ContractNumberClass, DocumentsPackage,
                      OtherFile, PackFile, SignUser, CityModel,
                      TemplateModel, DocumentTypeModel, SingleFilesTemplate,
-                     SingleFile, PackFilesTemplate)
+                     SingleFile, PackFilesTemplate, State, Event)
 
 from django.contrib.contenttypes.admin import GenericTabularInline
 
 from .forms import (TemplateModelForm,
                     PackFilesTemplateAdminForm,
                     SingleFilesTemplateAdminForm)
+
+from itertools import zip_longest
 
 
 class DuplicateElementsMixin:
@@ -87,7 +89,7 @@ class OtherFileInLine(GenericTabularInline):
 
 class DocumentsPackageAdmin(admin.ModelAdmin):
     sets = ('pk', 'name_uuid', 'contragent_name', 'is_active',
-            'creation_date')
+            'creation_date', 'package_state')
     list_display = sets
     list_display_links = sets
     inlines = [SingleFileInLine, PackFileInLine, OtherFileInLine, ]
@@ -159,6 +161,33 @@ class TemplateModelAdmin(admin.ModelAdmin, DuplicateElementsMixin):
     actions = ['duplicate', ]
 
 
+class StateAdmin(admin.ModelAdmin):
+    sets = ('name_state', )
+    list_display = sets
+    list_display_links = sets
+    filter_horizontal = ('departments',)
+    readonly_fields = ['get_events', ]
+
+    def get_events(self, obj):
+        out_events = Event.objects.filter(from_state__id=obj.pk)
+        in_events = Event.objects.filter(to_state__id=obj.pk)
+        print(len(out_events), len(in_events))
+        tmp_str = ''.join(
+            [f'<tr><td>{t[0]}</td><td>{t[1]}</td></tr>' for t in list(
+                zip_longest(out_events, in_events, fillvalue='-'))])
+        display_text = f'<table><thead><th>Исходящие события</th><th>Входящие\
+             события</th></thead><tbody>{tmp_str}</tbody></table>'
+        if display_text:
+            return mark_safe(display_text)
+        return "-"
+
+
+class EventAdmin(admin.ModelAdmin):
+    sets = ('name_event', 'from_state', 'to_state')
+    list_display = sets
+    list_link_display = sets
+
+
 admin.site.register(Contragent, ContragentAdmin)
 admin.site.register(NormativeCategory, NormativeCategoryAdmin)
 admin.site.register(Normative, NormativeAdmin)
@@ -172,3 +201,5 @@ admin.site.register(TemplateModel, TemplateModelAdmin)
 admin.site.register(SingleFilesTemplate, SingleFilesTemplateAdmin)
 admin.site.register(PackFilesTemplate, PackFilesTemplateAdmin)
 admin.site.register(PackFile)
+admin.site.register(State, StateAdmin)
+admin.site.register(Event, EventAdmin)
