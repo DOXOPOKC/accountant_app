@@ -2,7 +2,7 @@ from rest_framework import serializers
 from .models import (Contragent, DocumentsPackage, OtherFile, PackFile,
                      NormativeCategory, SignUser,
                      DocumentTypeModel, SingleFile, PackFilesTemplate, State,
-                     Event)
+                     Event, Commentary)
 
 from django_q.models import Task
 from django.core.exceptions import ObjectDoesNotExist
@@ -126,3 +126,17 @@ class NormSerializer(serializers.ModelSerializer):
     class Meta:
         model = NormativeCategory
         fields = ['id', 'name']
+
+
+class CommentarySerializer(serializers.ModelSerializer):
+
+    # content_object = serializers.SerializerMethodField()
+
+    # def get_content_object(self, value):
+    #     if isinstance(value, DocumentsPackage):
+    #         return 'package_id: ' + value.id
+    #     raise Exception('Unexpected type of tagged object')
+
+    class Meta:
+        model = Commentary
+        fields = ['id', 'commentary_text', 'creation_date']
