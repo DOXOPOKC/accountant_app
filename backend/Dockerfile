@@ -5,7 +5,7 @@ ENV PYTHONDONTWRITEBYTECODE 1
 RUN mkdir -p /app &&\
   apk add --no-cache  python3 g++ gcc libxslt-dev wkhtmltopdf xvfb msttcorefonts-installer postgresql-libs jpeg zlib libc-dev && \
   if [ ! -e /usr/bin/python ]; then ln -sf python3 /usr/bin/python ; fi && \
-  apk add --no-cache --virtual .build-deps python3-dev gcc musl-dev postgresql-dev jpeg-dev zlib-dev && \
+  apk add --no-cache --virtual .build-deps python3-dev gcc musl-dev libffi-dev openssl-dev postgresql-dev jpeg-dev zlib-dev && \
   pip3 install --disable-pip-version-check --no-cache-dir pipenv && update-ms-fonts && fc-cache -f
 WORKDIR /app
 COPY Pipfile Pipfile.lock /app/

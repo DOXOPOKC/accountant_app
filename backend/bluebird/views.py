@@ -189,7 +189,7 @@ class PackageView(APIView):
 
     def delete(self, request, pk, package_id):
         package = get_object(package_id, DocumentsPackage)
-        event_id = request.get('event', None)
+        event_id = request.data.get('event', None)
         if not event_id:
             package.set_inactive()
             return Response(status=status.HTTP_200_OK)

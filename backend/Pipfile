@@ -57,6 +57,7 @@ pymorphy2-dicts-ru = "*"
 lxml = "*"
 pypandoc = "*"
 aiohttp = "*"
+cryptography = "*"
 djangorestframework-simplejwt = "*"
 pillow = "*"
 
