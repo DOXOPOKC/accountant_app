@@ -6,7 +6,7 @@ export const types = {
   FETCH_PACKAGE: 'FETCH_PACKAGE',
   GENERATE_PACKAGE: 'GENERATE_PACKAGE',
   REGENERATE_PACKAGE: 'REGENERATE_PACKAGE',
-  DEACTIVATE_PACKAGE: 'DEACTIVATE_PACKAGE'
+  SEND_EVENT: 'SEND_EVENT'
 }
 
 export const state = () => ({
@@ -62,11 +62,10 @@ export const actions = {
     }
   },
   // Статус пакета переводится в закрытый
-  async [types.DEACTIVATE_PACKAGE] ({ dispatch }, { contragentId, packageId }) {
+  async [types.SEND_EVENT] ({ dispatch }, { contragentId, packageId, eventId }) {
     try {
-      await this.$repositories.packages.delete(contragentId, packageId)
+      await this.$repositories.packages.delete(contragentId, packageId, { event: eventId })
       await dispatch(types.FETCH_PACKAGE, { contragentId, packageId })
-      this.$toast.error('Пакет неактивен')
     } catch (error) {
       this.$toast.error('Ошибка статуса')
     }

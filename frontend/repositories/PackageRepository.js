@@ -16,7 +16,9 @@ export default $axios => resource => ({
     return $axios.$put(`${resource}/${contragentId}/packages/${packageId}/`)
   },
   // Статус пакета переводится в закрытый
-  delete (contragentId, packageId) {
-    return $axios.$delete(`${resource}/${contragentId}/packages/${packageId}/`)
+  delete (contragentId, packageId, payload) {
+    return $axios.$delete(`${resource}/${contragentId}/packages/${packageId}/`, {
+      data: payload
+    })
   }
 })

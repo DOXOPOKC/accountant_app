@@ -19,52 +19,42 @@
             v-icon mdi-arrow-left
           v-toolbar-title Пакет № {{ package.id }}
           v-spacer
-          v-toolbar-items(class="hidden-sm-and-down" color="indigo" dark fixed)
-            v-btn(
-              v-if="packageActiveStatus"
-              text
-              tile
-              class="custom-transform-class text-none"
-              color="error"
-              @click="DEACTIVATE_PACKAGE({ contragentId: package.contragent, packageId: package.id })"
-            )
-              | Сделать неактивным
-            v-btn(
-              v-if="packageActiveStatus"
-              text
-              tile
-              class="ml-2 custom-transform-class text-none"
-              color="primary"
-              @click="REGENERATE_PACKAGE({ contragentId: package.contragent, packageId: package.id })"
-            )
-              | Перегенерировать
-          v-menu
+          v-chip(
+            outlined
+            :color="package.package_state ? 'primary' : 'error'"
+          )
+            span {{ package.package_state.name_state }}
+          v-menu(
+            v-if="packageActiveStatus"
+          )
             template(v-slot:activator="{ on }")
               v-btn(
-                class="hidden-md-and-up"
                 icon
                 v-on="on"
               )
                 v-icon mdi-dots-vertical
             v-list
-              v-list-item
+              v-list-item(
+                class="px-0"
+                v-for="(event, i) in package.package_state.events"
+                :key="i"
+              )
                 v-btn(
-                  v-if="packageActiveStatus"
                   text
                   tile
-                  outlined
+                  block
                   class="custom-transform-class text-none"
-                  color="error"
-                  @click="DEACTIVATE_PACKAGE({ contragentId: package.contragent, packageId: package.id })"
+                  @click="SEND_EVENT({ contragentId: package.contragent, packageId: package.id, eventId: event.id })"
                 )
-                  | Сделать неактивным
-              v-list-item
+                  | {{ event.name_event }}
+              v-list-item(
+                class="px-0"
+              )
                 v-btn(
-                  v-if="packageActiveStatus"
                   text
                   tile
-                  outlined
-                  class="ml-2 custom-transform-class text-none"
+                  block
+                  class="custom-transform-class text-none"
                   color="primary"
                   @click="REGENERATE_PACKAGE({ contragentId: package.contragent, packageId: package.id })"
                 )
@@ -305,7 +295,7 @@ export default {
   methods: {
     ...mapActions({
       REGENERATE_PACKAGE: 'packages/REGENERATE_PACKAGE',
-      DEACTIVATE_PACKAGE: 'packages/DEACTIVATE_PACKAGE',
+      SEND_EVENT: 'packages/SEND_EVENT',
       DELETE_FILE: 'files/DELETE_FILE'
     }),
     upload () {
