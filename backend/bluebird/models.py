@@ -176,6 +176,17 @@ class SignUser(models.Model):
         verbose_name_plural = "Отвественные лица с правом подписи"
 
 
+class Commentary(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,
+                             on_delete=models.CASCADE, blank=True, null=True)
+    commentary_text = models.TextField('Комментарий', blank=True, null=True)
+    creation_date = models.DateTimeField('Дата создания', auto_now_add=True)
+
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey('content_type', 'object_id')
+
+
 class AbstractFileModel(models.Model):
     file_name = models.CharField('Название файла', max_length=255,
                                  null=True, blank=True)
@@ -242,6 +253,8 @@ class OtherFile(AbstractFileModel):
                                 upload_to=other_files_directory_path,
                                 max_length=500)
 
+    commentary = GenericRelation(Commentary, related_query_name='file')
+
     class Meta:
         verbose_name_plural = "Прочие файлы"
 
@@ -274,6 +287,8 @@ class DocumentsPackage(models.Model):
     pack_files = GenericRelation(PackFile)
 
     other_files = GenericRelation(OtherFile)
+
+    commentary = GenericRelation(Commentary, related_query_name='package')
 
     def __str__(self):
         return f'Пакет {self.name_uuid}'
@@ -599,28 +614,34 @@ class MyAndEmptyRecordsStrategy(ListStrategy):
     def execute_list_strategy(self, user):
         res = list()
         contragents = Contragent.objects.filter(
-            Q(current_user=user) | Q(current_user=None))
+            Q(current_user__id=user.id) | Q(current_user__id=None))
+        print(len(contragents))
         for c in contragents:
             tmp_pack = c.get_active_package()
+            print(tmp_pack)
             if tmp_pack:
                 tmp_state = tmp_pack.package_state
                 if tmp_state:
                     if user.department in tmp_state.departments.all():
                         res.append(c)
+                else:
+                    res.append(c)
             else:
                 res.append(c)
+        print(len(res))
         return res
 
     def execute_single_strategy(self, pk, user):
         try:
-            contragent = Contragent.objects.get(pk=pk, current_user=user)
+            contragent = Contragent.objects.get(pk=pk,
+                                                current_user__id=user.id)
             tmp_pack = contragent.get_active_package()
             if tmp_pack:
                 tmp_state = tmp_pack.package_state
                 if tmp_state:
                     if user.department in tmp_state.departments.all():
                         return contragent
-            return None
+            return contragent
         except Contragent.DoesNotExist:
             return None
 

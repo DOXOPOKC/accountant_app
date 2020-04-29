@@ -5,7 +5,7 @@ from .models import (KLASS_TYPES, Contragent, NormativeCategory, Normative,
                      Contract, ContractNumberClass, DocumentsPackage,
                      OtherFile, PackFile, SignUser, CityModel,
                      TemplateModel, DocumentTypeModel, SingleFilesTemplate,
-                     SingleFile, PackFilesTemplate, State, Event)
+                     SingleFile, PackFilesTemplate, State, Event, Commentary)
 
 from django.contrib.contenttypes.admin import GenericTabularInline
 
@@ -118,7 +118,7 @@ class SingleFilesTemplateAdmin(admin.ModelAdmin):
 
 
 class PackFilesTemplateAdmin(admin.ModelAdmin):
-    form = PackFilesTemplateAdminForm 
+    form = PackFilesTemplateAdminForm
     filter_horizontal = ('documents',)
     list_display = ('__str__', )
 
@@ -203,3 +203,4 @@ admin.site.register(PackFilesTemplate, PackFilesTemplateAdmin)
 admin.site.register(PackFile)
 admin.site.register(State, StateAdmin)
 admin.site.register(Event, EventAdmin)
+admin.site.register(Commentary)

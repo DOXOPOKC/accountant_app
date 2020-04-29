@@ -17,4 +17,8 @@ urlpatterns = [
     path('tasks/<str:group_id>/', views.TasksView.as_view()),
     path('norms/', views.NormsView.as_view()),
     path('sign_users/', views.SignUsersView.as_view()),
+    path('comments/package/<int:package_id>/',
+         views.CommentaryPackageView.as_view()),
+    path('comments/package/<int:package_id>/file/<int:file_id>/',
+         views.CommentaryFileView.as_view()),
 ]

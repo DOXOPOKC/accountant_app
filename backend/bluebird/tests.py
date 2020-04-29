@@ -1,10 +1,8 @@
 from django.test import TestCase
-from bluebird.utils import (generate_act, generate_document,
-                            generate_count, generate_count_fact,
+from bluebird.utils import (generate_act, generate_count, generate_count_fact,
                             generate_contract)
 from bluebird.models import (Contragent, ContractNumberClass,
-                             NormativeCategory, Normative,
-                             CountFactUniqueNumber)
+                             NormativeCategory, Normative)
 from datetime import date
 
 

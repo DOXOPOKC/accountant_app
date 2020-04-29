@@ -20,9 +20,8 @@ class User(AbstractUser):
 
 class Department(models.Model):
     title = models.CharField('Отдел', max_length=255, unique=True)
-    strategy = models.CharField('Стратегия отсеивания результатов',
-                                max_length=255, choices=STRATEGIES_TUPLES,
-                                default=STRATEGIES_TUPLES[0][0])
+    strategy = models.IntegerField('Стратегия отсеивания результатов',
+                                   choices=STRATEGIES_TUPLES, default=0)
 
     def __str__(self):
         return self.title

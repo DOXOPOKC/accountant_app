@@ -282,7 +282,7 @@ def create_models(data: dict, package: DocumentsPackage,
     file_name = f'{file_type.doc_type.title()} \
  №{unique_number} от {data["curr_date"]}.pdf'.replace('/', '-')
     file_path = os.path.join(file_obj.get_files_path(package), file_name)
-    
+
     create_files(data, template, file_path)
     file_obj.file_name = file_name
     file_obj.file_path = str_remove_app(file_path)
@@ -348,7 +348,7 @@ def generate_docx_file(data: dict, package: DocumentsPackage, total: float,
     if not template:
         return None
     doc = DocxTemplate(template.template_path)
-    
+
     jinja_env = jinja2.Environment()
     jinja_env.filters['datv_case_filter'] = datv_case_filter
     jinja_env.filters['gent_case_filter'] = gent_case_filter

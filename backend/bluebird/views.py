@@ -1,4 +1,5 @@
 import datetime
+from copy import deepcopy
 
 from django_q.tasks import (
     Task,
@@ -23,7 +24,7 @@ from bluebird.models import (
     DocumentTypeModel,
     NormativeCategory,
     OtherFile,
-    SignUser, STRATEGIES, State, Event)
+    SignUser, STRATEGIES, STRATEGIES_LIST, Event, Commentary)
 from bluebird.serializers import (
     ContragentFullSerializer,
     ContragentShortSerializer,
@@ -32,7 +33,7 @@ from bluebird.serializers import (
     PackageFullSerializer,
     PackageShortSerializer,
     SignUserSerializer,
-    TaskSerializer)
+    TaskSerializer, CommentarySerializer)
 from bluebird.utils import (
     calc_create_gen_async,
     create_unique_id,
@@ -59,9 +60,9 @@ class ContragentsView(APIView):
                 'Все по отделу'
                 ]().execute_list_strategy(request.user)
         elif not request.user.is_staff and not request.user.is_superuser:
-            conrtagents = STRATEGIES[
+            conrtagents = STRATEGIES[STRATEGIES_LIST[
                 request.user.department.strategy
-                ]().execute_list_strategy(request.user)
+                ]]().execute_list_strategy(request.user)
         serializer = ContragentShortSerializer(conrtagents, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -73,13 +74,13 @@ class ContragentsView(APIView):
                 result = parse_from_file(file)
             except Exception:
                 return Response('Структура файла не верна.\
-                Пожалуста используйте правильную форму.',
-                status=status.HTTP_400_BAD_REQUEST)
+                    Пожалуста используйте правильную форму.',
+                    status=status.HTTP_400_BAD_REQUEST)
             if not result:
                 # Если фаил есть но он "пустой"
                 return Response('Выбраный фаил пуст или содержит информацию,\
-                не соотвествующую формату.',
-                status=status.HTTP_400_BAD_REQUEST)
+                    не соотвествующую формату.',
+                    status=status.HTTP_400_BAD_REQUEST)
             group_id = create_unique_id()
             for data_element in result:
                 if data_element['klass'] == 1:
@@ -97,8 +98,8 @@ class ContragentsView(APIView):
         else:
             # Если файла нет
             return Response('В запросе не найден фаил.\
-            Пожалуйста, выберите фаил.',
-            status=status.HTTP_400_BAD_REQUEST)
+                Пожалуйста, выберите фаил.',
+                status=status.HTTP_400_BAD_REQUEST)
 
 
 class ContragentView(APIView):
@@ -115,9 +116,9 @@ class ContragentView(APIView):
                 'Все по отделу'
                 ]().execute_single_strategy(pk, request.user)
         elif not request.user.is_staff and not request.user.is_superuser:
-            obj = STRATEGIES[
+            obj = STRATEGIES[STRATEGIES_LIST[
                 request.user.department.strategy
-                ]().execute_single_strategy(pk, request.user)
+                ]]().execute_single_strategy(pk, request.user)
         serializer = ContragentFullSerializer(obj)
         return Response(serializer.data)
 
@@ -278,3 +279,47 @@ class OtherFileView(APIView):
         result = get_object(file_id, OtherFile)
         result.delete()
         return Response(status=status.HTTP_200_OK)
+
+
+class CommentaryPackageView(APIView):
+    """ Вью для CRUD комментариев """
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request, package_id):
+        comments = Commentary.objects.filter(package__id=package_id)
+        serializer = CommentarySerializer(comments, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, package_id):
+        package = get_object(package_id, DocumentsPackage)
+        comment = package.commentary.create(
+            user=request.user,
+            commentary_text=request.data.get('commentary_text')
+        )
+        serializer = CommentarySerializer(data=comment)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CommentaryFileView(APIView):
+    """ Вью для CRUD комментариев """
+    # permission_classes = (IsAuthenticated,)
+
+    def get(self, request, package_id, file_id):
+        comments = Commentary.objects.filter(file__id=package_id)
+        serializer = CommentarySerializer(comments, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, package_id, file_id):
+        other_file = get_object(package_id, OtherFile)
+        comment = other_file.commentary.create(
+            user=request.user,
+            commentary_text=request.data.get('commentary_text')
+        )
+        serializer = CommentarySerializer(data=comment)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
