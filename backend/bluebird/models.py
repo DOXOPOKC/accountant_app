@@ -106,9 +106,7 @@ class Contragent(models.Model):
     signed_user = models.ForeignKey('SignUser', blank=True, null=True,
                                     on_delete=models.CASCADE,
                                     related_name='signed')
-    current_user = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True,
-                                     null=True, on_delete=models.CASCADE,
-                                     related_name='current')
+
     platform = models.IntegerField('№ площадки',
                                    blank=True, null=True)
 
@@ -128,6 +126,16 @@ class Contragent(models.Model):
                                          KLASS_TYPES[self.klass][1]),
                             f'{self.pk} {self.excell_name}')
 
+    @property
+    def current_user(self):
+        package = get_active_package()
+        if package:
+            return [user for user in package.package_users.all(
+                ) if package.package_state.is_permitted(user.department.id)]
+        return None
+
+    @current_user.setter
+
     def get_all_packages(self):
         return DocumentsPackage.objects.filter(contragent=self.pk) or None
 
@@ -136,9 +144,9 @@ class Contragent(models.Model):
                                               is_active=True)
         return list(res)[0] if len(res) else None
 
-    def set_current_user_to_none(self):
-        self.current_user = None
-        self.save()
+    # def set_current_user_to_none(self):
+    #     self.current_user = None
+    #     self.save()
 
     def __str__(self):
         return f'{self.excell_name}'
@@ -275,6 +283,9 @@ class DocumentsPackage(models.Model):
                                  editable=False)
     is_active = models.BooleanField('Активный пакет', default=True)
     creation_date = models.DateField('Дата создания пакета', auto_now_add=True)
+
+    package_users = models.ManyToManyField(settings.AUTH_USER_MODEL,
+                                           related_name='packages')
 
     package_state = models.ForeignKey('State', on_delete=models.CASCADE,
                                       null=True, blank=True)
@@ -615,10 +626,8 @@ class MyAndEmptyRecordsStrategy(ListStrategy):
         res = list()
         contragents = Contragent.objects.filter(
             Q(current_user__id=user.id) | Q(current_user__id=None))
-        print(len(contragents))
         for c in contragents:
             tmp_pack = c.get_active_package()
-            print(tmp_pack)
             if tmp_pack:
                 tmp_state = tmp_pack.package_state
                 if tmp_state:
@@ -628,13 +637,11 @@ class MyAndEmptyRecordsStrategy(ListStrategy):
                     res.append(c)
             else:
                 res.append(c)
-        print(len(res))
         return res
 
     def execute_single_strategy(self, pk, user):
         try:
-            contragent = Contragent.objects.get(pk=pk,
-                                                current_user__id=user.id)
+            contragent = Contragent.objects.get(pk=pk)
             tmp_pack = contragent.get_active_package()
             if tmp_pack:
                 tmp_state = tmp_pack.package_state

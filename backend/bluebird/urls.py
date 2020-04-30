@@ -3,7 +3,7 @@ from bluebird import views
 
 
 urlpatterns = [
-    path('contragents/', views.ContragentsView.as_view()),
+    path('contragents/', views.ContragentsView.as_view(), name="main"),
     path('contragents/<int:pk>/', views.ContragentView.as_view()),
     path('contragents/<int:pk>/packages/', views.PackagesView.as_view()),
     path('contragents/<int:pk>/packages/<int:package_id>/',

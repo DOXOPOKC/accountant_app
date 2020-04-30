@@ -17,6 +17,8 @@ from rest_framework.response import \
 from rest_framework.views import \
     APIView
 
+from django.shortcuts import redirect
+
 from bluebird.models import (
     ContractNumberClass,
     Contragent,
@@ -198,11 +200,14 @@ class PackageView(APIView):
             if event.from_state == package.package_state:
                 package.change_state_to(event.to_state)
                 if not any([
-                    True for dept in event.from_state.departments.all(
-                        ) if dept in event.to_state.departments.all()]):
+                    event.to_state.is_permitted(dept.id
+                        ) for dept in event.from_state.departments.all()]):
                     package.contragent.set_current_user_to_none()
                 if event.to_state.is_final_state:
                     package.set_inactive()
+                if package.package_state.is_permitted(
+                                                request.user.department.id):
+                    return redirect('main')
                 return Response(status=status.HTTP_200_OK)
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
