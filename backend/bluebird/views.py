@@ -26,7 +26,7 @@ from bluebird.models import (
     DocumentTypeModel,
     NormativeCategory,
     OtherFile,
-    SignUser, STRATEGIES, STRATEGIES_LIST, Event, Commentary)
+    SignUser, STRATEGIES, STRATEGIES_LIST, Event, Commentary, State)
 from bluebird.serializers import (
     ContragentFullSerializer,
     ContragentShortSerializer,
@@ -65,6 +65,8 @@ class ContragentsView(APIView):
             conrtagents = STRATEGIES[STRATEGIES_LIST[
                 request.user.department.strategy
                 ]]().execute_list_strategy(request.user)
+        if not conrtagents:
+            return Response(status=status.HTTP_403_FORBIDDEN)
         serializer = ContragentShortSerializer(conrtagents, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -121,6 +123,8 @@ class ContragentView(APIView):
             obj = STRATEGIES[STRATEGIES_LIST[
                 request.user.department.strategy
                 ]]().execute_single_strategy(pk, request.user)
+        if not obj:
+            return Response(status=status.HTTP_403_FORBIDDEN)
         serializer = ContragentFullSerializer(obj)
         return Response(serializer.data)
 
@@ -153,13 +157,14 @@ class PackagesView(APIView):
             pack = DocumentsPackage.objects.get(contragent__pk=pk,
                                                 is_active=True)
             pack.initialize_sub_folders()
+            pack.change_state_to(State.objects.filter(is_initial_state=True)[0])
 
             group_id = pack.name_uuid
             async_task(calc_create_gen_async, contragent, pack,
                        group=group_id)
 
             contragent.current_user = request.user
-            contragent.save()
+            # contragent.save()
             return Response(group_id, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -171,8 +176,11 @@ class PackageView(APIView):
 
     def get(self, request, pk, package_id):
         package = get_object(package_id, DocumentsPackage)
-        serializer = PackageFullSerializer(package)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        if package.package_state.is_permitted(request.user.department):
+            serializer = PackageFullSerializer(package)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            Response(status=status.HTTP_308_PERMANENT_REDIRECT)
 
     def post(self, request, pk, package_id):
         return Response(status=status.HTTP_501_NOT_IMPLEMENTED)
@@ -199,16 +207,15 @@ class PackageView(APIView):
             event = Event.objects.get(id=event_id)
             if event.from_state == package.package_state:
                 package.change_state_to(event.to_state)
-                if not any([
-                    event.to_state.is_permitted(dept.id
-                        ) for dept in event.from_state.departments.all()]):
-                    package.contragent.set_current_user_to_none()
+                # if not any([
+                #     event.to_state.is_permitted(dept.id
+                #         ) for dept in event.from_state.departments.all()]):
                 if event.to_state.is_final_state:
                     package.set_inactive()
                 if package.package_state.is_permitted(
-                                                request.user.department.id):
-                    return redirect('main')
-                return Response(status=status.HTTP_200_OK)
+                                                request.user.department):
+                    return Response(status=status.HTTP_200_OK)
+                return Response(status=status.HTTP_308_PERMANENT_REDIRECT)
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
 

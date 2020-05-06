@@ -128,13 +128,23 @@ class Contragent(models.Model):
 
     @property
     def current_user(self):
-        package = get_active_package()
+        package = self.get_active_package()
         if package:
-            return [user for user in package.package_users.all(
-                ) if package.package_state.is_permitted(user.department.id)]
+            res = [user for user in package.package_users.all(
+                ) if package.package_state.is_permitted(user.department)]
+            return res
         return None
 
     @current_user.setter
+    def current_user(self, user):
+        package = self.get_active_package()
+        if package and not package.is_user_in_package(user, True):
+            package.package_users.add(user)
+            package.save()
+
+    @property
+    def active_package(self):
+        return self.get_active_package()
 
     def get_all_packages(self):
         return DocumentsPackage.objects.filter(contragent=self.pk) or None
@@ -143,10 +153,6 @@ class Contragent(models.Model):
         res = DocumentsPackage.objects.filter(contragent=self.pk,
                                               is_active=True)
         return list(res)[0] if len(res) else None
-
-    # def set_current_user_to_none(self):
-    #     self.current_user = None
-    #     self.save()
 
     def __str__(self):
         return f'{self.excell_name}'
@@ -318,6 +324,13 @@ class DocumentsPackage(models.Model):
 
     def initialize_sub_folders(self):
         os.makedirs(str(self.get_save_path()), exist_ok=True)
+
+    def is_user_in_package(self, user, use_department=False):
+        users = self.package_users.all()
+        if use_department:
+            depts = [tmp_user.department for tmp_user in users]
+            return (user.department in depts) or (user in users)
+        return user in users
 
     def set_inactive(self):
         self.is_active = False
@@ -522,8 +535,8 @@ class State(models.Model):
     def get_linked_events(self):
         return Event.objects.filter(from_state=self.id)
 
-    def is_permitted(self, dept_id):
-        return dept_id in self.departments_set
+    def is_permitted(self, department):
+        return department in self.departments.all()
 
     def __str__(self):
         return self.name_state
@@ -567,12 +580,13 @@ class ListStrategy(ABC):
 
 class OnlyEmptyRecords(ListStrategy):
     def execute_list_strategy(self, user):
-        contragents = Contragent.objects.filter(current_user=None)
-        return contragents
+        contragents = Contragent.objects.all()
+        return [c for c in contragents if not c.active_package]
 
     def execute_single_strategy(self, pk, user):
         try:
-            return Contragent.objects.get(pk=pk, current_user=None)
+            res = Contragent.objects.get(pk=pk)
+            return res if (not res.active_package) else None
         except Contragent.DoesNotExist:
             return None
 
@@ -580,12 +594,12 @@ class OnlyEmptyRecords(ListStrategy):
 class OnlyMyRecordsStrategy(ListStrategy):
 
     def execute_list_strategy(self, user):
-        contragents = Contragent.objects.filter(current_user=user)
+        contragents = Contragent.objects.filter(current_user__contain=user)
         return contragents
 
     def execute_single_strategy(self, pk, user):
         try:
-            return Contragent.objects.get(pk=pk, current_user=user)
+            return Contragent.objects.get(pk=pk, current_user__contain=user)
         except Contragent.DoesNotExist:
             return None
 
@@ -604,18 +618,32 @@ class AllRecords(ListStrategy):
 
 class AllInDepartmentRecords(ListStrategy):
     def execute_list_strategy(self, user):
-        contragents = Contragent.objects.filter(
-            current_user__department=user.department
-        )
-        return contragents
+        res = list()
+        contragents = Contragent.objects.all()
+        for c in contragents:
+            tmp_pack = c.get_active_package()
+            if tmp_pack:
+                tmp_state = tmp_pack.package_state
+                if tmp_state:
+                    if tmp_state.is_permitted(user.department):
+                        res.append(c)
+                else:
+                    res.append(c)
+            else:
+                res.append(c)
+        return res
 
     def execute_single_strategy(self, pk, user):
         try:
             contragent = Contragent.objects.get(pk=pk)
-            if contragent.current_user.department == user.department:
-                return contragent
-            else:
+            tmp_pack = contragent.get_active_package()
+            if tmp_pack:
+                tmp_list = [c.department == user.department
+                        for c in contragent.current_user]
+                if any(tmp_list):
+                    return contragent
                 return None
+            return contragent
         except Contragent.DoesNotExist:
             return None
 
@@ -624,14 +652,14 @@ class MyAndEmptyRecordsStrategy(ListStrategy):
 
     def execute_list_strategy(self, user):
         res = list()
-        contragents = Contragent.objects.filter(
-            Q(current_user__id=user.id) | Q(current_user__id=None))
+        contragents = Contragent.objects.all()
         for c in contragents:
             tmp_pack = c.get_active_package()
             if tmp_pack:
                 tmp_state = tmp_pack.package_state
                 if tmp_state:
-                    if user.department in tmp_state.departments.all():
+                    if tmp_state.is_permitted(user.department) and (
+                        user in c.current_user):
                         res.append(c)
                 else:
                     res.append(c)
@@ -646,7 +674,8 @@ class MyAndEmptyRecordsStrategy(ListStrategy):
             if tmp_pack:
                 tmp_state = tmp_pack.package_state
                 if tmp_state:
-                    if user.department in tmp_state.departments.all():
+                    if tmp_state.is_permitted(user.department) and (
+                        user in contragent.current_user):
                         return contragent
             return contragent
         except Contragent.DoesNotExist:

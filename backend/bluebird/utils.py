@@ -343,7 +343,8 @@ def generate_single_files(data: dict, package: DocumentsPackage, total: float,
 
 
 def generate_docx_file(data: dict, package: DocumentsPackage, total: float,
-                       document_type_obj: int, recreate: bool = False):
+                       document_type_obj: DocumentTypeModel,
+                       recreate: bool = False):
     template = get_template(document_type_obj, package)
     if not template:
         return None
@@ -392,7 +393,7 @@ def create_unique_id():
 
 
 def count_total(data: List):
-    res = 0
+    res = 0.0
     for data_piece in data:
         res += float(data_piece['summ_tax_precise'])
     return res

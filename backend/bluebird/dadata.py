@@ -215,7 +215,7 @@ class Suggestions_Response:
 
 
 class Result_response_from_suggestion:
-    def __init__(self, response: Suggestions_Response):
+    def __init__(self, response: Suggestion):
         self.data = dict()
         self.data['dadata_name'] = response.data.name.full_with_opf
         self.data['ogrn'] = int(
