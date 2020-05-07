@@ -150,8 +150,7 @@ class Contragent(models.Model):
         return DocumentsPackage.objects.filter(contragent=self.pk) or None
 
     def get_active_package(self):
-        res = DocumentsPackage.objects.filter(contragent=self.pk,
-                                              is_active=True)
+        res = DocumentsPackage.get_active_package(self)
         return list(res)[0] if len(res) else None
 
     def __str__(self):
@@ -691,3 +690,12 @@ STRATEGIES_FUNCTIONS = [MyAndEmptyRecordsStrategy, AllInDepartmentRecords,
                         AllRecords, OnlyMyRecordsStrategy, OnlyEmptyRecords]
 
 STRATEGIES = dict(zip(STRATEGIES_LIST, STRATEGIES_FUNCTIONS))
+
+ZIP_FILES_ACTIONS = {
+    0: "Скачать весь пакет",
+    1: "Скачать основные файлы",
+    2: "Скачать акты",
+    3: "Скачать счета",
+    4: "Скачать счета фактуры",
+    5: "Скачать прочие файлы",
+}

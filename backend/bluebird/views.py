@@ -1,4 +1,5 @@
 import datetime
+import os, tempfile, zipfile
 from copy import deepcopy
 
 from django_q.tasks import (
@@ -18,6 +19,7 @@ from rest_framework.views import \
     APIView
 
 from django.shortcuts import redirect
+from wsgiref.util import FileWrapper
 
 from bluebird.models import (
     ContractNumberClass,
@@ -26,7 +28,14 @@ from bluebird.models import (
     DocumentTypeModel,
     NormativeCategory,
     OtherFile,
-    SignUser, STRATEGIES, STRATEGIES_LIST, Event, Commentary, State)
+    PackFile,
+    SingleFile,
+    OtherFile,
+    Event,
+    Commentary,
+    State,
+    SignUser,
+    STRATEGIES, STRATEGIES_LIST, ZIP_FILES_ACTIONS)
 from bluebird.serializers import (
     ContragentFullSerializer,
     ContragentShortSerializer,
@@ -124,7 +133,8 @@ class ContragentView(APIView):
                 request.user.department.strategy
                 ]]().execute_single_strategy(pk, request.user)
         if not obj:
-            return Response(status=status.HTTP_403_FORBIDDEN)
+            return Response('Requested page is forbidden.',
+                            status=status.HTTP_403_FORBIDDEN)
         serializer = ContragentFullSerializer(obj)
         return Response(serializer.data)
 
@@ -183,7 +193,27 @@ class PackageView(APIView):
             Response(status=status.HTTP_308_PERMANENT_REDIRECT)
 
     def post(self, request, pk, package_id):
-        return Response(status=status.HTTP_501_NOT_IMPLEMENTED)
+        temp = tempfile.TemporaryFile()
+        archive = zipfile.ZipFile(temp, 'w', zipfile.ZIP_DEFLATED)
+        #  add file addition here
+
+        pack = get_object(package_id, DocumentsPackage)
+        docs_pack = PackFile.objects.filter(object_id=pack.id)
+        docs_single = SingleFile.objects.filter(object_id=pack.id)
+        docs_other = OtherFile.objects.filter(object_id=pack.id)
+        for doc in (docs_pack + docs_single + docs_other):
+            archive.write(doc.file_path)
+
+        #  add file addition here
+        archive.close()
+        wrapper = FileWrapper(temp)
+        response = Response(data=wrapper, status=status.HTTP_200_OK,
+                            content_type='application/zip')
+        response['Content-Disposition'] = f'attachment;\
+         filename={pack.name_uuid}.zip'
+        response['Content-Length'] = temp.tell()
+        temp.seek(0)
+        return response
 
     def put(self, request, pk, package_id):
         package = get_object(package_id, DocumentsPackage)
