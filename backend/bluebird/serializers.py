@@ -12,14 +12,14 @@ class ContragentShortSerializer(serializers.ModelSerializer):
     class Meta:
         model = Contragent
         fields = ['id', 'klass', 'excell_name',
-                  'inn', 'debt', 'physical_address']
+                  'inn', 'debt', 'physical_address', ]
 
 
 class PackageShortSerializer(serializers.ModelSerializer):
     class Meta:
         model = DocumentsPackage
         fields = ['id', 'name_uuid', 'contragent', 'is_active',
-                  'creation_date', 'package_state_date', 'package_state']
+                  'creation_date', 'package_state_date', 'package_state', ]
 
 
 class ContragentFullSerializer(serializers.ModelSerializer):
@@ -47,19 +47,22 @@ class SingleFileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SingleFile
-        fields = ['file_name', 'file_path', 'file_type']
+        fields = ['id', 'file_name', 'file_path', 'file_type',
+                  'creation_date', ]
 
 
 class PackFileListSerializer(serializers.ModelSerializer):
     class Meta:
         model = PackFile
-        fields = ['id', 'file_name', 'file_path', 'creation_date']
+        fields = ['id', 'file_name', 'file_path', 'file_type',
+                  'creation_date', ]
 
 
 class OtherFileSerializer(serializers.ModelSerializer):
     class Meta:
         model = OtherFile
-        fields = ['id', 'file_name', 'file_path', 'creation_date', ]
+        fields = ['id', 'file_name', 'file_path', 'file_type',
+                  'creation_date', ]
 
 
 class EventSerializer(serializers.ModelSerializer):
@@ -80,7 +83,7 @@ class StateSerializer(serializers.ModelSerializer):
     class Meta:
         model = State
         fields = ['id', 'name_state', 'departments', 'is_initial_state',
-                  'is_final_state', 'events']
+                  'is_final_state', 'events', ]
 
 
 class PackageFullSerializer(serializers.ModelSerializer):
@@ -119,13 +122,13 @@ class TaskSerializer(serializers.ModelSerializer):
 class SignUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = SignUser
-        fields = ['id', 'name', 'position', 'address']
+        fields = ['id', 'name', 'position', 'address', ]
 
 
 class NormSerializer(serializers.ModelSerializer):
     class Meta:
         model = NormativeCategory
-        fields = ['id', 'name']
+        fields = ['id', 'name', ]
 
 
 class CommentarySerializer(serializers.ModelSerializer):
@@ -139,4 +142,4 @@ class CommentarySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Commentary
-        fields = ['id', 'commentary_text', 'creation_date']
+        fields = ['id', 'commentary_text', 'creation_date', ]
