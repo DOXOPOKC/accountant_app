@@ -4,6 +4,7 @@ import uuid
 from abc import ABC, abstractmethod
 
 from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 from django.contrib.contenttypes.fields import (GenericForeignKey,
                                                 GenericRelation)
@@ -151,7 +152,7 @@ class Contragent(models.Model):
 
     def get_active_package(self):
         res = DocumentsPackage.get_active_package(self)
-        return list(res)[0] if len(res) else None
+        return res
 
     def __str__(self):
         return f'{self.excell_name}'
@@ -318,8 +319,11 @@ class DocumentsPackage(models.Model):
 
     @classmethod
     def get_active_package(cls, contragent: Contragent):
-        res = cls.objects.get(contragent__id=contragent.pk, is_active=True)
-        return res
+        try:
+            res = cls.objects.get(contragent__id=contragent.pk, is_active=True)
+            return res
+        except ObjectDoesNotExist:
+            return None
 
     def initialize_sub_folders(self):
         os.makedirs(str(self.get_save_path()), exist_ok=True)

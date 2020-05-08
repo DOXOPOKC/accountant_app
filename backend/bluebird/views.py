@@ -75,7 +75,8 @@ class ContragentsView(APIView):
                 request.user.department.strategy
                 ]]().execute_list_strategy(request.user)
         if not conrtagents:
-            return Response(status=status.HTTP_403_FORBIDDEN)
+            return Response(data='Нет прав доступа к элементу.',
+                            status=status.HTTP_403_FORBIDDEN)
         serializer = ContragentShortSerializer(conrtagents, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -133,7 +134,7 @@ class ContragentView(APIView):
                 request.user.department.strategy
                 ]]().execute_single_strategy(pk, request.user)
         if not obj:
-            return Response('Requested page is forbidden.',
+            return Response(data='Нет прав доступа к элементу.',
                             status=status.HTTP_403_FORBIDDEN)
         serializer = ContragentFullSerializer(obj)
         return Response(serializer.data)
@@ -190,7 +191,8 @@ class PackageView(APIView):
             serializer = PackageFullSerializer(package)
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
-            Response(status=status.HTTP_308_PERMANENT_REDIRECT)
+            Response(data="Нет прав доступа к элементу.",
+                     status=status.HTTP_308_PERMANENT_REDIRECT)
 
     def post(self, request, pk, package_id):
         temp = tempfile.TemporaryFile()
@@ -245,7 +247,8 @@ class PackageView(APIView):
                 if package.package_state.is_permitted(
                                                 request.user.department):
                     return Response(status=status.HTTP_200_OK)
-                return Response(status=status.HTTP_308_PERMANENT_REDIRECT)
+                return Response(data="Статус успешно сменен.",
+                                status=status.HTTP_308_PERMANENT_REDIRECT)
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
