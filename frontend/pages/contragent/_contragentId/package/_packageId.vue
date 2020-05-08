@@ -64,6 +64,7 @@
           v-model="tab"
           background-color="transparent"
           color="primary"
+          show-arrows
           grow
         )
           v-tab(
