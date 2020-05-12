@@ -153,7 +153,7 @@ class PackagesView(APIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request, pk):
-        packages = DocumentsPackage.objects.filter(contragent__pk=pk)
+        packages = get_object(pk, DocumentsPackage)
         serializer = PackageShortSerializer(packages, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -161,7 +161,7 @@ class PackagesView(APIView):
         if DocumentsPackage.objects.filter(contragent__pk=pk,
                                            is_active=True).exists():
             return Response(status=status.HTTP_409_CONFLICT)
-        contragent = Contragent.objects.get(pk=pk)
+        contragent = get_object(pk, Contragent)
         serializer = PackageShortSerializer(data={'contragent': contragent.pk})
         if serializer.is_valid():
             serializer.save()
@@ -187,12 +187,12 @@ class PackageView(APIView):
 
     def get(self, request, pk, package_id):
         package = get_object(package_id, DocumentsPackage)
-        if package.package_state.is_permitted(request.user.department):
-            serializer = PackageFullSerializer(package)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        else:
-            Response(data="Нет прав доступа к элементу.",
-                     status=status.HTTP_308_PERMANENT_REDIRECT)
+        if package.package_state:
+            if package.package_state.is_permitted(request.user.department):
+                serializer = PackageFullSerializer(package)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(data="Нет прав доступа к элементу.",
+                        status=status.HTTP_308_PERMANENT_REDIRECT)
 
     def post(self, request, pk, package_id):
         temp = tempfile.TemporaryFile()
