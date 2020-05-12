@@ -135,7 +135,7 @@ def get_data(id: int):
                 'status': "No suggestions. Check, DADATA is availiable?"}
 
 
-def generate_documents(data: List, package: DocumentsPackage,
+def generate_documents(data: dict, package: DocumentsPackage,
                        recreate: bool = False):
     """ Функция пакетной генерации документов."""
     package.contragent.create_package_and_folder()  # Создаем папку контрагента
@@ -392,7 +392,7 @@ def create_unique_id():
     return str(uuid.uuid4())
 
 
-def count_total(data: List):
+def count_total(data: dict):
     res = 0.0
     for data_piece in data:
         res += float(data_piece['summ_tax_precise'])
