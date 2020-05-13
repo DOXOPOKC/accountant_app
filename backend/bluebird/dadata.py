@@ -1,5 +1,5 @@
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Optional, List, Any, Union, Dict
 from datetime import date
 
@@ -202,7 +202,7 @@ class Suggestion:
 
 @dataclass
 class Suggestions_Response:
-    suggestions: List[Optional[Suggestion]] = list()
+    suggestions: List[Optional[Suggestion]] = field(default_factory=list)
 
     @staticmethod
     def parse_from_dict(obj: Any) -> Union['Suggestions_Response', None]:
