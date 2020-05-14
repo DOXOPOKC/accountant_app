@@ -19,6 +19,7 @@ from rest_framework.views import \
     APIView
 
 from django.shortcuts import redirect
+from django.http import HttpResponse
 from wsgiref.util import FileWrapper
 
 from bluebird.models import (
@@ -195,26 +196,29 @@ class PackageView(APIView):
                         status=status.HTTP_308_PERMANENT_REDIRECT)
 
     def post(self, request, pk, package_id):
-        temp = tempfile.TemporaryFile()
-        archive = zipfile.ZipFile(temp, 'w', zipfile.ZIP_DEFLATED)
-        #  add file addition here
+        with tempfile.TemporaryFile() as temp:
+            with zipfile.ZipFile(temp, 'w', zipfile.ZIP_DEFLATED) as archive:
+            #  add file addition here
 
-        pack = get_object(package_id, DocumentsPackage)
-        docs_pack = PackFile.objects.filter(object_id=pack.id)
-        docs_single = SingleFile.objects.filter(object_id=pack.id)
-        docs_other = OtherFile.objects.filter(object_id=pack.id)
-        for doc in (docs_pack + docs_single + docs_other):
-            archive.write(doc.file_path)
+                pack = get_object(package_id, DocumentsPackage)
+                docs_pack = list(PackFile.objects.filter(object_id=pack.id))
+                docs_single = list(
+                    SingleFile.objects.filter(object_id=pack.id))
+                docs_other = list(OtherFile.objects.filter(object_id=pack.id))
+                for doc in (docs_pack + docs_single + docs_other):
+                    try:
+                        archive.write(doc.file_path)
+                    except FileNotFoundError:
+                        continue
 
-        #  add file addition here
-        archive.close()
-        wrapper = FileWrapper(temp)
-        response = Response(data=wrapper, status=status.HTTP_200_OK,
-                            content_type='application/zip')
-        response['Content-Disposition'] = f'attachment;\
-         filename={pack.name_uuid}.zip'
-        response['Content-Length'] = temp.tell()
-        temp.seek(0)
+            #  add file addition here
+            # archive.close()
+            wrapper = FileWrapper(temp)
+            response = HttpResponse(wrapper, content_type='application/zip')
+            response['Content-Disposition'] = f'attachment;\
+            filename={pack.name_uuid}.zip'
+            # response['Content-Length'] = temp.tell()
+            # temp.seek(0)
         return response
 
     def put(self, request, pk, package_id):
