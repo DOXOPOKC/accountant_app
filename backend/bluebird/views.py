@@ -2,6 +2,8 @@ import datetime
 import os, tempfile, zipfile
 from copy import deepcopy
 
+from io import BytesIO
+
 from django_q.tasks import (
     Task,
     async_task,
@@ -19,8 +21,8 @@ from rest_framework.views import \
     APIView
 
 from django.shortcuts import redirect
-from django.http import HttpResponse
-from wsgiref.util import FileWrapper
+from django.http import HttpResponse, JsonResponse
+# from wsgiref.util import FileWrapper
 
 from bluebird.models import (
     ContractNumberClass,
@@ -196,29 +198,30 @@ class PackageView(APIView):
                         status=status.HTTP_308_PERMANENT_REDIRECT)
 
     def post(self, request, pk, package_id):
-        with tempfile.TemporaryFile() as temp:
-            with zipfile.ZipFile(temp, 'w', zipfile.ZIP_DEFLATED) as archive:
-            #  add file addition here
+        pack = get_object(package_id, DocumentsPackage)
+        docs_pack = list(PackFile.objects.filter(object_id=pack.id))
+        docs_single = list(SingleFile.objects.filter(object_id=pack.id))
+        docs_other = list(OtherFile.objects.filter(object_id=pack.id))
 
-                pack = get_object(package_id, DocumentsPackage)
-                docs_pack = list(PackFile.objects.filter(object_id=pack.id))
-                docs_single = list(
-                    SingleFile.objects.filter(object_id=pack.id))
-                docs_other = list(OtherFile.objects.filter(object_id=pack.id))
-                for doc in (docs_pack + docs_single + docs_other):
-                    try:
-                        archive.write(doc.file_path)
-                    except FileNotFoundError:
-                        continue
+        zip_buffer = BytesIO()
+        with zipfile.ZipFile(zip_buffer, "a", zipfile.ZIP_DEFLATED,
+                             False) as zip_file:
+            for doc in (docs_pack + docs_single + docs_other):
+                try:
+                    zip_file.writestr(data=doc.file_path,
+                                zinfo_or_arcname=doc.file_name)
+                except FileNotFoundError:
+                    continue
 
-            #  add file addition here
-            # archive.close()
-            wrapper = FileWrapper(temp)
-            response = HttpResponse(wrapper, content_type='application/zip')
-            response['Content-Disposition'] = f'attachment;\
+        zip_buffer.seek(0)
+        data = {
+            'filename': f'{pack.name_uuid}.zip',
+            'file': str(zip_buffer.getvalue()),
+        }
+        response = JsonResponse(data, content_type='application/zip')
+        response['Content-Disposition'] = f'attachment; \
             filename={pack.name_uuid}.zip'
-            # response['Content-Length'] = temp.tell()
-            # temp.seek(0)
+
         return response
 
     def put(self, request, pk, package_id):
