@@ -153,7 +153,7 @@ class PackagesView(APIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request, pk):
-        packages = get_object(pk, DocumentsPackage)
+        packages = DocumentsPackage.objects.filter(contragent__pk=pk)
         serializer = PackageShortSerializer(packages, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
