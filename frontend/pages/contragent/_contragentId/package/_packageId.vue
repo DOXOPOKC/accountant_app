@@ -46,7 +46,7 @@
                   class="custom-transform-class text-none"
                   @click="SEND_EVENT({ contragentId: package.contragent, packageId: package.id, eventId: event.id })"
                 )
-                  | {{ event.name_event }}
+                  span {{ event.name_event }}
               v-list-item(
                 class="px-0"
               )
@@ -58,7 +58,20 @@
                   color="primary"
                   @click="REGENERATE_PACKAGE({ contragentId: package.contragent, packageId: package.id })"
                 )
-                  | Перегенерировать
+                  span Перегенерировать
+              v-list-item(
+                class="px-0"
+              )
+                v-btn(
+                  text
+                  tile
+                  block
+                  class="custom-transform-class text-none mr-2"
+                  color="primary"
+                  @click="DOWNLOAD_PACKAGE({ contragentId: package.contragent, packageId: package.id })"
+                )
+                  span Скачать пакет
+                  v-icon(small class="ml-2") mdi-download
         v-card-title(class="headline font-weight-light px-10")
         v-tabs(
           v-model="tab"
@@ -297,6 +310,7 @@ export default {
     ...mapActions({
       REGENERATE_PACKAGE: 'packages/REGENERATE_PACKAGE',
       SEND_EVENT: 'packages/SEND_EVENT',
+      DOWNLOAD_PACKAGE: 'packages/DOWNLOAD_PACKAGE',
       DELETE_FILE: 'files/DELETE_FILE'
     }),
     upload () {

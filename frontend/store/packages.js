@@ -5,6 +5,7 @@ export const types = {
   SET_PACKAGE: 'SET_PACKAGE',
   FETCH_PACKAGE: 'FETCH_PACKAGE',
   GENERATE_PACKAGE: 'GENERATE_PACKAGE',
+  DOWNLOAD_PACKAGE: 'DOWNLOAD_PACKAGE',
   REGENERATE_PACKAGE: 'REGENERATE_PACKAGE',
   SEND_EVENT: 'SEND_EVENT'
 }
@@ -46,7 +47,7 @@ export const actions = {
       const data = await this.$repositories.packages.getPackage(contragentId, packageId)
       commit(types.SET_PACKAGE, data)
       this.commit('tasks/SET_TASK', data.name_uuid)
-      this.dispatch('tasks/FETCH_TASKS', { contragentId, packageId })
+      this.dispatch('tasks/FETCH_TASKS', { contragentId, packageId, taskUid: data.name_uuid })
     } catch (error) {
       this.$toast.error(`${error.response.data} - ${error.response.status}`)
     }
@@ -68,6 +69,15 @@ export const actions = {
       await dispatch(types.FETCH_PACKAGE, { contragentId, packageId })
     } catch (error) {
       this.$toast.error('Ошибка статуса')
+    }
+  },
+  // Скачать zip пакет
+  async [types.DOWNLOAD_PACKAGE] ({ dispatch }, { contragentId, packageId }) {
+    try {
+      const response = await this.$repositories.packages.download(contragentId, packageId)
+      console.log({ response })
+    } catch (error) {
+      this.$toast.error('Ошибка скачивания')
     }
   }
 }

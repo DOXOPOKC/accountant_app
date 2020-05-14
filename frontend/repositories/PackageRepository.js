@@ -20,5 +20,9 @@ export default $axios => resource => ({
     return $axios.$delete(`${resource}/${contragentId}/packages/${packageId}/`, {
       data: payload
     })
+  },
+  // Скачать пакет
+  download (contragentId, packageId) {
+    return $axios.$post(`${resource}/${contragentId}/packages/${packageId}/`)
   }
 })
