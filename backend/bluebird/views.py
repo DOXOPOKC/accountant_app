@@ -216,11 +216,11 @@ class PackageView(APIView):
 
         zip_buffer.seek(0)
 
-        data = {
-            'filename': f'{pack.name_uuid}.zip',
-            'file': binascii.b2a_uu(zip_buffer.getvalue()),
-        }
-        response = HttpResponse(zip_buffer.getvalue(),
+        # data = {
+        #     'filename': f'{pack.name_uuid}.zip',
+        #     'file': binascii.b2a_uu(zip_buffer.getvalue()),
+        # }
+        response = HttpResponse(zip_buffer,
                                 content_type='application/zip')
         response['Content-Disposition'] = f'attachment; \
             filename={pack.name_uuid}.zip'
