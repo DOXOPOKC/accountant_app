@@ -3,6 +3,7 @@ import os, tempfile, zipfile
 from copy import deepcopy
 
 from io import BytesIO
+import base64
 
 from django_q.tasks import (
     Task,
@@ -214,9 +215,10 @@ class PackageView(APIView):
                     continue
 
         zip_buffer.seek(0)
+
         data = {
             'filename': f'{pack.name_uuid}.zip',
-            'file': str(zip_buffer.getvalue()),
+            'file': base64.b64encode(zip_buffer.getvalue()),
         }
         response = JsonResponse(data, content_type='application/zip')
         response['Content-Disposition'] = f'attachment; \
