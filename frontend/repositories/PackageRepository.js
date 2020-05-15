@@ -23,6 +23,6 @@ export default $axios => resource => ({
   },
   // Скачать пакет
   download (contragentId, packageId) {
-    return $axios.$post(`${resource}/${contragentId}/packages/${packageId}/`)
+    return $axios.$post(`${resource}/${contragentId}/packages/${packageId}/`, {}, { responseType: 'arraybuffer' })
   }
 })

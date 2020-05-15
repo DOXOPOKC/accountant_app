@@ -75,7 +75,12 @@ export const actions = {
   async [types.DOWNLOAD_PACKAGE] ({ dispatch }, { contragentId, packageId }) {
     try {
       const response = await this.$repositories.packages.download(contragentId, packageId)
-      console.log({ response })
+      const blob = new Blob([response], { type: 'application/zip' })
+      const link = document.createElement('a')
+      link.href = window.URL.createObjectURL(blob)
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
     } catch (error) {
       this.$toast.error('Ошибка скачивания')
     }
