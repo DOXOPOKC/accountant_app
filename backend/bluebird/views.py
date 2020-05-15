@@ -218,7 +218,7 @@ class PackageView(APIView):
 
         data = {
             'filename': f'{pack.name_uuid}.zip',
-            'file': base64.b64encode(zip_buffer.getvalue()),
+            'file': str(base64.b64encode(zip_buffer.getvalue())),
         }
         response = JsonResponse(data, content_type='application/zip')
         response['Content-Disposition'] = f'attachment; \
