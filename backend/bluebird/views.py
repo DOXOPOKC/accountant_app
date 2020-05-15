@@ -57,7 +57,7 @@ from bluebird.utils import (
     parse_from_file)
 
 from .snippets import \
-    str_remove_app
+    str_remove_app, str_add_app
 
 
 class ContragentsView(APIView):
@@ -209,8 +209,8 @@ class PackageView(APIView):
                              False) as zip_file:
             for doc in (docs_pack + docs_single + docs_other):
                 try:
-                    zip_file.writestr(data=doc.file_path,
-                                zinfo_or_arcname=doc.file_name)
+                    with open(str_add_app(doc.file_path), 'rb') as f:
+                        zip_file.writestr(doc.file_name, f.read())
                 except FileNotFoundError:
                     continue
 
