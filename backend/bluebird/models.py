@@ -132,7 +132,7 @@ class Contragent(models.Model):
         package = self.get_active_package()
         if package:
             res = [user for user in package.package_users.all(
-                ) if package.package_state.is_permitted(user.department)]
+                ) if package.package_state.is_permitted(user)]
             return res
         return None
 
@@ -538,8 +538,12 @@ class State(models.Model):
     def get_linked_events(self):
         return Event.objects.filter(from_state=self.id)
 
-    def is_permitted(self, department):
+    def _is_dept_permitted(self, department):
         return department in self.departments.all()
+
+    def is_permitted(self, user):
+        return (user.is_superuser or user.is_staff
+                or self._is_dept_permitted(user.department))
 
     def __str__(self):
         return self.name_state
@@ -661,7 +665,7 @@ class MyAndEmptyRecordsStrategy(ListStrategy):
             if tmp_pack:
                 tmp_state = tmp_pack.package_state
                 if tmp_state:
-                    if tmp_state.is_permitted(user.department) and (
+                    if tmp_state.is_permitted(user) and (
                         user in c.current_user):
                         res.append(c)
                 else:
@@ -677,7 +681,7 @@ class MyAndEmptyRecordsStrategy(ListStrategy):
             if tmp_pack:
                 tmp_state = tmp_pack.package_state
                 if tmp_state:
-                    if tmp_state.is_permitted(user.department) and (
+                    if tmp_state.is_permitted(user) and (
                         user in contragent.current_user):
                         return contragent
             return contragent

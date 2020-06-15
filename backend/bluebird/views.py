@@ -192,7 +192,7 @@ class PackageView(APIView):
     def get(self, request, pk, package_id):
         package = get_object(package_id, DocumentsPackage)
         if package.package_state:
-            if package.package_state.is_permitted(request.user.department):
+            if package.package_state.is_permitted(request.user):
                 serializer = PackageFullSerializer(package)
                 return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(data="Нет прав доступа к элементу.",
