@@ -29,12 +29,12 @@ export const mutations = {
 }
 
 export const actions = {
-  async [types.FETCH_TASKS] ({ state, commit, getters }, { contragentId, packageId }) {
+  async [types.FETCH_TASKS] ({ state, commit, getters }, { contragentId, packageId, taskUid }) {
     try {
       while (getters.tasksStatus) {
         const responses = (await Promise.all([
           await new Promise(resolve => setTimeout(() => resolve(), 1000)),
-          await this.$repositories.tasks.get(state.taskUid),
+          await this.$repositories.tasks.get(taskUid),
           await this.$repositories.packages.getPackage(contragentId, packageId)
         ]))
         const tasks = responses[1]

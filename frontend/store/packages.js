@@ -5,8 +5,9 @@ export const types = {
   SET_PACKAGE: 'SET_PACKAGE',
   FETCH_PACKAGE: 'FETCH_PACKAGE',
   GENERATE_PACKAGE: 'GENERATE_PACKAGE',
+  DOWNLOAD_PACKAGE: 'DOWNLOAD_PACKAGE',
   REGENERATE_PACKAGE: 'REGENERATE_PACKAGE',
-  DEACTIVATE_PACKAGE: 'DEACTIVATE_PACKAGE'
+  SEND_EVENT: 'SEND_EVENT'
 }
 
 export const state = () => ({
@@ -46,9 +47,9 @@ export const actions = {
       const data = await this.$repositories.packages.getPackage(contragentId, packageId)
       commit(types.SET_PACKAGE, data)
       this.commit('tasks/SET_TASK', data.name_uuid)
-      this.dispatch('tasks/FETCH_TASKS', { contragentId, packageId })
+      this.dispatch('tasks/FETCH_TASKS', { contragentId, packageId, taskUid: data.name_uuid })
     } catch (error) {
-      this.$toast.error('Ошибка при загрузке пакета!')
+      this.$toast.error(`${error.response.data} - ${error.response.status}`)
     }
   },
   // Перегенирация
@@ -62,13 +63,26 @@ export const actions = {
     }
   },
   // Статус пакета переводится в закрытый
-  async [types.DEACTIVATE_PACKAGE] ({ dispatch }, { contragentId, packageId }) {
+  async [types.SEND_EVENT] ({ dispatch }, { contragentId, packageId, eventId }) {
     try {
-      await this.$repositories.packages.delete(contragentId, packageId)
+      await this.$repositories.packages.delete(contragentId, packageId, { event: eventId })
       await dispatch(types.FETCH_PACKAGE, { contragentId, packageId })
-      this.$toast.error('Пакет неактивен')
     } catch (error) {
       this.$toast.error('Ошибка статуса')
+    }
+  },
+  // Скачать zip пакет
+  async [types.DOWNLOAD_PACKAGE] ({ dispatch }, { contragentId, packageId }) {
+    try {
+      const response = await this.$repositories.packages.download(contragentId, packageId)
+      const blob = new Blob([response], { type: 'application/zip' })
+      const link = document.createElement('a')
+      link.href = window.URL.createObjectURL(blob)
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    } catch (error) {
+      this.$toast.error('Ошибка скачивания')
     }
   }
 }

@@ -1,4 +1,9 @@
 import datetime
+import os, tempfile, zipfile
+from copy import deepcopy
+
+from io import BytesIO
+import binascii
 
 from django_q.tasks import (
     Task,
@@ -16,6 +21,10 @@ from rest_framework.response import \
 from rest_framework.views import \
     APIView
 
+from django.shortcuts import redirect
+from django.http import HttpResponse, JsonResponse
+# from wsgiref.util import FileWrapper
+
 from bluebird.models import (
     ContractNumberClass,
     Contragent,
@@ -23,7 +32,14 @@ from bluebird.models import (
     DocumentTypeModel,
     NormativeCategory,
     OtherFile,
-    SignUser)
+    PackFile,
+    SingleFile,
+    OtherFile,
+    Event,
+    Commentary,
+    State,
+    SignUser,
+    STRATEGIES, STRATEGIES_LIST, ZIP_FILES_ACTIONS)
 from bluebird.serializers import (
     ContragentFullSerializer,
     ContragentShortSerializer,
@@ -32,7 +48,7 @@ from bluebird.serializers import (
     PackageFullSerializer,
     PackageShortSerializer,
     SignUserSerializer,
-    TaskSerializer)
+    TaskSerializer, CommentarySerializer)
 from bluebird.utils import (
     calc_create_gen_async,
     create_unique_id,
@@ -41,7 +57,7 @@ from bluebird.utils import (
     parse_from_file)
 
 from .snippets import \
-    str_remove_app
+    str_remove_app, str_add_app
 
 
 class ContragentsView(APIView):
@@ -50,7 +66,21 @@ class ContragentsView(APIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request):
-        conrtagents = Contragent.objects.all()
+        if request.user.is_superuser and request.user.is_staff:
+            conrtagents = STRATEGIES[
+                'Все'
+                ]().execute_list_strategy(request.user)
+        elif request.user.is_staff and not request.user.is_superuser:
+            conrtagents = STRATEGIES[
+                'Все по отделу'
+                ]().execute_list_strategy(request.user)
+        elif not request.user.is_staff and not request.user.is_superuser:
+            conrtagents = STRATEGIES[STRATEGIES_LIST[
+                request.user.department.strategy
+                ]]().execute_list_strategy(request.user)
+        if not conrtagents:
+            return Response(data='Нет прав доступа к элементу.',
+                            status=status.HTTP_403_FORBIDDEN)
         serializer = ContragentShortSerializer(conrtagents, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -62,17 +92,19 @@ class ContragentsView(APIView):
                 result = parse_from_file(file)
             except Exception:
                 return Response('Структура файла не верна.\
- Пожалуста используйте правильную форму.', status=status.HTTP_400_BAD_REQUEST)
+                    Пожалуста используйте правильную форму.',
+                    status=status.HTTP_400_BAD_REQUEST)
             if not result:
                 # Если фаил есть но он "пустой"
                 return Response('Выбраный фаил пуст или содержит информацию,\
- не соотвествующую формату.', status=status.HTTP_400_BAD_REQUEST)
+                    не соотвествующую формату.',
+                    status=status.HTTP_400_BAD_REQUEST)
             group_id = create_unique_id()
             for data_element in result:
                 if data_element['klass'] == 1:
                     contract_number = ContractNumberClass.create(new=True)
                     data_element['number_contract'] = contract_number.pk
-                    data_element['current_user'] = request.user.id
+                    data_element['current_user'] = None  # request.user.id
                     serializer = ContragentFullSerializer(data=data_element)
                     if serializer.is_valid(True):
                         serializer.save()
@@ -84,7 +116,8 @@ class ContragentsView(APIView):
         else:
             # Если файла нет
             return Response('В запросе не найден фаил.\
- Пожалуйста, выберите фаил.', status=status.HTTP_400_BAD_REQUEST)
+                Пожалуйста, выберите фаил.',
+                status=status.HTTP_400_BAD_REQUEST)
 
 
 class ContragentView(APIView):
@@ -92,7 +125,21 @@ class ContragentView(APIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request, pk):
-        obj = get_object(pk, Contragent)
+        if request.user.is_superuser and request.user.is_staff:
+            obj = STRATEGIES[
+                'Все'
+                ]().execute_single_strategy(pk, request.user)
+        elif request.user.is_staff and not request.user.is_superuser:
+            obj = STRATEGIES[
+                'Все по отделу'
+                ]().execute_single_strategy(pk, request.user)
+        elif not request.user.is_staff and not request.user.is_superuser:
+            obj = STRATEGIES[STRATEGIES_LIST[
+                request.user.department.strategy
+                ]]().execute_single_strategy(pk, request.user)
+        if not obj:
+            return Response(data='Нет прав доступа к элементу.',
+                            status=status.HTTP_403_FORBIDDEN)
         serializer = ContragentFullSerializer(obj)
         return Response(serializer.data)
 
@@ -118,17 +165,21 @@ class PackagesView(APIView):
         if DocumentsPackage.objects.filter(contragent__pk=pk,
                                            is_active=True).exists():
             return Response(status=status.HTTP_409_CONFLICT)
-        contragent = Contragent.objects.get(pk=pk)
+        contragent = get_object(pk, Contragent)
         serializer = PackageShortSerializer(data={'contragent': contragent.pk})
         if serializer.is_valid():
             serializer.save()
             pack = DocumentsPackage.objects.get(contragent__pk=pk,
                                                 is_active=True)
             pack.initialize_sub_folders()
+            pack.change_state_to(State.objects.filter(is_initial_state=True)[0])
 
             group_id = pack.name_uuid
             async_task(calc_create_gen_async, contragent, pack,
                        group=group_id)
+
+            contragent.current_user = request.user
+            # contragent.save()
             return Response(group_id, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -140,11 +191,41 @@ class PackageView(APIView):
 
     def get(self, request, pk, package_id):
         package = get_object(package_id, DocumentsPackage)
-        serializer = PackageFullSerializer(package)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        if package.package_state:
+            if package.package_state.is_permitted(request.user):
+                serializer = PackageFullSerializer(package)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(data="Нет прав доступа к элементу.",
+                        status=status.HTTP_308_PERMANENT_REDIRECT)
 
     def post(self, request, pk, package_id):
-        return Response(status=status.HTTP_501_NOT_IMPLEMENTED)
+        pack = get_object(package_id, DocumentsPackage)
+        docs_pack = list(PackFile.objects.filter(object_id=pack.id))
+        docs_single = list(SingleFile.objects.filter(object_id=pack.id))
+        docs_other = list(OtherFile.objects.filter(object_id=pack.id))
+
+        zip_buffer = BytesIO()
+        with zipfile.ZipFile(zip_buffer, "a", zipfile.ZIP_DEFLATED,
+                             False) as zip_file:
+            for doc in (docs_pack + docs_single + docs_other):
+                try:
+                    with open(str_add_app(doc.file_path), 'rb') as f:
+                        zip_file.writestr(doc.file_name, f.read())
+                except FileNotFoundError:
+                    continue
+
+        zip_buffer.seek(0)
+
+        # data = {
+        #     'filename': f'{pack.name_uuid}.zip',
+        #     'file': binascii.b2a_uu(zip_buffer.getvalue()),
+        # }
+        response = HttpResponse(zip_buffer,
+                                content_type='application/zip')
+        response['Content-Disposition'] = f'attachment; \
+            filename={pack.name_uuid}.zip'
+
+        return response
 
     def put(self, request, pk, package_id):
         package = get_object(package_id, DocumentsPackage)
@@ -160,11 +241,25 @@ class PackageView(APIView):
 
     def delete(self, request, pk, package_id):
         package = get_object(package_id, DocumentsPackage)
-        if package.is_active:
-            package.is_active = False
-            package.save()
+        event_id = request.data.get('event', None)
+        if not event_id:
+            package.set_inactive()
             return Response(status=status.HTTP_200_OK)
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+        else:
+            event = Event.objects.get(id=event_id)
+            if event.from_state == package.package_state:
+                package.change_state_to(event.to_state)
+                # if not any([
+                #     event.to_state.is_permitted(dept.id
+                #         ) for dept in event.from_state.departments.all()]):
+                if event.to_state.is_final_state:
+                    package.set_inactive()
+                if package.package_state.is_permitted(
+                                                request.user.department):
+                    return Response(status=status.HTTP_200_OK)
+                return Response(data="Статус успешно сменен.",
+                                status=status.HTTP_308_PERMANENT_REDIRECT)
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 class TasksView(APIView):
@@ -239,3 +334,47 @@ class OtherFileView(APIView):
         result = get_object(file_id, OtherFile)
         result.delete()
         return Response(status=status.HTTP_200_OK)
+
+
+class CommentaryPackageView(APIView):
+    """ Вью для CRUD комментариев """
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request, package_id):
+        comments = Commentary.objects.filter(package__id=package_id)
+        serializer = CommentarySerializer(comments, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, package_id):
+        package = get_object(package_id, DocumentsPackage)
+        comment = package.commentary.create(
+            user=request.user,
+            commentary_text=request.data.get('commentary_text')
+        )
+        serializer = CommentarySerializer(data=comment)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CommentaryFileView(APIView):
+    """ Вью для CRUD комментариев """
+    # permission_classes = (IsAuthenticated,)
+
+    def get(self, request, package_id, file_id):
+        comments = Commentary.objects.filter(file__id=package_id)
+        serializer = CommentarySerializer(comments, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, package_id, file_id):
+        other_file = get_object(package_id, OtherFile)
+        comment = other_file.commentary.create(
+            user=request.user,
+            commentary_text=request.data.get('commentary_text')
+        )
+        serializer = CommentarySerializer(data=comment)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

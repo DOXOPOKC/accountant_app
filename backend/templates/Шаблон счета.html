@@ -155,7 +155,7 @@
 				<td style="padding: 0;">
 					<p style="white-space:nowrap" class="ft14">Руководитель</p>
 					<p style="padding: 20px 0 0 0;white-space:nowrap" class="ft12"><b>{% if consumer.signed_user.sign %}<img src="{{ consumer.signed_user.sign.url }}" style="display: inline; position: absolute;z-index: 1;left: 100px;top:700px; max-width: 140px; height: auto;"/>{% endif %}____________________________</b></p>
-					<p style="padding: 0 0 0 0;white-space:nowrap" class="ft18">{{ consumer.signed_user.name }}&#160;{{ sign_user_document }}<br/>б/н {{ consumer.signed_user.doc_number }}&#160;от&#160;{{ consumer.signed_user.doc_date|date:"d E Y" }}г.</p>
+					<p style="padding: 0 0 0 0;white-space:nowrap" class="ft18"><img src="/static/stamp/печать.png"/>{{ consumer.signed_user.name }}&#160;{{ sign_user_document }}<br/>б/н {{ consumer.signed_user.doc_number }}&#160;от&#160;{{ consumer.signed_user.doc_date|date:"d E Y" }}г.</p>
 				</td>
 				<td style="padding: 0 0 0 500px;">
 					<p style="white-space:nowrap;padding: 0 90px 0 0;" class="ft14">Бухгалтер</p>

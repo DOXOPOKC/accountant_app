@@ -135,7 +135,7 @@ def get_data(id: int):
                 'status': "No suggestions. Check, DADATA is availiable?"}
 
 
-def generate_documents(data: List, package: DocumentsPackage,
+def generate_documents(data: dict, package: DocumentsPackage,
                        recreate: bool = False):
     """ Функция пакетной генерации документов."""
     package.contragent.create_package_and_folder()  # Создаем папку контрагента
@@ -282,7 +282,7 @@ def create_models(data: dict, package: DocumentsPackage,
     file_name = f'{file_type.doc_type.title()} \
  №{unique_number} от {data["curr_date"]}.pdf'.replace('/', '-')
     file_path = os.path.join(file_obj.get_files_path(package), file_name)
-    
+
     create_files(data, template, file_path)
     file_obj.file_name = file_name
     file_obj.file_path = str_remove_app(file_path)
@@ -343,12 +343,13 @@ def generate_single_files(data: dict, package: DocumentsPackage, total: float,
 
 
 def generate_docx_file(data: dict, package: DocumentsPackage, total: float,
-                       document_type_obj: int, recreate: bool = False):
+                       document_type_obj: DocumentTypeModel,
+                       recreate: bool = False):
     template = get_template(document_type_obj, package)
     if not template:
         return None
     doc = DocxTemplate(template.template_path)
-    
+
     jinja_env = jinja2.Environment()
     jinja_env.filters['datv_case_filter'] = datv_case_filter
     jinja_env.filters['gent_case_filter'] = gent_case_filter
@@ -391,8 +392,8 @@ def create_unique_id():
     return str(uuid.uuid4())
 
 
-def count_total(data: List):
-    res = 0
+def count_total(data: dict):
+    res = 0.0
     for data_piece in data:
         res += float(data_piece['summ_tax_precise'])
     return res

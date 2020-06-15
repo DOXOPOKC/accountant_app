@@ -1,6 +1,6 @@
 import json
-from dataclasses import dataclass
-from typing import Optional, List, Any
+from dataclasses import dataclass, field
+from typing import Optional, List, Any, Union, Dict
 from datetime import date
 
 
@@ -12,7 +12,7 @@ class OPF:
     short: Optional[str] = None
 
     @staticmethod
-    def from_dict(obj: Any) -> 'OPF':
+    def from_dict(obj: Any) -> Union['OPF', None]:
         if isinstance(obj, dict):
             type_opf = str(obj.get('type_opf', None))
             code = str(obj.get('code', None))
@@ -31,7 +31,7 @@ class NameModel:
     short: Optional[str] = None
 
     @staticmethod
-    def from_dict(obj: Any) -> 'NameModel':
+    def from_dict(obj: Any) -> Union['NameModel', None]:
         if isinstance(obj, dict):
             full_with_opf = str(obj.get('full_with_opf', None))
             short_with_opf = str(obj.get('short_with_opf', None))
@@ -48,7 +48,7 @@ class AddressData:
     source: Optional[str] = None
 
     @staticmethod
-    def from_dict(obj: Any) -> 'AddressData':
+    def from_dict(obj: Any) -> Union['AddressData', None]:
         if isinstance(obj, dict):
             source = obj.get('source', None)
             return AddressData(source)
@@ -62,7 +62,7 @@ class AddressModel:
     data: Optional[AddressData] = None
 
     @staticmethod
-    def from_dict(obj: Any) -> 'AddressModel':
+    def from_dict(obj: Any) -> Union['AddressModel', None]:
         if isinstance(obj, dict):
             value = obj.get('value', None)
             unrestricted_value = obj.get('unrestricted_value', None)
@@ -79,7 +79,7 @@ class State:
     liquidation_date: None = None
 
     @staticmethod
-    def from_dict(obj: Any) -> 'State':
+    def from_dict(obj: Any) -> Union['State', None]:
         if isinstance(obj, dict):
             status = obj.get('status', None)
             actuality_date = obj.get('actuality_date', None)
@@ -97,7 +97,7 @@ class Management:
     disqualified: Optional[str] = None
 
     @staticmethod
-    def from_dict(obj: Any) -> 'Management':
+    def from_dict(obj: Any) -> Union['Management', None]:
         if isinstance(obj, dict):
             name = obj.get('name', None)
             post = obj.get('post', None)
@@ -141,7 +141,7 @@ class Data:
     branch_count: Optional[int] = 0
 
     @staticmethod
-    def from_dict(obj: Any) -> 'Data':
+    def from_dict(obj: Any) -> Union['Data', None]:
         if isinstance(obj, dict):
             citizenship = obj.get('citizenship', None)
             source = obj.get('source', None)
@@ -191,7 +191,7 @@ class Suggestion:
     data: Optional[Data] = None
 
     @staticmethod
-    def from_dict(obj: Any) -> 'Suggestion':
+    def from_dict(obj: Any) -> Union['Suggestion', None]:
         if isinstance(obj, dict):
             value = obj.get('value', None)
             unrestricted_value = obj.get('unrestricted_value', None)
@@ -202,10 +202,10 @@ class Suggestion:
 
 @dataclass
 class Suggestions_Response:
-    suggestions: Optional[List[Suggestion]] = None
+    suggestions: List[Optional[Suggestion]] = field(default_factory=list)
 
     @staticmethod
-    def parse_from_dict(obj: Any) -> 'Suggestions_Response':
+    def parse_from_dict(obj: Any) -> Union['Suggestions_Response', None]:
         if isinstance(obj, dict):
             is_suggestion = obj.get('suggestions', list())
             if is_suggestion:
@@ -215,24 +215,32 @@ class Suggestions_Response:
 
 
 class Result_response_from_suggestion:
-    def __init__(self, response: Suggestions_Response):
-        self.data = dict()
-        self.data['dadata_name'] = response.data.name.full_with_opf
-        self.data['ogrn'] = int(
-            response.data.ogrn) if response.data.ogrn else None
-        self.data['kpp'] = int(
-            response.data.kpp) if response.data.kpp else None
-        if response.data.management:
-            self.data['director_status'] = response.data.management.post
-            self.data['director_name'] = response.data.management.name
-        self.data['creation_date'] = date.fromtimestamp(
-            int(int(response.data.state.registration_date) / 1000))
-        self.data['is_func'] = response.data.state.status == 'ACTIVE'
-        self.data['okved'] = response.data.okved
-        self.data['legal_address'] = response.data.address.data.source
+    def __init__(self, response: Suggestion):
+        self.data: Dict[str, Any] = dict()
+        if isinstance(response.data, dict):
+            if name := response.data.name or None:
+                self.data['dadata_name'] = name.full_with_opf
+            if  ogrn := response.data.ogrn:
+                self.data['ogrn'] = int(ogrn)
+            else:
+                self.data['ogrn'] = None
+            if kpp := response.data.kpp or None:
+                self.data['kpp'] = int(kpp)
+            else:
+                self.data['kpp'] = None
+
+            if response.data.management:
+                self.data['director_status'] = response.data.management.post
+                self.data['director_name'] = response.data.management.name
+            self.data['creation_date'] = date.fromtimestamp(
+                int(int(response.data.state.registration_date) / 1000))
+            self.data['is_func'] = response.data.state.status == 'ACTIVE'
+            self.data['okved'] = response.data.okved
+            self.data['legal_address'] = response.data.address.data.source
 
 
-def suggestions_response_from_dict(s: Any) -> Suggestions_Response:
+def suggestions_response_from_dict(s: Any) -> Union['Suggestions_Response',
+                                                    None]:
     return Suggestions_Response.parse_from_dict(s)
 
 

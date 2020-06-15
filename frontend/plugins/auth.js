@@ -37,6 +37,8 @@ export default function ({ app, store, redirect }) {
         $auth.logout()
         redirect('/login')
       }
+    } else {
+      redirect('/')
     }
     return Promise.reject(err)
   })

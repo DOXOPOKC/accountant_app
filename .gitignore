@@ -113,3 +113,5 @@ media/*
 
 !.gitignore
 !.gitkeep
+backend/fixtures.json
+.mypy_cache/*
