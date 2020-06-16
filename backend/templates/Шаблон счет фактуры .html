@@ -157,7 +157,7 @@
 				</td>
 				<td style="vertical-align: bottom;">
 					<p>{% if consumer.signed_user.sign %}<img src="{{ consumer.signed_user.sign.url }}" style="display: inline; position: absolute;z-index: 1;left: 320px;top:490px; max-width: 100px; height: auto;"/>{% endif %}</p>
-					<p style="width:50px;text-align:center;border-top:1px solid black" class="ft10"><img src="http://jud-module.lf.ru/static/stamp/печать.png" width="210px" style="position: absolute; z-index:0;"/>(подпись)</p>
+					<p style="width:50px;text-align:center;border-top:1px solid black" class="ft10"><img src="http://jud-module.lf.ru/static/stamp/печать.png" width="200px" style="position: absolute; z-index:0;"/>(подпись)</p>
 				</td>
 				<td style="vertical-align: baseline;">
 					<p class="ft16">{{ consumer.signed_user.name }}&nbsp;<br/>{{ sign_user_document }}&nbsp;б/н {{ consumer.signed_user.doc_number }}&nbsp;<br/>от&nbsp;{{ consumer.signed_user.doc_date|date:"d E Y" }}г.</p>
