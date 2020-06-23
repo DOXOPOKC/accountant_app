@@ -6,9 +6,8 @@ name: CI
 # events but only for the master branch
 on:
   push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+    branches: '*'
+  
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -19,25 +18,15 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-    - name: Send mailer
-      uses: devellany/send-mail@v1.0.2
-      with:
-        # Enter SMTP host.
-        host: smtp.yandex.ru
-        # Enter SMTP port. (defaults to 465)
-        port: 587 # optional, default is 465
-        # Enter SMTP host account.
-        account: ${{ secrets.EMAIL_ACCOUNT }}
-        # Enter SMTP host account password.
-        password: ${{ secrets.EMAIL_PASSWORD }}
-        # Enter sender name.
-        sender: CI accountant_app
-        # Enter sender mail.
-        from: ${{ secrets.EMAIL_ACCOUNT }}
-        # Enter recipient emails and separated with 'comma'. (The prefix 'file://' if you want to read a file)
-        to: ${{ secrets.EMAIL_DOXOPOKC }}
-        # Enter the subject of the mail. (The prefix 'file://' if you want to read a file)
-        subject: new change
-        # Enter the body of the mail. (The prefix 'file://' if you want to read a file)
-        body: new change
-        
+      - name: Send mailer
+        uses: devellany/send-mail@v1.0.2
+        with:
+          host: smtp.yandex.ru
+          port: 587 # optional, default is 465
+          account: ${{secrets.EMAIL_ACCOUNT}}
+          password: ${{ secrets.EMAIL_PASSWORD}}
+          sender: CI accountant_app
+          from: ${{ secrets.EMAIL_ACCOUNT }}
+          to: ${{ secrets.EMAIL_DOXOPOKC }}
+          subject: new change
+          body: file://README.md
