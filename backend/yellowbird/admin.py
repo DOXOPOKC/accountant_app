@@ -3,10 +3,14 @@ from django.contrib.auth.admin import UserAdmin
 from .models import User, Department
 
 
-class JudUserAdmin(admin.ModelAdmin):
-    fields = ('username', 'password', 'name', 'last_name', 'info',
-              'department', 'is_superuser', 'is_staff')
-    readonly_fields = ('password',)
+class JudUserAdmin(UserAdmin):
+    fieldsets = UserAdmin.fieldsets + (
+        (None, {'fields': ('info', 'department')}),
+    )
+    add_fieldsets = UserAdmin.add_fieldsets + (
+        (None, {'fields': ('info', 'department')}),)
+    # fields = 
+    # readonly_fields = ('password',)
 
 
 class DepartmentAdmin(admin.ModelAdmin):

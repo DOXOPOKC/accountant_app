@@ -49,11 +49,12 @@ export const actions = {
     }
     commit(types.SET_CONTRAGENT, data)
   },
-  async [types.CREATE_CONTRAGENT] ({ dispatch }, { vueFileAgent }) {
+  async [types.CREATE_CONTRAGENT] ({ dispatch }, { vueFileAgent, filesDataForUpload }) {
     try {
       const formData = new FormData()
-      formData.append('file', vueFileAgent.filesData[0].file)
-      formData.append('filename', vueFileAgent.filesData[0].file.name)
+      console.log(filesDataForUpload)
+      formData.append('file', filesDataForUpload.file)
+      formData.append('filename', filesDataForUpload.name())
       await this.$repositories.contragents.create(formData)
       dispatch(types.FETCH_CONTRAGENTS)
       this.$toast.success('Контрагент успешно добавлен')
