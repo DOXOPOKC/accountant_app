@@ -26,6 +26,6 @@ jobs:
           username: ${{ secrets.EMAIL_ACCOUNT }}
           password: ${{ secrets.EMAIL_PASSWORD}}
           subject: new change in ${{ github.ref }} by ${{ github.actor }}
-          body: ${{ github }}
+          body: ${{ toJson(github) }}
           to: ${{ secrets.EMAIL_DOXOPOKC }}
           from: ${{ secrets.EMAIL_ACCOUNT }}
