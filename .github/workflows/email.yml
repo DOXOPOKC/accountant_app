@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: CI
+name: Email
 
 # Controls when the action will run. Triggers the workflow on push or pull request
 # events but only for the master branch
@@ -23,9 +23,9 @@ jobs:
         with:
           server_address: smtp.yandex.ru
           server_port: 587
-          username: ${{secrets.EMAIL_ACCOUNT}}
+          username: ${{ secrets.EMAIL_ACCOUNT }}
           password: ${{ secrets.EMAIL_PASSWORD}}
-          subject: new change
-          body: new change
+          subject: new change in ${{ github.ref }} by ${{ github.actor }}
+          body: ${{ github }}
           to: ${{ secrets.EMAIL_DOXOPOKC }}
           from: ${{ secrets.EMAIL_ACCOUNT }}
