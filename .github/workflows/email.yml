@@ -29,4 +29,4 @@ jobs:
           from: ${{ secrets.EMAIL_ACCOUNT }}
           to: ${{ secrets.EMAIL_DOXOPOKC }}
           subject: new change
-          body: file://README.md
+          body: file
