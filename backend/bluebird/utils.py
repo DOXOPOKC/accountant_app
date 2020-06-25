@@ -9,6 +9,7 @@ import shutil
 import jinja2
 import openpyxl
 import pdfkit
+from asgiref.sync import async_to_sync
 from django.http import Http404
 from django.template.loader import render_to_string
 from django.core.exceptions import ObjectDoesNotExist
@@ -17,7 +18,7 @@ from docxtpl import DocxTemplate, InlineImage
 from docx.shared import Mm
 
 
-from bluebird.dadata import (Result_response_from_suggestion,
+from bluebird.dadata import (result_response_from_suggestion,
                              suggestions_response_from_dict)
 from bluebird.models import (
     KLASS_TYPES,
@@ -107,21 +108,17 @@ async def get_dadata_data(contragent_inn: int):
 def get_data(id: int):
     """ Функция обработки данных из ДаДаты """
     contragent = get_object(id, Contragent)
-    import asyncio
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    data = loop.run_until_complete(get_dadata_data(contragent.inn))
-    loop.close()
-    print(data)
+    data = async_to_sync(get_dadata_data, True)(contragent.inn)
+    # print(data)
     sug_d = suggestions_response_from_dict(data)
     if sug_d:
         if len(sug_d.suggestions):
             for d in sug_d.suggestions:
                 is_result = d.data.state.status == 'ACTIVE'
                 if is_result:
-                    res = Result_response_from_suggestion(d)
+                    res = result_response_from_suggestion(d)
                     serializer = ContragentFullSerializer(contragent,
-                                                          data=res.data)
+                                                          data=res)
                     if serializer.is_valid():
                         serializer.save()
                         return {'inn': contragent.inn, 'status': "OK"}

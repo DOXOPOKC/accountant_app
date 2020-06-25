@@ -214,29 +214,34 @@ class Suggestions_Response:
         return None
 
 
-class Result_response_from_suggestion:
-    def __init__(self, response: Suggestion):
-        self.data: Dict[str, Any] = dict()
-        if isinstance(response.data, dict):
-            if name := response.data.name or None:
-                self.data['dadata_name'] = name.full_with_opf
-            if  ogrn := response.data.ogrn:
-                self.data['ogrn'] = int(ogrn)
-            else:
-                self.data['ogrn'] = None
-            if kpp := response.data.kpp or None:
-                self.data['kpp'] = int(kpp)
-            else:
-                self.data['kpp'] = None
+def result_response_from_suggestion(response: Suggestion):
+    data: Dict[str, Any] = dict()
+    if isinstance(response.data, Data):
 
-            if response.data.management:
-                self.data['director_status'] = response.data.management.post
-                self.data['director_name'] = response.data.management.name
-            self.data['creation_date'] = date.fromtimestamp(
-                int(int(response.data.state.registration_date) / 1000))
-            self.data['is_func'] = response.data.state.status == 'ACTIVE'
-            self.data['okved'] = response.data.okved
-            self.data['legal_address'] = response.data.address.data.source
+        name = response.data.name
+        data['dadata_name'] = None
+        if name:
+            data['dadata_name'] = name.full_with_opf or None
+
+        ogrn = response.data.ogrn
+        data['ogrn'] = None
+        if ogrn:
+            data['ogrn'] = int(ogrn)
+
+        kpp = response.data.kpp
+        data['kpp'] = None
+        if kpp:
+            data['kpp'] = int(kpp)
+
+        if response.data.management:
+            data['director_status'] = response.data.management.post
+            data['director_name'] = response.data.management.name
+        data['creation_date'] = date.fromtimestamp(
+            int(int(response.data.state.registration_date) / 1000))
+        data['is_func'] = response.data.state.status == 'ACTIVE'
+        data['okved'] = response.data.okved
+        data['legal_address'] = response.data.address.data.source
+    return data
 
 
 def suggestions_response_from_dict(s: Any) -> Union['Suggestions_Response',
