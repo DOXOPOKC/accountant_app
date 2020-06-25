@@ -1,0 +1,31 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Email
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
+on:
+  push:
+    branches: '*'
+  
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  sendmail:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      - name: Send mailer
+        uses: dawidd6/action-send-mail@v2.2.0
+        with:
+          server_address: smtp.yandex.ru
+          server_port: 587
+          username: ${{ secrets.EMAIL_ACCOUNT }}
+          password: ${{ secrets.EMAIL_PASSWORD}}
+          subject: new change in ${{ github.ref }} by ${{ github.actor }}
+          body: ${{ toJson(github) }}
+          to: ${{ secrets.EMAIL_DOXOPOKC }}
+          from: ${{ secrets.EMAIL_ACCOUNT }}
