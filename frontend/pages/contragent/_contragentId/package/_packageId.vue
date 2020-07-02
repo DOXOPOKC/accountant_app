@@ -15,15 +15,20 @@
         exact
       )
         v-toolbar(elevation="0")
-          v-btn(icon class="hidden-xs-only" :to="'/contragent/' + $route.params.contragentId")
+          v-btn(
+            icon
+            :to="'/contragent/' + $route.params.contragentId"
+          )
             v-icon mdi-arrow-left
-          v-toolbar-title Пакет № {{ package.id }}
+          v-toolbar-title(class="headline font-weight-light") Пакет № {{ package.id }}
           v-spacer
           v-chip(
             outlined
+            class="mr-2"
             :color="package.package_state ? 'primary' : 'error'"
           )
             span {{ package.package_state.name_state }}
+          comments(view-state="package")
           v-menu(
             v-if="packageActiveStatus"
           )
@@ -249,6 +254,15 @@
                       )
                         v-icon(small) mdi-close
                     span Удалить
+                  v-tooltip(bottom)
+                    template(v-slot:activator="{ on: tooltip }")
+                      comments(
+                        v-on="tooltip"
+                        view-state="file"
+                        :file-id="item.id"
+                      )
+                        v-icon(small) mdi-close
+                    span Коментарии
       v-dialog(v-model="packageFileWarningDialog" max-width="360")
         v-card
           v-card-title(class="headline") Удалить выбранный файл?
@@ -261,11 +275,13 @@
 <script>
 import { mapState, mapActions } from 'vuex'
 import { ValidationProvider, ValidationObserver } from 'vee-validate'
+import comments from '~/components/Comments.vue'
 
 export default {
   components: {
     ValidationProvider,
-    ValidationObserver
+    ValidationObserver,
+    comments
   },
   async asyncData ({ $axios, store, params }) {
     await store.dispatch('packages/FETCH_PACKAGE', { contragentId: params.contragentId, packageId: params.packageId })
