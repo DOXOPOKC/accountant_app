@@ -351,7 +351,7 @@ class CommentaryPackageView(APIView):
             user=request.user,
             commentary_text=request.data.get('commentary_text')
         )
-        serializer = CommentarySerializer(data=comment)
+        serializer = CommentarySerializer(comment, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -368,12 +368,12 @@ class CommentaryFileView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request, package_id, file_id):
-        other_file = get_object(package_id, OtherFile)
+        other_file = get_object(file_id, OtherFile)
         comment = other_file.commentary.create(
             user=request.user,
             commentary_text=request.data.get('commentary_text')
         )
-        serializer = CommentarySerializer(data=comment)
+        serializer = CommentarySerializer(comment, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
