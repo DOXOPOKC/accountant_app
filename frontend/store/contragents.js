@@ -52,7 +52,6 @@ export const actions = {
   async [types.CREATE_CONTRAGENT] ({ dispatch }, { vueFileAgent, filesDataForUpload }) {
     try {
       const formData = new FormData()
-      console.log(filesDataForUpload)
       formData.append('file', filesDataForUpload.file)
       formData.append('filename', filesDataForUpload.name())
       await this.$repositories.contragents.create(formData)
