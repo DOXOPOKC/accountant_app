@@ -29,11 +29,11 @@ export const actions = {
     commit(types.SET_FILES, data)
   },
   // Добавление нового файла
-  async [types.CREATE_FILE] ({ commit, dispatch }, { vueFileAgent, contragentId, packageId }) {
+  async [types.CREATE_FILE] ({ commit, dispatch }, { filesDataForUpload, contragentId, packageId }) {
     try {
       const formData = new FormData()
-      formData.append('file', vueFileAgent.filesData[0].file)
-      formData.append('filename', vueFileAgent.filesData[0].file.name)
+      formData.append('file', filesDataForUpload.file)
+      formData.append('filename', filesDataForUpload.name())
       formData.append('package_id', packageId)
       await this.$repositories.files.create(contragentId, packageId, formData)
       dispatch(types.FETCH_FILES, { contragentId, packageId })
