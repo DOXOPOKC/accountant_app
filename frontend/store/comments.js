@@ -26,7 +26,7 @@ export const actions = {
   async [types.CREATE_COMMENT] ({ dispatch, state }, { packageId, comment }) {
     try {
       await this.$repositories.comments.create(packageId, {
-        user: 'qwe',
+        user: this.state.auth.user.username,
         commentary_text: comment
       })
       await dispatch(types.FETCH_COMMENTS, { packageId })
@@ -42,7 +42,7 @@ export const actions = {
   async [types.CREATE_FILE_COMMENT] ({ dispatch, state }, { fileId, packageId, comment }) {
     try {
       await this.$repositories.comments.createFileComment(packageId, fileId, {
-        user: 'qwe',
+        user: this.state.auth.user.username,
         commentary_text: comment
       })
       await dispatch(types.FETCH_FILE_COMMENTS, { packageId, fileId })
