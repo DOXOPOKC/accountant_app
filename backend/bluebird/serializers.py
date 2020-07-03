@@ -11,6 +11,8 @@ from .models import (Contragent, DocumentsPackage, OtherFile, PackFile,
 from django_q.models import Task
 from django.core.exceptions import ObjectDoesNotExist
 
+from backend.yellowbird.serializers import UserShortSerializer
+
 
 class ContragentShortSerializer(serializers.ModelSerializer):
     pack = serializers.SerializerMethodField()
@@ -157,7 +159,7 @@ class NormSerializer(serializers.ModelSerializer):
 
 class CommentarySerializer(serializers.ModelSerializer):
 
-    # content_object = serializers.SerializerMethodField()
+    user = UserShortSerializer()
 
     # def get_content_object(self, value):
     #     if isinstance(value, DocumentsPackage):
@@ -166,4 +168,4 @@ class CommentarySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Commentary
-        fields = ['id', 'commentary_text', 'creation_date', ]
+        fields = ['id', 'user', 'commentary_text', 'creation_date', ]
