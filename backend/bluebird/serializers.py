@@ -11,7 +11,7 @@ from .models import (Contragent, DocumentsPackage, OtherFile, PackFile,
 from django_q.models import Task
 from django.core.exceptions import ObjectDoesNotExist
 
-from backend.yellowbird.serializers import UserShortSerializer
+from yellowbird.serializers import UserShortSerializer
 
 
 class ContragentShortSerializer(serializers.ModelSerializer):
