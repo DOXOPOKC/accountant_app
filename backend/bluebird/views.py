@@ -363,7 +363,7 @@ class CommentaryFileView(APIView):
     # permission_classes = (IsAuthenticated,)
 
     def get(self, request, package_id, file_id):
-        comments = Commentary.objects.filter(file__id=package_id)
+        comments = Commentary.objects.filter(file__id=file_id)
         serializer = CommentarySerializer(comments, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
