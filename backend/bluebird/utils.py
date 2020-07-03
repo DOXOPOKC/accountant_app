@@ -1,7 +1,7 @@
 import json
 import os
 import uuid
-from typing import List
+
 import aiohttp
 import datetime
 import shutil
@@ -13,7 +13,7 @@ from asgiref.sync import async_to_sync
 from django.http import Http404
 from django.template.loader import render_to_string
 from django.core.exceptions import ObjectDoesNotExist
-from django_q.tasks import async_task, Task
+
 from docxtpl import DocxTemplate, InlineImage
 from docx.shared import Mm
 
@@ -21,16 +21,16 @@ from docx.shared import Mm
 from bluebird.dadata import (result_response_from_suggestion,
                              suggestions_response_from_dict)
 from bluebird.models import (
-    KLASS_TYPES,
-    DOC_TYPE,
     Contragent,
     PackFile,
     SyncUniqueNumber,
-    PackFilesTemplate,
+    # PackFilesTemplate,
+    # SingleFilesTemplate,
+    DocumentFileTemplate,
+    DocumentStateEntity,
     DocumentsPackage,
     TemplateModel,
     DocumentTypeModel,
-    SingleFilesTemplate,
     SingleFile)
 from bluebird.serializers import ContragentFullSerializer
 from bluebird.templatetags.template_extra_filters import (
@@ -40,9 +40,9 @@ from bluebird.templatetags.template_extra_filters import (
     cap_first,
     literal, proper_date_filter, remove_zero_at_end, sum_imp)
 
-from blackbird.views import calculate, round_hafz
+from blackbird.views import round_hafz
 
-from .snippets import str_add_app, str_remove_app
+from .snippets import str_add_app, str_remove_app, KLASS_TYPES, DOC_TYPE
 
 
 MIN_INNN_LEN = 10
@@ -57,23 +57,25 @@ def parse_from_file(xlsx_file):
     xl = openpyxl.load_workbook(xlsx_file)
     sheet = xl.worksheets[0]
     results = []
-    for row in sheet.iter_rows(min_row=3, max_row=42, min_col=2, max_col=5,
+    for row in sheet.iter_rows(min_row=3, max_row=42, min_col=2, max_col=7,
                                values_only=True):
-        a, b, c, d = row
+        a, b, c, d, e, f = row
         # print('|', a, '|', b, '|', c, '|', d, '|')
         if a is not None:
             if MIN_INNN_LEN > len(str(a)) or len(str(a)) > MAX_INN_LEN:
                 raise Exception(('200', 'Inn is wrong.'))
             else:
-                if d != '' and 0 < d < len(KLASS_TYPES):
-                    klass = KLASS_TYPES[d][0]
+                if f != '' and 0 < f < len(KLASS_TYPES):
+                    klass = KLASS_TYPES[f][0]
                 else:
                     klass = 0
                 tmp_obj = {
                     'inn': int(a),
                     'physical_address': b,
                     'excell_name': c,
-                    'klass': klass
+                    'klass': klass,
+                    'debt': float(d),
+                    'debt_period': int(e)
                 }
                 results.append(tmp_obj)
         else:
@@ -144,35 +146,41 @@ def generate_documents(data: dict, package: DocumentsPackage,
     generate_pack_doc(data, package, recreate)
 
     package.contragent.debt = total
+    package.debt_plan = total
     package.contragent.save()
+    package.save()
 
 
 def generate_pack_doc(data_list, package: DocumentsPackage,
                       recreate: bool = False):
     contragent = package.contragent
-
     try:
         # Находим запись шаблона со списком подпакетов.
-        pack_template = PackFilesTemplate.objects.get(
-            contagent_type=contragent.klass)
+        pack_template = DocumentFileTemplate.objects.get(
+            contagent_type=contragent.klass, is_package=True)
+
+        document_state = DocumentStateEntity.objects.get(
+            template__id=pack_template.id,
+            states=package.package_state
+        )
     except ObjectDoesNotExist:
         return
-
     # Находим экземпляры класса входящие в пакет.
     docs = PackFile.objects.filter(object_id=package.id)
 
     # Получаем список всех подпакетов.
     # И создаем словарь с экземплярами классов.
-    tmp_template_doc_types_list = pack_template.documents.all()
+    tmp_template_doc_types_list = document_state.documents.all()
+    if not tmp_template_doc_types_list:
+        return
     tmp_templ_dict = dict()
     for tmpl in tmp_template_doc_types_list:
         tmp_templ_dict[str(tmpl)] = list(docs.filter(file_type=tmpl))
 
-    # Удаляем папки с файлами.
-    delete_folders(package)
-
-    if len(docs):  # Смотрим есть ли уже экземпляры класса.
-        if recreate:  # Перегенерируем пакет?
+    if recreate:
+        delete_folders(package)  # Удаляем папки с файлами.
+        if len(docs):  # Смотрим есть ли уже экземпляры класса.
+            # Перегенерируем пакет?
             # Пакет перегенерируется. Экземпляры есть.
 
             # Находим экземпляры класса не входящие в перечень шаблонов.
@@ -208,8 +216,9 @@ def generate_pack_doc(data_list, package: DocumentsPackage,
                                 file_path = str_add_app(doc.file_path)
 
                             else:
-                                file_name = f'{doc_type.doc_type.title()} \
- №{doc.unique_number} от {data["curr_date"]}.pdf'.replace('/', '-')
+                                file_name = f'{doc_type.doc_type.title()}\
+                                №{doc.unique_number} от\
+                                     {data["curr_date"]}.pdf'.replace('/', '-')
                                 file_path = os.path.join(
                                     doc.get_files_path(package),
                                     file_name)
@@ -240,11 +249,12 @@ def generate_pack_doc(data_list, package: DocumentsPackage,
                         if item:
                             item.delete()
             return
-        else:
-            # Пакет создается с 0, но при этом есть экземпляры.
-            # Такое вряд ли возможно, но на всякий случай удалим эти
-            # экземпляры.
-            delete_models(docs)
+    else:
+        # Пакет создается с 0, но при этом есть экземпляры.
+        # Такое вряд ли возможно, но на всякий случай удалим эти
+        # экземпляры.
+        # delete_models(docs)
+        pass
     # Здесь мы окажемся в 3х случаях:
     # - если мы с 0 создаем пакет;
     # - если создаем с 0 но при этом есть записи в базе с екземплярами класса
@@ -325,16 +335,21 @@ def generate_document(text: str, name: str, **kwargs):
 def generate_single_files(data: dict, package: DocumentsPackage, total: float,
                           recreate: bool = False):
     try:
-        document_types = SingleFilesTemplate.objects.get(
-            contagent_type=package.contragent.klass)
-        doc_types = document_types.documents.all()
+        document_types = DocumentFileTemplate.objects.get(
+            contagent_type=package.contragent.klass, is_package=False)
+        document_state = DocumentStateEntity.objects.get(
+            template__id=document_types.id,
+            states=package.package_state
+        )
+        doc_types = document_state.documents.all()
         for document_type in doc_types:
             generate_docx_file(data, package, total, document_type, recreate)
 
         res = SingleFile.objects.filter(object_id=package.id).exclude(
             file_type__in=doc_types)
-        for r in res:
-            r.delete()
+        if recreate:
+            for r in res:
+                r.delete()
     except ObjectDoesNotExist:
         return Http404
 
@@ -394,29 +409,6 @@ def count_total(data: dict):
     for data_piece in data:
         res += float(data_piece['summ_tax_precise'])
     return res
-
-
-def calc_create_gen_async(contragent, pack, recreate: bool = False):
-    try:
-        async_task(calculate, contragent.contract_accept_date,
-                   contragent.current_date, contragent.stat_value,
-                   contragent.norm_value, pack, recreate,
-                   hook=gen_async, group=pack.name_uuid)
-    except AttributeError:
-        raise Http404
-
-
-def gen_async(task):
-    if task.success:
-        async_task(generate_documents, task.result, task.args[4], task.args[5],
-                   hook=del_after_exec, group=task.group)
-    else:
-        del_after_exec(task)
-        raise Http404
-
-
-def del_after_exec(task):
-    Task.delete_group(task.group)
 
 
 def get_template(doc_type: DocumentTypeModel, package: DocumentsPackage):

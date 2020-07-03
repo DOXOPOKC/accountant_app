@@ -1,7 +1,9 @@
 import os
 
 from django import forms
-from .models import PackFilesTemplate, SingleFilesTemplate
+from .models import (DocumentFileTemplate,
+                     #  PackFilesTemplate, SingleFilesTemplate,
+                     DocumentStateEntity)
 
 
 def scan_templates_dir():
@@ -36,35 +38,24 @@ class TemplateModelForm(forms.ModelForm):
             choices=scan_templates_dir())
 
 
-class PackFilesTemplateAdminForm(forms.ModelForm):
+class DocumentStateEntityForm(forms.ModelForm):
+
     class Meta:
-        model = PackFilesTemplate
-        fields = ['contagent_type', 'documents']
-
-    def clean(self):
-        cleaned_data = super().clean()
-        cleaned_documents = cleaned_data.get("documents")
-        for doc in cleaned_documents:
-            if not doc.is_pack:
-                raise forms.ValidationError(
-                    f"В шаблоне должны присутьствовать только документы с\
-                        пометкой 'Пакет документов'. Документ `{doc.doc_type}`\
-                        не соответствует этому требованию."
-                )
+        model = DocumentStateEntity
+        fields = ['documents', 'states']
 
 
-class SingleFilesTemplateAdminForm(forms.ModelForm):
+# class PackFilesTemplateAdminForm(forms.ModelForm):
+#     class Meta:
+#         model = PackFilesTemplate
+#         fields = ['contagent_type', 'documents']
+
+
+# class SingleFilesTemplateAdminForm(forms.ModelForm):
+#     class Meta:
+#         model = SingleFilesTemplate
+#         fields = '__all__'
+class DocumentFileTemplateAdminForm(forms.ModelForm):
     class Meta:
-        model = SingleFilesTemplate
-        fields = ['contagent_type', 'documents']
-
-    def clean(self):
-        cleaned_data = super().clean()
-        cleaned_documents = cleaned_data.get("documents")
-        for doc in cleaned_documents:
-            if doc.is_pack:
-                raise forms.ValidationError(
-                    f"В шаблоне должны присутьствовать только документы без\
-                        пометки 'Пакет документов'. Документ `{doc.doc_type}`\
-                        не соответствует этому требованию."
-                )
+        model = DocumentFileTemplate
+        fields = '__all__'

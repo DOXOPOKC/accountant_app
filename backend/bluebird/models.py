@@ -5,28 +5,18 @@ from abc import ABC, abstractmethod
 
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import Q
 from django.contrib.contenttypes.fields import (GenericForeignKey,
                                                 GenericRelation)
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 
 from bluebird.templatetags.template_extra_filters import plur_form
+from bluebird.tasks import calc_create_gen_async
 
-from .snippets import str_add_app
-# from django.http.response import Http404
+from django_q.tasks import async_task
 
-# from django.core.exceptions import ValidationError
-# from django.contrib.auth.models import User
+from .snippets import str_add_app, KLASS_TYPES, DOC_TYPE
 
-KLASS_TYPES = [
-        (0, 'Пусто'),
-        (1, 'Юридическое лицо без договора'),
-        (2, 'Юридическое лицо с договором'),
-        (3, 'ИЖС без договора'),
-        (4, 'ИЖС с договором'),
-        (5, 'Физическое лицо'),
-    ]
 
 NORM_TYPE = [
     (0, '1 м2 общей площади'),
@@ -34,10 +24,6 @@ NORM_TYPE = [
     (2, '1 человек'),
 ]
 
-DOC_TYPE = [
-    (0, 'Доверенность'),
-    (1, 'Пасспорт'),
-]
 
 POST_TYPE = [
     (0, 'Клиент-менеджер'),
@@ -59,6 +45,8 @@ class Contragent(models.Model):
     dadata_name = models.CharField('Наименование контрагента (из Dadata)',
                                    max_length=255, blank=True, null=True)
     debt = models.FloatField('Сумма задолжности', default=0.00)
+    debt_period = models.IntegerField('Количество неоплаченных периодов, мес.',
+                                      blank=True, null=True)
     inn = models.BigIntegerField('ИНН контрагента', blank=True, null=True)
     ogrn = models.BigIntegerField('ОГРН контрагента', blank=True, null=True)
     kpp = models.BigIntegerField('КПП контрагента', blank=True, null=True)
@@ -275,10 +263,27 @@ class OtherFile(AbstractFileModel):
 
 class DocumentsPackage(models.Model):
     """ Модель пакета документов.
-    act_files -  Акты
-    count_files - Счета
-    count_fact_files - Счета фактуры
-    files - Произвольные файлы
+    contragent - ID контрагента
+    name_uuid - Уникальный ID пакета (каждый раз новый)
+    is_active - Является ли пакет активным. Если True, то пакет в работе. Если
+                False, то пакет закрыт.
+    is_automatic - Создан ли пакет автоматически или пользователь может
+                   редактировать наборы файлов и некоторые характеристики. Если
+                   True, то нельзя подгружать свои договора и редактировать
+                   debt_plan. Если False, то редактирование возможно.
+    creation_date - Дата создания пакета.
+    debt_plan - Сумма долга. Если is_automatic == True, то значение не
+                редактируется. Если is_automatic == False, то значение
+                необходимо заполнить.
+    debt_fact - Сумма долга по факту. Заполняется при сторнировании или оплате.
+    tax_count - Госпошлина. Можно заполнять в любом случае.
+    package_users - Все пользователи пакета, работавшие с ним.
+    package_state - Состояние пакета.
+    package_state_date - Дата изменения состояния пакета.
+    single_files -  Пакет одиночных документов. 
+    pack_files - Пакет наборов файлов.
+    other_files - Произвольные файлы.
+    commentary - Комментарии.
     """
     contragent = models.ForeignKey(Contragent, on_delete=models.CASCADE,
                                    related_name='contragents',
@@ -288,7 +293,14 @@ class DocumentsPackage(models.Model):
                                  default=uuid.uuid4, null=True, blank=True,
                                  editable=False)
     is_active = models.BooleanField('Активный пакет', default=True)
+    is_automatic = models.BooleanField('Создан автоматически', default=True)
     creation_date = models.DateField('Дата создания пакета', auto_now_add=True)
+
+    debt_plan = models.FloatField('Сумма задолжности (плановая)',
+                                  default=0.00)
+    debt_fact = models.FloatField('Сумма задолжности (фактическая)',
+                                  default=0.00)
+    tax_count = models.FloatField('Госпошлина', default=0.00)
 
     package_users = models.ManyToManyField(settings.AUTH_USER_MODEL,
                                            related_name='packages')
@@ -339,37 +351,60 @@ class DocumentsPackage(models.Model):
         self.is_active = False
         self.save()
 
-    def change_state_to(self, new_state):
+    def change_state_to(self, new_state, is_backward):
         self.package_state = new_state
         self.package_state_date = datetime.date.today()
+        if not is_backward:
+            async_task(calc_create_gen_async, self.contragent, self, False,
+                       group=self.name_uuid)
+        # TODO Journal log here!
         self.save()
 
     class Meta:
         verbose_name_plural = "Пакеты документов"
 
 
-class SingleFilesTemplate(models.Model):
-    contagent_type = models.IntegerField(choices=KLASS_TYPES, default=0)
+class DocumentStateEntity(models.Model):
     documents = models.ManyToManyField('DocumentTypeModel',
                                        related_name='document_type')
+    states = models.ForeignKey('State', related_name='states',
+                               on_delete=models.CASCADE,
+                               blank=True, null=True)
+    template = models.ForeignKey('DocumentFileTemplate',
+                                 on_delete=models.CASCADE,
+                                 blank=True, null=True)
 
-    def __str__(self):
-        return KLASS_TYPES[self.contagent_type][1]
 
-    class Meta:
-        verbose_name_plural = "Шаблоны единичных файлов"
-
-
-class PackFilesTemplate(models.Model):
+class DocumentFileTemplate(models.Model):
     contagent_type = models.IntegerField(choices=KLASS_TYPES, default=0)
-    documents = models.ManyToManyField('DocumentTypeModel',
-                                       related_name='document_type_pack')
+    is_package = models.BooleanField('Набор файлов', default=False)
 
     def __str__(self):
         return KLASS_TYPES[self.contagent_type][1]
 
     class Meta:
-        verbose_name_plural = "Шаблоны наборов файлов"
+        verbose_name_plural = "Шаблоны файлов"
+
+# class SingleFilesTemplate(models.Model):
+#     contagent_type = models.IntegerField(choices=KLASS_TYPES, default=0)
+
+#     def __str__(self):
+#         return KLASS_TYPES[self.contagent_type][1]
+
+#     class Meta:
+#         verbose_name_plural = "Шаблоны единичных файлов"
+
+
+# class PackFilesTemplate(models.Model):
+#     contagent_type = models.IntegerField(choices=KLASS_TYPES, default=0)
+#     documents = models.ManyToManyField('DocumentTypeModel',
+#                                        related_name='document_type_pack')
+
+#     def __str__(self):
+#         return KLASS_TYPES[self.contagent_type][1]
+
+#     class Meta:
+#         verbose_name_plural = "Шаблоны наборов файлов"
 
 
 class NormativeCategory(models.Model):
@@ -562,6 +597,8 @@ class Event(models.Model):
                                  verbose_name='Конечное состояние',
                                  blank=True, null=True,
                                  related_name='end_states')
+    is_move_backward = models.BooleanField('Двигаемся обратно назад',
+                                           default=False)
 
     def __str__(self):
         return self.name_event
@@ -646,7 +683,7 @@ class AllInDepartmentRecords(ListStrategy):
             tmp_pack = contragent.get_active_package()
             if tmp_pack:
                 tmp_list = [c.department == user.department
-                        for c in contragent.current_user]
+                            for c in contragent.current_user]
                 if any(tmp_list):
                     return contragent
                 return None
@@ -666,7 +703,7 @@ class MyAndEmptyRecordsStrategy(ListStrategy):
                 tmp_state = tmp_pack.package_state
                 if tmp_state:
                     if tmp_state.is_permitted(user) and (
-                        user in c.current_user):
+                                            user in c.current_user):
                         res.append(c)
                 else:
                     res.append(c)
@@ -682,7 +719,7 @@ class MyAndEmptyRecordsStrategy(ListStrategy):
                 tmp_state = tmp_pack.package_state
                 if tmp_state:
                     if tmp_state.is_permitted(user) and (
-                        user in contragent.current_user):
+                                            user in contragent.current_user):
                         return contragent
             return contragent
         except Contragent.DoesNotExist:

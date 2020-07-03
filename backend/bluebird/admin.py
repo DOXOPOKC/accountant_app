@@ -4,14 +4,19 @@ from django.utils.html import mark_safe
 from .models import (KLASS_TYPES, Contragent, NormativeCategory, Normative,
                      Contract, ContractNumberClass, DocumentsPackage,
                      OtherFile, PackFile, SignUser, CityModel,
-                     TemplateModel, DocumentTypeModel, SingleFilesTemplate,
-                     SingleFile, PackFilesTemplate, State, Event, Commentary)
+                     TemplateModel, DocumentTypeModel,
+                     #  SingleFilesTemplate, PackFilesTemplate,
+                     SingleFile, DocumentFileTemplate,
+                     State, Event, Commentary,
+                     DocumentStateEntity)
 
 from django.contrib.contenttypes.admin import GenericTabularInline
 
 from .forms import (TemplateModelForm,
-                    PackFilesTemplateAdminForm,
-                    SingleFilesTemplateAdminForm)
+                    # PackFilesTemplateAdminForm,
+                    # SingleFilesTemplateAdminForm, 
+                    DocumentFileTemplateAdminForm,
+                    DocumentStateEntityForm)
 
 from itertools import zip_longest
 
@@ -110,17 +115,34 @@ class DocumentsPackageAdmin(admin.ModelAdmin):
         активные"
 
 
-class SingleFilesTemplateAdmin(admin.ModelAdmin):
-    form = SingleFilesTemplateAdminForm
+class DocumentStateEntityInline(admin.StackedInline):
+    form = DocumentStateEntityForm
+    model = DocumentStateEntity
     filter_horizontal = ('documents',)
+    extra = 1
+    ct_fk_field = 'entity_id'
+    ct_field = 'content_type'
+
+
+# class SingleFilesTemplateAdmin(admin.ModelAdmin):
+#     form = SingleFilesTemplateAdminForm
+#     inlines = [DocumentStateEntityInline]
+#     # filter_horizontal = ('documents',)
+#     list_display_links = ('__str__', )
+#     list_display = ('__str__', )
+
+class DocumentFileTemplateAdmin(admin.ModelAdmin):
+    form = DocumentFileTemplateAdminForm
+    inlines = [DocumentStateEntityInline]
+    # filter_horizontal = ('documents',)
     list_display_links = ('__str__', )
     list_display = ('__str__', )
 
 
-class PackFilesTemplateAdmin(admin.ModelAdmin):
-    form = PackFilesTemplateAdminForm
-    filter_horizontal = ('documents',)
-    list_display = ('__str__', )
+# class PackFilesTemplateAdmin(admin.ModelAdmin):
+#     form = PackFilesTemplateAdminForm
+#     filter_horizontal = ('documents',)
+#     list_display = ('__str__', )
 
 
 class SignUserAdmin(admin.ModelAdmin, DuplicateElementsMixin):
@@ -198,8 +220,9 @@ admin.site.register(SignUser, SignUserAdmin)
 admin.site.register(CityModel, CityModelAdmin)
 admin.site.register(DocumentTypeModel, DocumentTypeModelAdmin)
 admin.site.register(TemplateModel, TemplateModelAdmin)
-admin.site.register(SingleFilesTemplate, SingleFilesTemplateAdmin)
-admin.site.register(PackFilesTemplate, PackFilesTemplateAdmin)
+# admin.site.register(SingleFilesTemplate, SingleFilesTemplateAdmin)
+# admin.site.register(PackFilesTemplate, PackFilesTemplateAdmin)
+admin.site.register(DocumentFileTemplate, DocumentFileTemplateAdmin)
 admin.site.register(PackFile)
 admin.site.register(State, StateAdmin)
 admin.site.register(Event, EventAdmin)
