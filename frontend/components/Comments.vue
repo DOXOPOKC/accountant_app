@@ -23,7 +23,7 @@
             @click="commentsDialogState = false"
           )
             v-icon mdi-close
-        v-card-text(class="pb-0")
+        v-card-text(class="pa-0")
             v-container(
               px-0 pb-0
             )
@@ -62,21 +62,22 @@
                           v-list-item-title {{ comment.id }} - {{ comment.commentary_text }}
                           v-list-item-subtitle {{ comment.creation_date | dateFormat }}
                       v-divider
-              v-row(
-                no-gutters
-                class="fill-height"
-              )
-                v-col(
-                  cols="12"
+              v-card-actions
+                v-row(
+                  no-gutters
+                  class="fill-height"
                 )
-                  v-text-field(
-                    type="text"
-                    label="Добавить комментарий..."
-                    v-model="commentText"
-                    append-outer-icon="mdi-send"
-                    @keyup.enter="sendMessage($event.target.value)"
-                    @click:append-outer="sendMessage($event.target.value)"
+                  v-col(
+                    cols="12"
                   )
+                    v-text-field(
+                      type="text"
+                      label="Добавить комментарий..."
+                      v-model="commentText"
+                      append-outer-icon="mdi-send"
+                      @keyup.enter="sendMessage"
+                      @click:append-outer="sendMessage"
+                    )
 </template>
 
 <script>
@@ -125,17 +126,17 @@ export default {
       CREATE_FILE_COMMENT: 'comments/CREATE_FILE_COMMENT',
       FETCH_FILE_COMMENTS: 'comments/FETCH_FILE_COMMENTS'
     }),
-    async sendMessage (comment) {
+    async sendMessage () {
       if (this.viewState === 'package') {
         await this.CREATE_COMMENT({
           packageId: this.$route.params.packageId,
-          comment
+          comment: this.commentText
         })
       } else {
         await this.CREATE_FILE_COMMENT({
           packageId: this.$route.params.packageId,
           fileId: this.fileId,
-          comment
+          comment: this.commentText
         })
       }
       this.commentText = ''
