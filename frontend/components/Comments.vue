@@ -10,6 +10,7 @@
           class="mr-2"
           icon
           v-on="on"
+          @click="updateComponent"
         )
           v-icon(small) mdi-comment
       v-card(
@@ -59,7 +60,7 @@
                         @click=""
                       )
                         v-list-item-content
-                          v-list-item-title {{ comment.id }} - {{ comment.commentary_text }}
+                          v-list-item-title {{ comment.user.username }} - {{ comment.commentary_text }}
                           v-list-item-subtitle {{ comment.creation_date | dateFormat }}
                       v-divider
               v-card-actions
@@ -96,20 +97,6 @@ export default {
       default: 1
     }
   },
-  async fetch () {
-    // eslint-disable-next-line no-console
-    console.log(this.viewState)
-    if (this.viewState === 'package') {
-      await this.$store.dispatch('comments/FETCH_COMMENTS', {
-        packageId: this.$route.params.packageId
-      })
-    } else {
-      await this.$store.dispatch('comments/FETCH_FILE_COMMENTS', {
-        packageId: this.$route.params.packageId,
-        fileId: this.fileId
-      })
-    }
-  },
   data: () => ({
     commentsDialogState: false,
     commentText: ''
@@ -140,6 +127,18 @@ export default {
         })
       }
       this.commentText = ''
+    },
+    async updateComponent () {
+      if (this.viewState === 'package') {
+        await this.$store.dispatch('comments/FETCH_COMMENTS', {
+          packageId: this.$route.params.packageId
+        })
+      } else {
+        await this.$store.dispatch('comments/FETCH_FILE_COMMENTS', {
+          packageId: this.$route.params.packageId,
+          fileId: this.fileId
+        })
+      }
     }
   }
 }
