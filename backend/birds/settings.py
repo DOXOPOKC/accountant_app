@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'yellowbird',
     'bluebird',
     'blackbird',
+    'redbird',
     
 ]
 
