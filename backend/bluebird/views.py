@@ -1,9 +1,7 @@
 import datetime
-import os, tempfile, zipfile
-from copy import deepcopy
+import zipfile
 
 from io import BytesIO
-import binascii
 
 from django_q.tasks import (
     Task,
@@ -21,9 +19,8 @@ from rest_framework.response import \
 from rest_framework.views import \
     APIView
 
-from django.shortcuts import redirect
-from django.http import HttpResponse, JsonResponse
-# from wsgiref.util import FileWrapper
+from django.http import HttpResponse
+from django.db import Error
 
 from bluebird.models import (
     ContractNumberClass,
@@ -34,12 +31,11 @@ from bluebird.models import (
     OtherFile,
     PackFile,
     SingleFile,
-    OtherFile,
     Event,
     Commentary,
     State,
     SignUser,
-    STRATEGIES, STRATEGIES_LIST, ZIP_FILES_ACTIONS)
+    STRATEGIES, STRATEGIES_LIST)
 from bluebird.serializers import (
     ContragentFullSerializer,
     ContragentShortSerializer,
@@ -50,7 +46,6 @@ from bluebird.serializers import (
     SignUserSerializer,
     TaskSerializer, CommentarySerializer)
 from bluebird.utils import (
-    calc_create_gen_async,
     create_unique_id,
     get_data,
     get_object,
@@ -60,6 +55,8 @@ from .snippets import \
     str_remove_app, str_add_app
 
 from redbird.utils import add_record_to_journal
+
+from .tasks import calc_create_gen_async
 
 
 class ContragentsView(APIView):
@@ -95,12 +92,12 @@ class ContragentsView(APIView):
             except Exception:
                 return Response('Структура файла не верна.\
                     Пожалуста используйте правильную форму.',
-                    status=status.HTTP_400_BAD_REQUEST)
+                                status=status.HTTP_400_BAD_REQUEST)
             if not result:
                 # Если фаил есть но он "пустой"
                 return Response('Выбраный фаил пуст или содержит информацию,\
                     не соотвествующую формату.',
-                    status=status.HTTP_400_BAD_REQUEST)
+                                status=status.HTTP_400_BAD_REQUEST)
             group_id = create_unique_id()
             for data_element in result:
                 if data_element['klass'] == 1:
@@ -112,14 +109,23 @@ class ContragentsView(APIView):
                         serializer.save()
                         async_task(get_data, int(serializer['id'].value),
                                    group=group_id)
-                else:
-                    continue  # TODO add another variants
+                elif data_element['klass'] == 2:
+                    continue
+                elif data_element['klass'] == 3:
+                    continue
+                elif data_element['klass'] == 4:   # TODO add another variants
+                    data_element['current_user'] = None
+                    serializer = ContragentFullSerializer(data=data_element)
+                    if serializer.is_valid(True):
+                        serializer.save()
+                elif data_element['klass'] == 5:
+                    continue
             return Response(group_id, status=status.HTTP_201_CREATED)
         else:
             # Если файла нет
             return Response('В запросе не найден фаил.\
                 Пожалуйста, выберите фаил.',
-                status=status.HTTP_400_BAD_REQUEST)
+                            status=status.HTTP_400_BAD_REQUEST)
 
 
 class ContragentView(APIView):
@@ -174,14 +180,25 @@ class PackagesView(APIView):
             pack = DocumentsPackage.objects.get(contragent__pk=pk,
                                                 is_active=True)
             pack.initialize_sub_folders()
-            pack.change_state_to(State.objects.filter(is_initial_state=True)[0])
-
+            pack.change_state_to(State.objects.filter(
+                                 is_initial_state=True)[0], False)
             group_id = pack.name_uuid
-            async_task(calc_create_gen_async, contragent, pack,
-                       group=group_id)
-
             contragent.current_user = request.user
-            # contragent.save()
+            contragent.save()
+
+            # if contragent.klass == 1:   # Юридическое лицо без договора
+            #     pass
+            # elif contragent.klass == 2:  # Юридическое лицо с договором
+            #     pass
+            # elif contragent.klass == 3:  # ИЖС без договора
+            #     pass
+            # elif contragent.klass == 4:  # ИЖС с договором
+            #     pack.is_automatic = False
+            #     pack.debt_plan = contragent.debt
+            #     pack.save(force_update=True)
+            # elif contragent.klass == 5:  # Физическое лицо
+            #     pass
+
             return Response(group_id, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -218,10 +235,6 @@ class PackageView(APIView):
 
         zip_buffer.seek(0)
 
-        # data = {
-        #     'filename': f'{pack.name_uuid}.zip',
-        #     'file': binascii.b2a_uu(zip_buffer.getvalue()),
-        # }
         response = HttpResponse(zip_buffer,
                                 content_type='application/zip')
         response['Content-Disposition'] = f'attachment; \
@@ -233,12 +246,15 @@ class PackageView(APIView):
         package = get_object(package_id, DocumentsPackage)
         group_id = package.name_uuid
         if not Task.get_group_count(group_id):
-            if package.is_active:
+            if (package.is_active
+                    and package.is_automatic
+                    and package.package_state.is_initial_state):
                 contragent = package.contragent
                 async_task(calc_create_gen_async, contragent, package, True,
                            group=group_id)
                 return Response(group_id, status=status.HTTP_200_OK)
-
+            return Response(data="Нельзя изменить пакет из этого состояния.",
+                            status=status.HTTP_308_PERMANENT_REDIRECT)
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk, package_id):
@@ -250,14 +266,15 @@ class PackageView(APIView):
         else:
             event = Event.objects.get(id=event_id)
             if event.from_state == package.package_state:
-                package.change_state_to(event.to_state)
+                package.change_state_to(event.to_state, event.is_move_backward)
+                # TODO Add record jo Journal
                 # if not any([
                 #     event.to_state.is_permitted(dept.id
                 #         ) for dept in event.from_state.departments.all()]):
                 if event.to_state.is_final_state:
                     package.set_inactive()
                 if package.package_state.is_permitted(
-                                                request.user.department):
+                                                request.user):
                     return Response(status=status.HTTP_200_OK)
                 return Response(data="Статус успешно сменен.",
                                 status=status.HTTP_308_PERMANENT_REDIRECT)
@@ -349,15 +366,16 @@ class CommentaryPackageView(APIView):
 
     def post(self, request, package_id):
         package = get_object(package_id, DocumentsPackage)
-        comment = package.commentary.create(
-            user=request.user,
-            commentary_text=request.data.get('commentary_text')
-        )
-        serializer = CommentarySerializer(comment, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
+        try:
+            comment = package.commentary.create(
+                user=request.user,
+                commentary_text=request.data.get('commentary_text')
+            )
+            serializer = CommentarySerializer(comment)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Error as error:
+            return Response(error,
+                            status=status.HTTP_400_BAD_REQUEST)
 
 
 class CommentaryFileView(APIView):
@@ -365,18 +383,19 @@ class CommentaryFileView(APIView):
     # permission_classes = (IsAuthenticated,)
 
     def get(self, request, package_id, file_id):
-        comments = Commentary.objects.filter(file__id=package_id)
+        comments = Commentary.objects.filter(file__id=file_id)
         serializer = CommentarySerializer(comments, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request, package_id, file_id):
         other_file = get_object(file_id, OtherFile)
-        comment = other_file.commentary.create(
-            user=request.user,
-            commentary_text=request.data.get('commentary_text')
-        )
-        serializer = CommentarySerializer(comment, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
+        try:
+            comment = other_file.commentary.create(
+                user=request.user,
+                commentary_text=request.data.get('commentary_text')
+            )
+            serializer = CommentarySerializer(comment)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Error as error:
+            return Response(error,
+                            status=status.HTTP_400_BAD_REQUEST)
