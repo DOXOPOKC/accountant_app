@@ -17,4 +17,8 @@ class JournalRecord(models.Model):
 class Journal(models.Model):
     pack = models.ForeignKey(DocumentsPackage, on_delete=models.CASCADE)
 
-    # def add_record(self, user):
+    def add_record(self, user):
+        record = JournalRecord.objects.create(
+            journal=self, user=user, state=self.pack.package_state
+        )
+        return record

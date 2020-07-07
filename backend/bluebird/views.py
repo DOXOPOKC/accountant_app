@@ -59,6 +59,8 @@ from bluebird.utils import (
 from .snippets import \
     str_remove_app, str_add_app
 
+from redbird.utils import add_record_to_journal
+
 
 class ContragentsView(APIView):
     """ Вью для списка контрагентов """

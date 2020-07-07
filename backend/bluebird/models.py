@@ -5,7 +5,6 @@ from abc import ABC, abstractmethod
 
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import Q
 from django.contrib.contenttypes.fields import (GenericForeignKey,
                                                 GenericRelation)
 from django.contrib.contenttypes.models import ContentType
@@ -14,10 +13,7 @@ from django.db import models
 from bluebird.templatetags.template_extra_filters import plur_form
 
 from .snippets import str_add_app
-# from django.http.response import Http404
 
-# from django.core.exceptions import ValidationError
-# from django.contrib.auth.models import User
 
 KLASS_TYPES = [
         (0, 'Пусто'),
@@ -646,7 +642,7 @@ class AllInDepartmentRecords(ListStrategy):
             tmp_pack = contragent.get_active_package()
             if tmp_pack:
                 tmp_list = [c.department == user.department
-                        for c in contragent.current_user]
+                            for c in contragent.current_user]
                 if any(tmp_list):
                     return contragent
                 return None
@@ -666,7 +662,7 @@ class MyAndEmptyRecordsStrategy(ListStrategy):
                 tmp_state = tmp_pack.package_state
                 if tmp_state:
                     if tmp_state.is_permitted(user) and (
-                        user in c.current_user):
+                            user in c.current_user):
                         res.append(c)
                 else:
                     res.append(c)
@@ -682,7 +678,7 @@ class MyAndEmptyRecordsStrategy(ListStrategy):
                 tmp_state = tmp_pack.package_state
                 if tmp_state:
                     if tmp_state.is_permitted(user) and (
-                        user in contragent.current_user):
+                            user in contragent.current_user):
                         return contragent
             return contragent
         except Contragent.DoesNotExist:
