@@ -20,6 +20,7 @@ from rest_framework.views import \
     APIView
 
 from django.http import HttpResponse
+from django.db import Error
 
 from bluebird.models import (
     ContractNumberClass,
@@ -367,15 +368,16 @@ class CommentaryPackageView(APIView):
 
     def post(self, request, package_id):
         package = get_object(package_id, DocumentsPackage)
-        comment = package.commentary.create(
-            user=request.user,
-            commentary_text=request.data.get('commentary_text')
-        )
-        serializer = CommentarySerializer(comment, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
+        try:
+            comment = package.commentary.create(
+                user=request.user,
+                commentary_text=request.data.get('commentary_text')
+            )
+            serializer = CommentarySerializer(comment)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Error as error:
+            return Response(error,
+                            status=status.HTTP_400_BAD_REQUEST)
 
 
 class CommentaryFileView(APIView):
@@ -389,12 +391,13 @@ class CommentaryFileView(APIView):
 
     def post(self, request, package_id, file_id):
         other_file = get_object(file_id, OtherFile)
-        comment = other_file.commentary.create(
-            user=request.user,
-            commentary_text=request.data.get('commentary_text')
-        )
-        serializer = CommentarySerializer(comment, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
+        try:
+            comment = other_file.commentary.create(
+                user=request.user,
+                commentary_text=request.data.get('commentary_text')
+            )
+            serializer = CommentarySerializer(comment)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Error as error:
+            return Response(error,
+                            status=status.HTTP_400_BAD_REQUEST)

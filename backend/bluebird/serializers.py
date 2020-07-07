@@ -169,6 +169,6 @@ class CommentarySerializer(serializers.ModelSerializer):
     class Meta:
         model = Commentary
         fields = ['id', 'user', 'commentary_text', 'creation_date', ]
-        extra_kwargs = {
-                'user': {'required': False},
-            }
+        # extra_kwargs = {
+        #         'user': {'required': False},
+        #     }
