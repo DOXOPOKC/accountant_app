@@ -54,6 +54,8 @@ from bluebird.utils import (
 from .snippets import \
     str_remove_app, str_add_app
 
+from redbird.utils import add_record_to_journal
+
 from .tasks import calc_create_gen_async
 
 
@@ -233,10 +235,6 @@ class PackageView(APIView):
 
         zip_buffer.seek(0)
 
-        # data = {
-        #     'filename': f'{pack.name_uuid}.zip',
-        #     'file': binascii.b2a_uu(zip_buffer.getvalue()),
-        # }
         response = HttpResponse(zip_buffer,
                                 content_type='application/zip')
         response['Content-Disposition'] = f'attachment; \
