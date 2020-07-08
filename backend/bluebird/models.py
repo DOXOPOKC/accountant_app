@@ -32,6 +32,12 @@ POST_TYPE = [
 ]
 
 
+class Adress(models.Model):
+    city = models.CharField(verbose_name="Город", max_length=255)
+    street = models.CharField(verbose_name="Улица", max_length=255)
+    house_number = models.CharField(verbose_name="Номер дома", max_length=10)
+    
+
 class Contragent(models.Model):
     """
     Класс Контрагента.
@@ -68,11 +74,14 @@ class Contragent(models.Model):
                                   default=True)
     okved = models.CharField('ОКВЭД',
                              max_length=255, blank=True, null=True)
+
+    #  TODO REWORK THIS AREA
     physical_address = models.CharField('Физический адресс',
                                         max_length=255)
     legal_address = models.CharField('Юридический адресс',
                                      max_length=255, blank=True, null=True)
-    # TODO СВЯЗАТЬ НОРМАТИВ И ОКВЭД?
+    #  END OF REWORK
+
     norm_value = models.ForeignKey('NormativeCategory',
                                    related_name='normatives',
                                    on_delete=models.CASCADE,
@@ -98,6 +107,17 @@ class Contragent(models.Model):
 
     platform = models.IntegerField('№ площадки',
                                    blank=True, null=True)
+
+    judge_link = models.CharField(verbose_name="", max_length=255,
+                                  blank=True, null=True)
+    fss_link = models.CharField(verbose_name="", max_length=255,
+                                blank=True, null=True)
+
+    personal_number = models.CharField(verbose_name="Лицевой счет",
+                                       max_length=255, blank=True, null=True)
+
+    passport_number = models.CharField(verbose_name="Номер паспорта",
+                                       max_length=15, blank=True, null=True)
 
     def create_package_and_folder(self):
         self.check_and_create_parent_folder()
