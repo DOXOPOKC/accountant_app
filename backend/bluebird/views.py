@@ -1,6 +1,5 @@
 import datetime
 import zipfile
-
 from io import BytesIO
 
 from django_q.tasks import (
@@ -182,6 +181,7 @@ class PackagesView(APIView):
             pack.initialize_sub_folders()
             pack.change_state_to(State.objects.filter(
                                  is_initial_state=True)[0], False)
+            add_record_to_journal(pack, request.user)
             group_id = pack.name_uuid
             contragent.current_user = request.user
             contragent.save()
@@ -267,7 +267,7 @@ class PackageView(APIView):
             event = Event.objects.get(id=event_id)
             if event.from_state == package.package_state:
                 package.change_state_to(event.to_state, event.is_move_backward)
-                # TODO Add record jo Journal
+                add_record_to_journal(package, request.user)
                 # if not any([
                 #     event.to_state.is_permitted(dept.id
                 #         ) for dept in event.from_state.departments.all()]):
