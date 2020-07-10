@@ -118,6 +118,12 @@ class Contragent(models.Model):
 
     passport_number = models.CharField(verbose_name="Номер паспорта",
                                        max_length=15, blank=True, null=True)
+    passport_date = models.DateField(verbose_name="Дата выдачи пасспорта",
+                                     blank=True, null=True)
+    passport_origin = models.CharField(verbose_name="Кем выдан пасспорт",
+                                       max_length=15, blank=True, null=True)
+    snils = models.CharField(verbose_name="СНИЛС",
+                             max_length=15, blank=True, null=True)
 
     def create_package_and_folder(self):
         self.check_and_create_parent_folder()
