@@ -112,12 +112,16 @@ class ContragentsView(APIView):
                     continue
                 elif data_element['klass'] == 3:
                     continue
-                elif data_element['klass'] == 4:   # TODO add another variants
+                elif data_element['klass'] == 4:
+                    contract_number = ContractNumberClass.create()
+                    data_element['number_contract'] = contract_number.pk
                     data_element['current_user'] = None
                     serializer = ContragentFullSerializer(data=data_element)
                     if serializer.is_valid(True):
                         serializer.save()
                 elif data_element['klass'] == 5:
+                    contract_number = ContractNumberClass.create()
+                    data_element['number_contract'] = contract_number.pk
                     data_element['current_user'] = None
                     serializer = ContragentFullSerializer(data=data_element)
                     if serializer.is_valid(True):
@@ -408,15 +412,12 @@ class CommentaryFileView(APIView):
 class ContractNumberClassView(APIView):
     permission_classes = (IsAuthenticated,)
 
-    def post(self, request, pk):
-        try:
-            contragent = get_object(pk, Contragent)
-            contract_number = ContractNumberClass.create(
-                    exist_number=request.data.get('number_contract'))
-            contragent.number_contract = contract_number.id
-            contragent.save()
-            serializer = ContractNumberClassSerializer(contract_number)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        except Error as error:
-            return Response(error,
-                            status=status.HTTP_400_BAD_REQUEST)
+    def put(self, request, pk):
+        contragent = get_object(pk, Contragent)
+        contract_number = contragent.number_contract
+        serializer = ContractNumberClassSerializer(contract_number,
+                                                   data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
