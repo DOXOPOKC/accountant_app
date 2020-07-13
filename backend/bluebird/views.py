@@ -100,9 +100,9 @@ class ContragentsView(APIView):
             group_id = create_unique_id()
             for data_element in result:
                 if data_element['klass'] == 1:
-                    contract_number = ContractNumberClass.create(new=True)
-                    data_element['number_contract'] = contract_number.pk
-                    data_element['current_user'] = None  # request.user.id
+                    # contract_number = ContractNumberClass.create(new=True)
+                    # data_element['number_contract'] = ContractNumberClassSerializer(contract_number).data
+                    # data_element['current_user'] = None  # request.user.id
                     serializer = ContragentFullSerializer(data=data_element)
                     if serializer.is_valid(True):
                         serializer.save()
@@ -113,16 +113,16 @@ class ContragentsView(APIView):
                 elif data_element['klass'] == 3:
                     continue
                 elif data_element['klass'] == 4:
-                    contract_number = ContractNumberClass.create()
-                    data_element['number_contract'] = contract_number.pk
-                    data_element['current_user'] = None
+                    # contract_number = ContractNumberClass.create()
+                    # data_element['number_contract'] = ContractNumberClassSerializer(contract_number).data
+                    # data_element['current_user'] = None
                     serializer = ContragentFullSerializer(data=data_element)
                     if serializer.is_valid(True):
                         serializer.save()
                 elif data_element['klass'] == 5:
-                    contract_number = ContractNumberClass.create()
-                    data_element['number_contract'] = contract_number.pk
-                    data_element['current_user'] = None
+                    # contract_number = ContractNumberClass.create()
+                    # data_element['number_contract'] = ContractNumberClassSerializer(contract_number).data
+                    # data_element['current_user'] = None
                     serializer = ContragentFullSerializer(data=data_element)
                     if serializer.is_valid(True):
                         serializer.save()
