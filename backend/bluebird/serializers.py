@@ -6,7 +6,7 @@ from .models import (Contragent, DocumentsPackage, OtherFile, PackFile,
                      DocumentFileTemplate,
                      DocumentStateEntity,
                      State,
-                     Event, Commentary)
+                     Event, Commentary, ContractNumberClass)
 
 from django_q.models import Task
 from django.core.exceptions import ObjectDoesNotExist
@@ -55,6 +55,17 @@ class StateShortSerializer(serializers.ModelSerializer):
         fields = ['id', 'name_state', ]
 
 
+class ContractNumberClassSerializer(serializers.ModelSerializer):
+    number = serializers.SerializerMethodField()
+
+    def get_number(self, obj):
+        return obj.contract_number
+
+    class Meta:
+        model = ContractNumberClass
+        fields = ['id', 'is_generated', 'number']
+
+
 class PackageShortSerializer(serializers.ModelSerializer):
     package_state = StateShortSerializer()
 
@@ -65,6 +76,8 @@ class PackageShortSerializer(serializers.ModelSerializer):
 
 
 class ContragentFullSerializer(serializers.ModelSerializer):
+    number_contract = ContractNumberClassSerializer()
+
     class Meta:
         model = Contragent
         fields = '__all__'

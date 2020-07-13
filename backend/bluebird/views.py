@@ -43,7 +43,7 @@ from bluebird.serializers import (
     PackageFullSerializer,
     PackageShortSerializer,
     SignUserSerializer,
-    TaskSerializer, CommentarySerializer)
+    TaskSerializer, CommentarySerializer, ContractNumberClassSerializer)
 from bluebird.utils import (
     create_unique_id,
     get_data,
@@ -118,7 +118,10 @@ class ContragentsView(APIView):
                     if serializer.is_valid(True):
                         serializer.save()
                 elif data_element['klass'] == 5:
-                    continue
+                    data_element['current_user'] = None
+                    serializer = ContragentFullSerializer(data=data_element)
+                    if serializer.is_valid(True):
+                        serializer.save()
             return Response(group_id, status=status.HTTP_201_CREATED)
         else:
             # Если файла нет
@@ -396,6 +399,23 @@ class CommentaryFileView(APIView):
                 commentary_text=request.data.get('commentary_text')
             )
             serializer = CommentarySerializer(comment)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        except Error as error:
+            return Response(error,
+                            status=status.HTTP_400_BAD_REQUEST)
+
+
+class ContractNumberClassView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request, pk):
+        try:
+            contragent = get_object(pk, Contragent)
+            contract_number = ContractNumberClass.create(
+                    exist_number=request.data.get('number_contract'))
+            contragent.number_contract = contract_number.id
+            contragent.save()
+            serializer = ContractNumberClassSerializer(contract_number)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         except Error as error:
             return Response(error,
