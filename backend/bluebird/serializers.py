@@ -20,7 +20,7 @@ class ContragentShortSerializer(serializers.ModelSerializer):
     class Meta:
         model = Contragent
         fields = ['id', 'klass', 'excell_name',
-                  'inn', 'debt', 'physical_address', 'pack', ]
+                  'inn', 'debt', 'physical_address', 'pack', 'debt_period']
 
     def get_pack(self, obj):
         tmp_pack = DocumentsPackage.objects.filter(

@@ -168,6 +168,11 @@ class Contragent(models.Model):
         res = DocumentsPackage.get_active_package(self)
         return res
 
+    def reset_debt(self):
+        self.debt = 0
+        self.debt_period = 0
+        self.save()
+
     def __str__(self):
         return f'{self.excell_name}'
 

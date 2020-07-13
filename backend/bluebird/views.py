@@ -273,6 +273,7 @@ class PackageView(APIView):
                 #         ) for dept in event.from_state.departments.all()]):
                 if event.to_state.is_final_state:
                     package.set_inactive()
+                    package.contragent.reset_debt()
                 if package.package_state.is_permitted(
                                                 request.user):
                     return Response(status=status.HTTP_200_OK)
