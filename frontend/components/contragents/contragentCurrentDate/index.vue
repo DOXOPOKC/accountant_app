@@ -11,6 +11,7 @@
     )
       template(v-slot:activator="{ on }")
         v-text-field(
+          dense
           v-model="current_date"
           label="Конечная дата оказания услуг"
           readonly

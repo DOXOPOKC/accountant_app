@@ -3,12 +3,21 @@
     v-text-field(
       dense
       v-model="opf"
-      label="ОПФ"
+      label="Номер паспорта"
     )
 </template>
 
 <script>
+import PassportDate from '@/components/contragentPassport/PassportDate'
+import PassportNumber from '@/components/contragentPassport/PassportNumber'
+import PassportOrigin from '@/components/contragentPassport/PassportOrigin'
+
 export default {
+  components: [
+    PassportDate,
+    PassportNumber,
+    PassportOrigin
+  ],
   data: () => ({}),
   computed: {
     opf: {

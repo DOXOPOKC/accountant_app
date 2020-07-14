@@ -10,15 +10,21 @@
       min-width="290px"
     )
       template(v-slot:activator="{ on }")
-        ValidationProvider(rules="required" v-slot="{ errors }")
+        ValidationProvider(rules="" v-slot="{ errors }")
           v-text-field(
+            dense
             v-model="creation_date"
             label="Дата создания юр. лица"
             readonly
             v-on="on"
             :error-messages="errors"
           )
-      v-date-picker(v-model="creation_date" no-title scrollable readonly)
+      v-date-picker(
+        v-model="creation_date"
+        no-title
+        scrollable
+        readonly
+      )
         v-spacer
         v-btn(text color="primary" @click="menu = false") Cancel
         v-btn(text color="primary" @click="$refs.menu.save(creation_date)") OK

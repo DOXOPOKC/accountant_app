@@ -2,6 +2,7 @@
   v-col(cols="12")
     v-text-field(
       disabled
+      dense
       v-model="current_user"
       label="Текущий пользователь"
     )

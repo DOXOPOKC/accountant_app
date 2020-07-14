@@ -32,7 +32,6 @@
                   focusable
                   flat
                   tile
-                  mandatory
                 )
                   v-expansion-panel
                     v-expansion-panel-header Информация о контрагенте
@@ -75,6 +74,15 @@
                         contragent-stat-value
                         contragent-platform
                         contragent-signed-user
+                  v-expansion-panel
+                    v-expansion-panel-header Юридическое лицо
+                    v-expansion-panel-content
+                      v-row(no-gutters)
+                        contragentDebtPeriond
+                        contragentFssLink
+                        contragentJudgeLink
+                        contragentPersonalNumber
+                        contragentSnils
           v-card-actions(class="px-6 pt-2")
             v-spacer
             v-btn(
@@ -116,7 +124,6 @@ import contragentDebt from '@/components/contragents/contragentDebt'
 import contragentDirectorName from '@/components/contragents/contragentDirectorName'
 import contragentDirectorStatus from '@/components/contragents/contragentDirectorStatus'
 import contragentExcellName from '@/components/contragents/contragentExcellName'
-// import contragentId from '@/components/contragents/contragentId'
 import contragentInn from '@/components/contragents/contragentInn'
 import contragentIsFunc from '@/components/contragents/contragentIsFunc'
 import contragentKpp from '@/components/contragents/contragentKpp'
@@ -132,6 +139,15 @@ import contragentPlatform from '@/components/contragents/contragentPlatform'
 import contragentRs from '@/components/contragents/contragentRs'
 import contragentSignedUser from '@/components/contragents/contragentSignedUser'
 import contragentStatValue from '@/components/contragents/contragentStatValue'
+
+import contragentDebtPeriond from '@/components/contragents/contragentDebtPeriond'
+import contragentFssLink from '@/components/contragents/contragentFssLink'
+import contragentJudgeLink from '@/components/contragents/contragentJudgeLink'
+
+// import contragentPassport from '@/components/contragents/contragentPassport'
+
+import contragentPersonalNumber from '@/components/contragents/contragentPersonalNumber'
+import contragentSnils from '@/components/contragents/contragentSnils'
 
 import packagesList from '@/components/packages'
 
@@ -167,7 +183,12 @@ export default {
     contragentPlatform,
     contragentRs,
     contragentSignedUser,
-    contragentStatValue
+    contragentStatValue,
+    contragentDebtPeriond,
+    contragentFssLink,
+    contragentJudgeLink,
+    contragentPersonalNumber,
+    contragentSnils
   },
   async asyncData ({ $axios, store, params }) {
     await store.dispatch('contragents/FETCH_CONTRAGENT', params.contragentId)

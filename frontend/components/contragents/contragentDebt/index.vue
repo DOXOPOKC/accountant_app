@@ -1,6 +1,7 @@
 <template lang="pug">
   v-col(cols="3")
     v-text-field(
+      dense
       readonly
       v-model="debt"
       label="Задолжность"

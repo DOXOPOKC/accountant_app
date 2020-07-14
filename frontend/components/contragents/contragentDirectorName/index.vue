@@ -1,6 +1,7 @@
 <template lang="pug">
   v-col(cols="12")
     v-text-field(
+      dense
       v-model="director_name"
       label="Ответственное лицо"
     )

@@ -11,9 +11,10 @@
     )
       template(v-slot:activator="{ on }")
         v-text-field(
+          dense
+          readonly
           v-model="contract_accept_date"
           label="Дата начала оказания услуг"
-          readonly
           v-on="on"
         )
       v-date-picker(v-model="contract_accept_date" no-title scrollable)

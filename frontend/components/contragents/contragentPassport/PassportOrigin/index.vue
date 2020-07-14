@@ -3,7 +3,7 @@
     v-text-field(
       dense
       v-model="opf"
-      label="ОПФ"
+      label="Кем выдан паспорт"
     )
 </template>
 

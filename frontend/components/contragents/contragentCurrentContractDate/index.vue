@@ -12,9 +12,10 @@
       template(v-slot:activator="{ on }")
         ValidationProvider(rules="required" name="" v-slot="{ errors }")
           v-text-field(
+            dense
+            readonly
             v-model="current_contract_date"
             label="Дата заключения договора"
-            readonly
             v-on="on"
             :error-messages="errors"
           )

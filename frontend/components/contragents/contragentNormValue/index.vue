@@ -2,6 +2,7 @@
   v-col(cols="4")
     ValidationProvider(rules="required" v-slot="{ errors }")
       v-select(
+        dense
         item-text="name"
         item-value="id"
         v-model="norm_value"

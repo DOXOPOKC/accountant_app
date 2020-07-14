@@ -2,6 +2,7 @@
   v-col(cols="3")
     ValidationProvider(rules="required" v-slot="{ errors }")
       v-text-field(
+        dense
         v-model="statValue"
         label="Количественный показатель"
         :error-messages="errors"

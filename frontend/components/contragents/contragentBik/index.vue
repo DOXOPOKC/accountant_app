@@ -1,6 +1,7 @@
 <template lang="pug">
   v-col(cols="6")
     v-text-field(
+      dense
       v-model="bik"
       label="БИК"
     )
