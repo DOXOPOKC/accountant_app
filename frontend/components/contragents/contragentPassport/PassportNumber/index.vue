@@ -1,8 +1,8 @@
 <template lang="pug">
-  v-col(cols="2")
+  v-col(cols="4")
     v-text-field(
       dense
-      v-model="opf"
+      v-model="passportNumber"
       label="Номер паспорта"
     )
 </template>
@@ -11,12 +11,12 @@
 export default {
   data: () => ({}),
   computed: {
-    opf: {
-      set (opf) {
-        this.$store.commit('contragents/SET_CONTRAGENT', { opf })
+    passportNumber: {
+      set (passportNumber) {
+        this.$store.commit('contragents/SET_CONTRAGENT', { passport_number: passportNumber })
       },
       get () {
-        return this.$store.state.contragents.detail.opf
+        return this.$store.state.contragents.detail.passport_number
       }
     }
   }

@@ -1,33 +1,21 @@
 <template lang="pug">
-  v-col(cols="2")
-    v-text-field(
-      dense
-      v-model="opf"
-      label="Номер паспорта"
-    )
+  v-col(cols="12")
+    v-row(no-gutters)
+        passport-date
+        passport-number
+        passport-origin
 </template>
 
 <script>
-import PassportDate from '@/components/contragentPassport/PassportDate'
-import PassportNumber from '@/components/contragentPassport/PassportNumber'
-import PassportOrigin from '@/components/contragentPassport/PassportOrigin'
+import PassportDate from '@/components/contragents/contragentPassport/PassportDate'
+import PassportNumber from '@/components/contragents/contragentPassport/PassportNumber'
+import PassportOrigin from '@/components/contragents/contragentPassport/PassportOrigin'
 
 export default {
-  components: [
+  components: {
     PassportDate,
     PassportNumber,
     PassportOrigin
-  ],
-  data: () => ({}),
-  computed: {
-    opf: {
-      set (opf) {
-        this.$store.commit('contragents/SET_CONTRAGENT', { opf })
-      },
-      get () {
-        return this.$store.state.contragents.detail.opf
-      }
-    }
   }
 }
 </script>

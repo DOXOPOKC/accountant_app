@@ -1,23 +1,68 @@
 <template lang="pug">
-  v-col(cols="2")
+  v-col(cols="12" align="center")
     v-text-field(
+      v-if="numberContract.is_generated"
       dense
-      v-model="number_contract"
+      readonly
+      v-model="numberContract.number"
       label="Номер контракта"
     )
+    v-dialog(
+      v-else
+      v-model="numberContractDialogState"
+      max-width="600px"
+    )
+      template(
+        v-slot:activator="{ on }"
+      )
+        v-btn(
+          text small outlined rounded block
+          color="primary"
+          class="my-4"
+          v-on="on"
+        ) Добавить номер контракта
+      v-card(
+        outlined
+      )
+        v-card-title Введите номер контракта
+        v-card-text
+          v-text-field(
+            dense
+            v-model="numberContract"
+          )
+        v-card-actions
+          v-spacer
+          v-btn(color="blue darken-1" text @click="closeNumberContractDialogState") Закрыть
+          v-btn(color="blue darken-1" text @click="test") Отправить
 </template>
 
 <script>
+import { mapActions } from 'vuex'
+import { types } from '~/store/contragents'
+
 export default {
-  data: () => ({}),
+  data: () => ({
+    numberContractDialogState: false
+  }),
   computed: {
-    number_contract: {
-      set (numberContract) {
-        this.$store.commit('contragents/SET_CONTRAGENT', { number_contract: numberContract })
+    numberContract: {
+      set (numberContractValue) {
+        this.$store.commit('contragents/SET_CONTRAGENT', { number_contract: Object.assign({}, this.$store.state.contragents.detail.number_contract, { number: numberContractValue }) })
       },
       get () {
-        return this.$store.state.contragents.detail.number_contract
+        return this.$store.state.contragents.detail.number_contract.number
       }
+    }
+  },
+  methods: {
+    ...mapActions('contragents', [types.UPDATE_CONTRACT]),
+    closeNumberContractDialogState () {
+      this.numberContractDialogState = false
+      this.numberContract = ''
+    },
+    async test () {
+      await this.UPDATE_CONTRACT()
+      this.numberContractDialogState = false
     }
   }
 }

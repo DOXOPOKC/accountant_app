@@ -35,13 +35,14 @@
                 )
                   v-expansion-panel
                     v-expansion-panel-header Информация о контрагенте
-                    v-expansion-panel-content
+                    v-expansion-panel-content(class="mt-8")
                       v-row(no-gutters)
                         contragent-excell-name
                         contragent-physical-address
+                        contragent-passport
                   v-expansion-panel
                     v-expansion-panel-header Юридическая информация
-                    v-expansion-panel-content
+                    v-expansion-panel-content(class="mt-8")
                       v-row(no-gutters)
                         contragent-director-status
                         contragent-director-name
@@ -55,7 +56,7 @@
                         contragent-creation-date
                   v-expansion-panel
                     v-expansion-panel-header Платежная информация
-                    v-expansion-panel-content
+                    v-expansion-panel-content(class="mt-8")
                       v-row(no-gutters)
                         contragent-bank
                         contragent-rs
@@ -63,7 +64,7 @@
                         contragent-bik
                   v-expansion-panel
                     v-expansion-panel-header Данные об отходообразовании
-                    v-expansion-panel-content
+                    v-expansion-panel-content(class="mt-8")
                       v-row(no-gutters)
                         contragent-contract-accept-date
                         contragent-current-date
@@ -76,13 +77,13 @@
                         contragent-signed-user
                   v-expansion-panel
                     v-expansion-panel-header Юридическое лицо
-                    v-expansion-panel-content
+                    v-expansion-panel-content(class="mt-8")
                       v-row(no-gutters)
-                        contragentDebtPeriond
-                        contragentFssLink
-                        contragentJudgeLink
-                        contragentPersonalNumber
-                        contragentSnils
+                        contragent-debt-periond
+                        contragent-fss-link
+                        contragent-judge-link
+                        contragent-personal-number
+                        contragent-snils
           v-card-actions(class="px-6 pt-2")
             v-spacer
             v-btn(
@@ -143,9 +144,7 @@ import contragentStatValue from '@/components/contragents/contragentStatValue'
 import contragentDebtPeriond from '@/components/contragents/contragentDebtPeriond'
 import contragentFssLink from '@/components/contragents/contragentFssLink'
 import contragentJudgeLink from '@/components/contragents/contragentJudgeLink'
-
-// import contragentPassport from '@/components/contragents/contragentPassport'
-
+import contragentPassport from '@/components/contragents/contragentPassport'
 import contragentPersonalNumber from '@/components/contragents/contragentPersonalNumber'
 import contragentSnils from '@/components/contragents/contragentSnils'
 
@@ -188,7 +187,8 @@ export default {
     contragentFssLink,
     contragentJudgeLink,
     contragentPersonalNumber,
-    contragentSnils
+    contragentSnils,
+    contragentPassport
   },
   async asyncData ({ $axios, store, params }) {
     await store.dispatch('contragents/FETCH_CONTRAGENT', params.contragentId)

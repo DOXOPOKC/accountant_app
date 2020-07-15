@@ -52,8 +52,8 @@
             template(v-slot:expanded-item="{ headers, item }")
               td(:colspan="headers.length" class="pa-0 ma-0")
                 v-card(flat tile)
-                  v-card-title(class="font-weight-light") Последний пакет:
-                  v-card-text
+                  v-card-title(v-if="Object.keys(item.pack).length" class="font-weight-light") Последний пакет:
+                  v-card-text(v-if="Object.keys(item.pack).length")
                     v-list-item(three-line)
                       v-list-item-content
                         v-list-item-title(class="font-weight-light") Пакет №{{ item.pack.id }}
