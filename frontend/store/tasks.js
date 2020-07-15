@@ -45,7 +45,6 @@ export const actions = {
         // this.dispatch('packages/FETCH_PACKAGE', { contragentId, packageId })
       }
     } catch (error) {
-      console.log({ error })
       this.$toast.error('Ошибка!')
     }
     // const failedTasks = tasksGroup.filter(task => task.success === false)
