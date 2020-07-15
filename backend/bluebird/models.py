@@ -48,7 +48,8 @@ class Contragent(models.Model):
     Класс Контрагента.
 
     """
-    klass = models.ForeignKey(ContragentClass)
+    # klass = models.ForeignKey(ContragentClass, on_delete=models.CASCADE)
+    klass = models.IntegerField(choices=KLASS_TYPES, default=0)
     excell_name = models.CharField('Наименование контрагента (из Excell)',
                                    max_length=255)
     dadata_name = models.CharField('Наименование контрагента (из Dadata)',
