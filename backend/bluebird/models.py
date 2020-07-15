@@ -33,19 +33,22 @@ POST_TYPE = [
 
 
 class Adress(models.Model):
+    state = models.CharField(verbose_name="Область", max_length=255)
     city = models.CharField(verbose_name="Город", max_length=255)
     street = models.CharField(verbose_name="Улица", max_length=255)
-    house_number = models.CharField(verbose_name="Номер дома", max_length=10)
-    
+    block = models.CharField(verbose_name="Номер дома", max_length=10)
+
+
+class ContragentClass(models.Model):
+    name = models.CharField('Наименование', max_length=255)
+
 
 class Contragent(models.Model):
     """
     Класс Контрагента.
 
     """
-    klass = models.IntegerField('Класс контрагента',
-                                choices=KLASS_TYPES,
-                                default=0)
+    klass = models.ForeignKey(ContragentClass)
     excell_name = models.CharField('Наименование контрагента (из Excell)',
                                    max_length=255)
     dadata_name = models.CharField('Наименование контрагента (из Dadata)',
