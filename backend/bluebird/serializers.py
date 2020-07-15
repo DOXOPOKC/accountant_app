@@ -6,26 +6,33 @@ from .models import (Contragent, DocumentsPackage, OtherFile, PackFile,
                      DocumentFileTemplate,
                      DocumentStateEntity,
                      State,
-                     Event, Commentary)
+                     Event, Commentary, ContractNumberClass)
 
 from django_q.models import Task
 from django.core.exceptions import ObjectDoesNotExist
 
 from yellowbird.serializers import UserShortSerializer
 
+from .snippets import KLASS_TYPES
+
 
 class ContragentShortSerializer(serializers.ModelSerializer):
     pack = serializers.SerializerMethodField()
+    contragent_class = serializers.SerializerMethodField(required=False)
 
     class Meta:
         model = Contragent
         fields = ['id', 'klass', 'excell_name',
-                  'inn', 'debt', 'physical_address', 'pack', 'debt_period']
+                  'inn', 'debt', 'physical_address', 'pack', 'debt_period', 
+                  'contragent_class']
 
     def get_pack(self, obj):
         tmp_pack = DocumentsPackage.objects.filter(
             contragent__id=obj.pk).order_by('-creation_date').first()
         return PackageShortSerializer(tmp_pack).data if tmp_pack else dict()
+
+    def get_contragent_class(self, obj):
+        return KLASS_TYPES[obj.klass][1]
 
 
 class EventSerializer(serializers.ModelSerializer):
@@ -55,6 +62,17 @@ class StateShortSerializer(serializers.ModelSerializer):
         fields = ['id', 'name_state', ]
 
 
+class ContractNumberClassSerializer(serializers.ModelSerializer):
+    number = serializers.SerializerMethodField()
+
+    def get_number(self, obj):
+        return obj.contract_number
+
+    class Meta:
+        model = ContractNumberClass
+        fields = ['id', 'is_generated', 'number']
+
+
 class PackageShortSerializer(serializers.ModelSerializer):
     package_state = StateShortSerializer()
 
@@ -65,6 +83,8 @@ class PackageShortSerializer(serializers.ModelSerializer):
 
 
 class ContragentFullSerializer(serializers.ModelSerializer):
+    number_contract = ContractNumberClassSerializer(required=False)
+
     class Meta:
         model = Contragent
         fields = '__all__'
@@ -76,6 +96,16 @@ class ContragentFullSerializer(serializers.ModelSerializer):
                         'ogrn': {'required': False},
                         'kpp': {'required': False},
                         }
+
+    def create(self, validated_data):
+        class_type = int(validated_data.get('klass'))
+        contract_number = ContractNumberClass.create(
+            new=True if class_type == 1 or class_type == 3 else False
+        )
+        contagent = Contragent.objects.create(number_contract=contract_number,
+                                              current_user=None,
+                                              **validated_data)
+        return contagent
 
 
 class DocumentTypeModelSerializer(serializers.ModelSerializer):

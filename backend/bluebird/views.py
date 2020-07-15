@@ -43,7 +43,7 @@ from bluebird.serializers import (
     PackageFullSerializer,
     PackageShortSerializer,
     SignUserSerializer,
-    TaskSerializer, CommentarySerializer)
+    TaskSerializer, CommentarySerializer, ContractNumberClassSerializer)
 from bluebird.utils import (
     create_unique_id,
     get_data,
@@ -100,9 +100,9 @@ class ContragentsView(APIView):
             group_id = create_unique_id()
             for data_element in result:
                 if data_element['klass'] == 1:
-                    contract_number = ContractNumberClass.create(new=True)
-                    data_element['number_contract'] = contract_number.pk
-                    data_element['current_user'] = None  # request.user.id
+                    # contract_number = ContractNumberClass.create(new=True)
+                    # data_element['number_contract'] = ContractNumberClassSerializer(contract_number).data
+                    # data_element['current_user'] = None  # request.user.id
                     serializer = ContragentFullSerializer(data=data_element)
                     if serializer.is_valid(True):
                         serializer.save()
@@ -112,13 +112,20 @@ class ContragentsView(APIView):
                     continue
                 elif data_element['klass'] == 3:
                     continue
-                elif data_element['klass'] == 4:   # TODO add another variants
-                    data_element['current_user'] = None
+                elif data_element['klass'] == 4:
+                    # contract_number = ContractNumberClass.create()
+                    # data_element['number_contract'] = ContractNumberClassSerializer(contract_number).data
+                    # data_element['current_user'] = None
                     serializer = ContragentFullSerializer(data=data_element)
                     if serializer.is_valid(True):
                         serializer.save()
                 elif data_element['klass'] == 5:
-                    continue
+                    # contract_number = ContractNumberClass.create()
+                    # data_element['number_contract'] = ContractNumberClassSerializer(contract_number).data
+                    # data_element['current_user'] = None
+                    serializer = ContragentFullSerializer(data=data_element)
+                    if serializer.is_valid(True):
+                        serializer.save()
             return Response(group_id, status=status.HTTP_201_CREATED)
         else:
             # Если файла нет
@@ -400,3 +407,17 @@ class CommentaryFileView(APIView):
         except Error as error:
             return Response(error,
                             status=status.HTTP_400_BAD_REQUEST)
+
+
+class ContractNumberClassView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def put(self, request, pk):
+        contragent = get_object(pk, Contragent)
+        contract_number = contragent.number_contract
+        serializer = ContractNumberClassSerializer(contract_number,
+                                                   data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
