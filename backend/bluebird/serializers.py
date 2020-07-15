@@ -72,6 +72,11 @@ class ContractNumberClassSerializer(serializers.ModelSerializer):
         model = ContractNumberClass
         fields = ['id', 'is_generated', 'number']
 
+    def update(self, instance, validated_data):
+        instance.contract_exist_number = validated_data.get('number', '')
+        instance.save()
+        return instance
+
 
 class PackageShortSerializer(serializers.ModelSerializer):
     package_state = StateShortSerializer()

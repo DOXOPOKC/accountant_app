@@ -46,12 +46,25 @@ class NameModel:
 @dataclass
 class AddressData:
     source: Optional[str] = None
+    postal_code: Optional[str] = None
+    country: Optional[str] = None
+    region: Optional[str] = None
+    city: Optional[str] = None
+    street: Optional[str] = None
+    house: Optional[str] = None
 
     @staticmethod
     def from_dict(obj: Any) -> Union['AddressData', None]:
         if isinstance(obj, dict):
             source = obj.get('source', None)
-            return AddressData(source)
+            postal_code = obj.get('postal_code', None)
+            country = obj.get('country', None)
+            region = obj.get('region', None)
+            city = obj.get('city', None)
+            street = obj.get('street', None)
+            house = obj.get('house', None)
+            return AddressData(source, postal_code, country, region,
+                               city, street, house)
         return None
 
 
