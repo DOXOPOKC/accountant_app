@@ -76,9 +76,9 @@ class ContragentsView(APIView):
             conrtagents = STRATEGIES[STRATEGIES_LIST[
                 request.user.department.strategy
                 ]]().execute_list_strategy(request.user)
-        if not conrtagents:
-            return Response(data='Нет прав доступа к элементу.',
-                            status=status.HTTP_403_FORBIDDEN)
+        # if not conrtagents:
+        #     return Response(data='Нет прав доступа к элементу.',
+        #                     status=status.HTTP_403_FORBIDDEN)
         serializer = ContragentShortSerializer(conrtagents, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
