@@ -1,10 +1,10 @@
 <template lang="pug">
   v-col(cols="12" align="center")
     v-text-field(
-      v-if="!!numberContract.number"
+      v-if="!!numberContract"
       dense
       readonly
-      v-model="numberContract.number"
+      v-model="numberContract"
       label="Номер контракта"
     )
     v-dialog(
