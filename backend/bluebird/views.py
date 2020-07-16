@@ -249,7 +249,7 @@ class PackageView(APIView):
 
         return response
 
-    def put(self, request, pk, package_id):
+    def patch(self, request, pk, package_id):
         package = get_object(package_id, DocumentsPackage)
         group_id = package.name_uuid
         if not Task.get_group_count(group_id):
@@ -264,7 +264,7 @@ class PackageView(APIView):
                             status=status.HTTP_308_PERMANENT_REDIRECT)
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
-    def patch(self, request, pk, package_id):
+    def put(self, request, pk, package_id):
         package = get_object(package_id, DocumentsPackage)
         package.tax_count = request.data.get('tax', 0.0)
         package.save()
