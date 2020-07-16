@@ -415,6 +415,7 @@ class ContractNumberClassView(APIView):
     def put(self, request, pk):
         contragent = get_object(pk, Contragent)
         contract_number = contragent.number_contract
+        print(request.data)
         serializer = ContractNumberClassSerializer(contract_number,
                                                    data=request.data)
         if serializer.is_valid():

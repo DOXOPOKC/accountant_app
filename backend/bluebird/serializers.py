@@ -63,7 +63,7 @@ class StateShortSerializer(serializers.ModelSerializer):
 
 
 class ContractNumberClassSerializer(serializers.ModelSerializer):
-    number = serializers.SerializerMethodField()
+    number = serializers.CharField(max_length=255)
 
     def get_number(self, obj):
         return obj.contract_number
@@ -72,7 +72,24 @@ class ContractNumberClassSerializer(serializers.ModelSerializer):
         model = ContractNumberClass
         fields = ['id', 'is_generated', 'number']
 
+    def to_internal_value(self, data):
+        number = data.get('number', '')
+        if not number:
+            raise serializers.ValidationError({
+                'number': 'This field is required.'
+            })
+        return {'number': number}
+
+    def to_representation(self, instance):
+        output = {}
+        output['id'] = str(instance.id)
+        output['is_generated'] = instance.is_generated
+        output['number'] = str(instance.contract_number)
+        return output
+
     def update(self, instance, validated_data):
+        print("UPDATE METHOD!")
+        print(validated_data)
         instance.contract_exist_number = validated_data.get('number', '')
         instance.save()
         return instance
