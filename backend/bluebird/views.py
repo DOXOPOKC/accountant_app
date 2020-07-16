@@ -264,6 +264,13 @@ class PackageView(APIView):
                             status=status.HTTP_308_PERMANENT_REDIRECT)
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
+    def patch(self, request, pk, package_id):
+        package = get_object(package_id, DocumentsPackage)
+        package.tax_count = request.data.get('tax', 0.0)
+        package.save()
+        return Response(data={'result': bool(package.tax_count)},
+                        status=status.HTTP_200_OK)
+
     def delete(self, request, pk, package_id):
         package = get_object(package_id, DocumentsPackage)
         event_id = request.data.get('event', None)

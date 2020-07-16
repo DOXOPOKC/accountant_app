@@ -96,7 +96,7 @@ class ContractNumberClassSerializer(serializers.ModelSerializer):
 
 
 class PackageShortSerializer(serializers.ModelSerializer):
-    package_state = StateShortSerializer()
+    package_state = StateShortSerializer(required=False, read_only=True)
 
     class Meta:
         model = DocumentsPackage
@@ -105,7 +105,8 @@ class PackageShortSerializer(serializers.ModelSerializer):
 
 
 class ContragentFullSerializer(serializers.ModelSerializer):
-    number_contract = ContractNumberClassSerializer(required=False)
+    number_contract = ContractNumberClassSerializer(required=False,
+                                                    read_only=True)
 
     class Meta:
         model = Contragent

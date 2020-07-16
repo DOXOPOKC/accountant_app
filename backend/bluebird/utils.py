@@ -145,9 +145,10 @@ def generate_documents(data: dict, package: DocumentsPackage,
 
     generate_pack_doc(data, package, recreate)
 
-    package.contragent.debt = total
-    package.debt_plan = total
-    package.contragent.save()
+    if package.contragent.klass == 1 or package.contragent.klass == 3:
+        package.contragent.debt = total
+        package.debt_plan = total
+        package.contragent.save()
     package.save()
 
 
@@ -361,7 +362,6 @@ def generate_docx_file(data: dict, package: DocumentsPackage, total: float,
     if not template:
         return None
     doc = DocxTemplate(template.template_path)
-
     jinja_env = jinja2.Environment()
     jinja_env.filters['datv_case_filter'] = datv_case_filter
     jinja_env.filters['gent_case_filter'] = gent_case_filter
@@ -371,7 +371,8 @@ def generate_docx_file(data: dict, package: DocumentsPackage, total: float,
     jinja_env.filters['remove_zero_at_end'] = remove_zero_at_end
     jinja_env.filters['proper_date_filter'] = proper_date_filter
     jinja_env.filters['sum_imp'] = sum_imp
-    context = {'data': data, 'consumer': package.contragent, 'total': total}
+    context = {'data': data, 'consumer': package.contragent, 'total': total,
+               'package': package}
     if package.contragent.signed_user.sign:
         context['sign'] = InlineImage(doc, package.contragent.signed_user.sign,
                                       width=Mm(27))
