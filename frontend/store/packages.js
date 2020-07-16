@@ -7,7 +7,10 @@ export const types = {
   GENERATE_PACKAGE: 'GENERATE_PACKAGE',
   DOWNLOAD_PACKAGE: 'DOWNLOAD_PACKAGE',
   REGENERATE_PACKAGE: 'REGENERATE_PACKAGE',
-  SEND_EVENT: 'SEND_EVENT'
+  SEND_EVENT: 'SEND_EVENT',
+
+  UPDATE_PACKAGE: 'UPDATE_PACKAGE',
+  SET_TAX: 'SET_TAX'
 }
 
 export const state = () => ({
@@ -20,7 +23,10 @@ export const mutations = {
     state.list = contragentPackages
   },
   [types.SET_PACKAGE] (state, contragentPackage) {
-    state.detail = contragentPackage
+    state.detail = Object.assign({}, state.detail, contragentPackage)
+  },
+  [types.SET_TAX] (state, taxCount) {
+    state.detail.tax_count = taxCount
   }
 }
 
@@ -58,6 +64,22 @@ export const actions = {
       await this.$repositories.packages.update(contragentId, packageId)
       await dispatch(types.FETCH_PACKAGE, { contragentId, packageId })
       this.$toast.success('Пакет успешно перегенерирован')
+    } catch (error) {
+      this.$toast.error('Ошибка генерации')
+    }
+  },
+  // Обновление данных пакета
+  async [types.UPDATE_PACKAGE] ({ dispatch, state }, { contragentId, packageId }) {
+    try {
+      console.log(contragentId, packageId)
+      await this.$repositories.packages.updatePackageState(
+        contragentId,
+        packageId,
+        {
+          tax: state.detail.tax_count
+        })
+      await dispatch(types.FETCH_PACKAGE, { contragentId, packageId })
+      this.$toast.success('Пакет успешно обновлен')
     } catch (error) {
       this.$toast.error('Ошибка генерации')
     }

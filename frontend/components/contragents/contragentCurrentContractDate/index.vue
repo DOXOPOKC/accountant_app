@@ -21,7 +21,7 @@
           )
       v-date-picker(v-model="currentContractDate" no-title scrollable)
         v-spacer
-        v-btn(text color="primary" @click="menu = false") Cancel
+        v-btn(text color="primary" @click="menu = false") Отмена
         v-btn(text color="primary" @click="$refs.menu.save(currentContractDate)") OK
 </template>
 

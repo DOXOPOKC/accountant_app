@@ -19,7 +19,7 @@
         )
       v-date-picker(v-model="currentDate" no-title scrollable)
         v-spacer
-        v-btn(text color="primary" @click="menu = false") Cancel
+        v-btn(text color="primary" @click="menu = false") Отмена
         v-btn(text color="primary" @click="$refs.menu.save(currentDate)") OK
 </template>
 

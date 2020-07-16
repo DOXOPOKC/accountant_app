@@ -263,6 +263,15 @@
                       )
                         v-icon(small) mdi-close
                     span Коментарии
+          v-tab-item
+            v-card(
+              flat
+            )
+              v-card-title
+              v-card-text
+                tax-count
+              v-card-actions
+                v-btn(text @click="update") Сохранить
       v-dialog(v-model="packageFileWarningDialog" max-width="360")
         v-card
           v-card-title(class="headline") Удалить выбранный файл?
@@ -276,12 +285,14 @@
 import { mapState, mapActions } from 'vuex'
 import { ValidationProvider, ValidationObserver } from 'vee-validate'
 import comments from '~/components/Comments.vue'
+import taxCount from '~/components/packages/packageTaxCount'
 
 export default {
   components: {
     ValidationProvider,
     ValidationObserver,
-    comments
+    comments,
+    taxCount
   },
   async asyncData ({ $axios, store, params }) {
     await store.dispatch('packages/FETCH_PACKAGE', { contragentId: params.contragentId, packageId: params.packageId })
@@ -307,7 +318,7 @@ export default {
       // Ответственное лицо
     ],
     items: [
-      'Основные файлы', 'Акты', 'Счета', 'Счета фактур', 'Другие файлы'
+      'Основные файлы', 'Акты', 'Счета', 'Счета фактур', 'Другие файлы', 'Дополнительная информация'
     ],
     menu: [
       { icon: 'home', title: 'Link A' },
@@ -327,7 +338,8 @@ export default {
       REGENERATE_PACKAGE: 'packages/REGENERATE_PACKAGE',
       SEND_EVENT: 'packages/SEND_EVENT',
       DOWNLOAD_PACKAGE: 'packages/DOWNLOAD_PACKAGE',
-      DELETE_FILE: 'files/DELETE_FILE'
+      DELETE_FILE: 'files/DELETE_FILE',
+      UPDATE_PACKAGE: 'packages/UPDATE_PACKAGE'
     }),
     upload () {
       this.$store.dispatch('files/CREATE_FILE', {
@@ -338,6 +350,12 @@ export default {
       })
       this.packageDialogState = false
       this.filesDataForUpload = null
+    },
+    update () {
+      this.UPDATE_PACKAGE({
+        contragentId: this.$route.params.contragentId,
+        packageId: this.$route.params.packageId
+      })
     },
     deleteFile () {
       this.DELETE_FILE({

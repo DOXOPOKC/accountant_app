@@ -5,7 +5,7 @@
       dense
       readonly
       v-model="numberContract"
-      label="Номер контракта"
+      label="Номер договора"
     )
     v-dialog(
       v-else
@@ -21,7 +21,7 @@
           color="primary"
           class="my-4"
           v-on="on"
-        ) Добавить номер контракта
+        ) Добавить номер договора
       template(
         v-else
         v-slot:activator="{ on }"
@@ -31,14 +31,14 @@
           readonly
           class="mt-4"
           v-model="numberContract"
-          label="Номер контракта"
+          label="Номер договора"
           :append-outer-icon="'mdi-pen'"
           @click:append-outer="on.click"
         )
       v-card(
         outlined
       )
-        v-card-title Введите номер контракта
+        v-card-title Введите номер договора
         v-card-text
           v-text-field(
             dense
