@@ -1,7 +1,7 @@
 <template lang="pug">
   v-col(cols="12" align="center")
     v-text-field(
-      v-if="!!numberContract"
+      v-if="numberContractIsGenerated"
       dense
       readonly
       v-model="numberContract"
@@ -13,6 +13,7 @@
       max-width="600px"
     )
       template(
+        v-if="numberContract"
         v-slot:activator="{ on }"
       )
         v-btn(
@@ -21,6 +22,22 @@
           class="my-4"
           v-on="on"
         ) Добавить номер контракта
+      template(
+        v-else
+        v-slot:activator="{ on }"
+      )
+        v-text-field(
+          dense
+          readonly
+          v-model="numberContract"
+          label="Номер контракта"
+        )
+        v-btn(
+          text small outlined rounded block
+          color="primary"
+          class="my-4"
+          v-on="on"
+        ) Изменить номер контракта
       v-card(
         outlined
       )
@@ -33,7 +50,7 @@
         v-card-actions
           v-spacer
           v-btn(color="blue darken-1" text @click="closeNumberContractDialogState") Закрыть
-          v-btn(color="blue darken-1" text @click="test") Отправить
+          v-btn(color="blue darken-1" text @click="updateContract") Сохранить
 </template>
 
 <script>
@@ -52,6 +69,11 @@ export default {
       get () {
         return this.$store.state.contragents.detail.number_contract.number
       }
+    },
+    numberContractIsGenerated: {
+      get () {
+        return this.$store.state.contragents.detail.number_contract.is_generated
+      }
     }
   },
   methods: {
@@ -60,7 +82,7 @@ export default {
       this.numberContractDialogState = false
       this.numberContract = ''
     },
-    async test () {
+    async updateContract () {
       await this.UPDATE_CONTRACT()
       this.numberContractDialogState = false
     }
