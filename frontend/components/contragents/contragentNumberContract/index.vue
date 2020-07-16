@@ -1,7 +1,7 @@
 <template lang="pug">
   v-col(cols="12" align="center")
     v-text-field(
-      v-if="numberContract.is_generated"
+      v-if="!!numberContract.number"
       dense
       readonly
       v-model="numberContract.number"
