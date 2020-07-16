@@ -4,7 +4,7 @@
       ref="menu"
       v-model="menu"
       :close-on-content-click="false"
-      :return-value.sync="current_contract_date"
+      :return-value.sync="currentContractDate"
       transition="scale-transition"
       offset-y
       min-width="290px"
@@ -12,16 +12,17 @@
       template(v-slot:activator="{ on }")
         ValidationProvider(rules="required" name="" v-slot="{ errors }")
           v-text-field(
-            v-model="current_contract_date"
-            label="Дата заключения договора"
+            dense
             readonly
+            v-model="currentContractDate"
+            label="Дата заключения договора"
             v-on="on"
             :error-messages="errors"
           )
-      v-date-picker(v-model="current_contract_date" no-title scrollable)
+      v-date-picker(v-model="currentContractDate" no-title scrollable)
         v-spacer
-        v-btn(text color="primary" @click="menu = false") Cancel
-        v-btn(text color="primary" @click="$refs.menu.save(current_contract_date)") OK
+        v-btn(text color="primary" @click="menu = false") Отмена
+        v-btn(text color="primary" @click="$refs.menu.save(currentContractDate)") OK
 </template>
 
 <script>
@@ -35,7 +36,7 @@ export default {
     menu: false
   }),
   computed: {
-    current_contract_date: {
+    currentContractDate: {
       set (currentContractDate) {
         this.$store.commit('contragents/SET_CONTRAGENT', { current_contract_date: currentContractDate })
       },

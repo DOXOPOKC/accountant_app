@@ -1,6 +1,7 @@
 <template lang="pug">
   v-col(cols="12")
     v-textarea(
+      dense
       readonly
       auto-grow
       rows="1"

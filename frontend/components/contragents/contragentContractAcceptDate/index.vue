@@ -1,25 +1,26 @@
 <template lang="pug">
   v-col(cols="3")
     v-menu(
-      ref="menu"
+      ref="contractAcceptDateMenu"
       v-model="menu"
       :close-on-content-click="false"
-      :return-value.sync="contract_accept_date"
+      :return-value.sync="contractAcceptDate"
       transition="scale-transition"
       offset-y
       min-width="290px"
     )
       template(v-slot:activator="{ on }")
         v-text-field(
-          v-model="contract_accept_date"
-          label="Дата начала оказания услуг"
+          dense
           readonly
+          v-model="contractAcceptDate"
+          label="Дата начала оказания услуг"
           v-on="on"
         )
-      v-date-picker(v-model="contract_accept_date" no-title scrollable)
+      v-date-picker(v-model="contractAcceptDate" no-title scrollable)
         v-spacer
-        v-btn(text color="primary" @click="menu = false") Cancel
-        v-btn(text color="primary" @click="$refs.menu.save(contract_accept_date)") OK
+        v-btn(text color="primary" @click="menu = false") Отмена
+        v-btn(text color="primary" @click="$refs.contractAcceptDateMenu.save(contractAcceptDate)") OK
 </template>
 
 <script>
@@ -28,7 +29,7 @@ export default {
     menu: false
   }),
   computed: {
-    contract_accept_date: {
+    contractAcceptDate: {
       set (contractAcceptDate) {
         this.$store.commit('contragents/SET_CONTRAGENT', { contract_accept_date: contractAcceptDate })
       },

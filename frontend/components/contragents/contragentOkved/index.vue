@@ -1,6 +1,7 @@
 <template lang="pug">
   v-col(cols="1")
     v-text-field(
+      dense
       v-model="okved"
       label="ОКВЕД"
     )

@@ -13,12 +13,15 @@ export default $axios => resource => ({
   },
   // Перегенирация
   update (contragentId, packageId) {
-    return $axios.$put(`${resource}/${contragentId}/packages/${packageId}/`)
+    return $axios.$patch(`${resource}/${contragentId}/packages/${packageId}/`)
+  },
+  updatePackageState (contragentId, packageId, payload) {
+    return $axios.$put(`${resource}/${contragentId}/packages/${packageId}/`, payload)
   },
   // Статус пакета переводится в закрытый
   delete (contragentId, packageId, payload) {
     return $axios.$delete(`${resource}/${contragentId}/packages/${packageId}/`, {
-      data: payload
+      payload
     })
   },
   // Скачать пакет

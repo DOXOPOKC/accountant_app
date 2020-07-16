@@ -1,6 +1,5 @@
 import datetime
 import zipfile
-
 from io import BytesIO
 
 from django_q.tasks import (
@@ -44,7 +43,7 @@ from bluebird.serializers import (
     PackageFullSerializer,
     PackageShortSerializer,
     SignUserSerializer,
-    TaskSerializer, CommentarySerializer)
+    TaskSerializer, CommentarySerializer, ContractNumberClassSerializer)
 from bluebird.utils import (
     create_unique_id,
     get_data,
@@ -101,9 +100,9 @@ class ContragentsView(APIView):
             group_id = create_unique_id()
             for data_element in result:
                 if data_element['klass'] == 1:
-                    contract_number = ContractNumberClass.create(new=True)
-                    data_element['number_contract'] = contract_number.pk
-                    data_element['current_user'] = None  # request.user.id
+                    # contract_number = ContractNumberClass.create(new=True)
+                    # data_element['number_contract'] = ContractNumberClassSerializer(contract_number).data
+                    # data_element['current_user'] = None  # request.user.id
                     serializer = ContragentFullSerializer(data=data_element)
                     if serializer.is_valid(True):
                         serializer.save()
@@ -113,13 +112,20 @@ class ContragentsView(APIView):
                     continue
                 elif data_element['klass'] == 3:
                     continue
-                elif data_element['klass'] == 4:   # TODO add another variants
-                    data_element['current_user'] = None
+                elif data_element['klass'] == 4:
+                    # contract_number = ContractNumberClass.create()
+                    # data_element['number_contract'] = ContractNumberClassSerializer(contract_number).data
+                    # data_element['current_user'] = None
                     serializer = ContragentFullSerializer(data=data_element)
                     if serializer.is_valid(True):
                         serializer.save()
                 elif data_element['klass'] == 5:
-                    continue
+                    # contract_number = ContractNumberClass.create()
+                    # data_element['number_contract'] = ContractNumberClassSerializer(contract_number).data
+                    # data_element['current_user'] = None
+                    serializer = ContragentFullSerializer(data=data_element)
+                    if serializer.is_valid(True):
+                        serializer.save()
             return Response(group_id, status=status.HTTP_201_CREATED)
         else:
             # Если файла нет
@@ -182,6 +188,7 @@ class PackagesView(APIView):
             pack.initialize_sub_folders()
             pack.change_state_to(State.objects.filter(
                                  is_initial_state=True)[0], False)
+            add_record_to_journal(pack, request.user)
             group_id = pack.name_uuid
             contragent.current_user = request.user
             contragent.save()
@@ -242,7 +249,7 @@ class PackageView(APIView):
 
         return response
 
-    def put(self, request, pk, package_id):
+    def patch(self, request, pk, package_id):
         package = get_object(package_id, DocumentsPackage)
         group_id = package.name_uuid
         if not Task.get_group_count(group_id):
@@ -257,6 +264,13 @@ class PackageView(APIView):
                             status=status.HTTP_308_PERMANENT_REDIRECT)
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
+    def put(self, request, pk, package_id):
+        package = get_object(package_id, DocumentsPackage)
+        package.tax_count = request.data.get('tax', 0.0)
+        package.save()
+        return Response(data={'result': bool(package.tax_count)},
+                        status=status.HTTP_200_OK)
+
     def delete(self, request, pk, package_id):
         package = get_object(package_id, DocumentsPackage)
         event_id = request.data.get('event', None)
@@ -267,12 +281,13 @@ class PackageView(APIView):
             event = Event.objects.get(id=event_id)
             if event.from_state == package.package_state:
                 package.change_state_to(event.to_state, event.is_move_backward)
-                # TODO Add record jo Journal
+                add_record_to_journal(package, request.user)
                 # if not any([
                 #     event.to_state.is_permitted(dept.id
                 #         ) for dept in event.from_state.departments.all()]):
                 if event.to_state.is_final_state:
                     package.set_inactive()
+                    package.contragent.reset_debt()
                 if package.package_state.is_permitted(
                                                 request.user):
                     return Response(status=status.HTTP_200_OK)
@@ -399,3 +414,18 @@ class CommentaryFileView(APIView):
         except Error as error:
             return Response(error,
                             status=status.HTTP_400_BAD_REQUEST)
+
+
+class ContractNumberClassView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def put(self, request, pk):
+        contragent = get_object(pk, Contragent)
+        contract_number = contragent.number_contract
+        print(request.data)
+        serializer = ContractNumberClassSerializer(contract_number,
+                                                   data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

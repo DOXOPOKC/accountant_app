@@ -11,13 +11,27 @@ export const types = {
   FETCH_NORM_LIST: 'FETCH_NORM_LIST',
 
   SET_SIGN_USERS_LIST: 'SET_SIGN_USERS_LIST',
-  FETCH_SIGN_USERS_LIST: 'FETCH_SIGN_USERS_LIST'
+  FETCH_SIGN_USERS_LIST: 'FETCH_SIGN_USERS_LIST',
+
+  UPDATE_CONTRACT: 'UPDATE_CONTRACT'
 }
 
 export const state = () => ({
   normList: [],
   signUsers: [],
-  list: [],
+  list: [
+    {
+      contragent_class: '',
+      debt: null,
+      debt_period: null,
+      excell_name: '',
+      id: null,
+      inn: null,
+      klass: null,
+      pack: null,
+      physical_address: ''
+    }
+  ],
   detail: {
     is_func: false,
     class: null
@@ -70,6 +84,15 @@ export const actions = {
       const data = await this.$repositories.contragents.update(state.detail, state.detail.id)
       commit(types.SET_CONTRAGENT, data)
       this.$toast.success('Контрагент сохранен')
+    } catch (error) {
+      this.$toast.error(error.message)
+    }
+  },
+  async [types.UPDATE_CONTRACT] ({ state, dispatch }) {
+    try {
+      await this.$repositories.contragents.updateContract(state.detail.number_contract, state.detail.id)
+      dispatch(types.FETCH_CONTRAGENT, state.detail.id)
+      this.$toast.success('Контракт сохранен')
     } catch (error) {
       this.$toast.error(error.message)
     }

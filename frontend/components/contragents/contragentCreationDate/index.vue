@@ -4,24 +4,30 @@
       ref="menu"
       v-model="menu"
       :close-on-content-click="false"
-      :return-value.sync="creation_date"
+      :return-value.sync="creationDate"
       transition="scale-transition"
       offset-y
       min-width="290px"
     )
       template(v-slot:activator="{ on }")
-        ValidationProvider(rules="required" v-slot="{ errors }")
+        ValidationProvider(rules="" v-slot="{ errors }")
           v-text-field(
-            v-model="creation_date"
+            dense
+            v-model="creationDate"
             label="Дата создания юр. лица"
             readonly
             v-on="on"
             :error-messages="errors"
           )
-      v-date-picker(v-model="creation_date" no-title scrollable readonly)
+      v-date-picker(
+        v-model="creationDate"
+        no-title
+        scrollable
+        readonly
+      )
         v-spacer
-        v-btn(text color="primary" @click="menu = false") Cancel
-        v-btn(text color="primary" @click="$refs.menu.save(creation_date)") OK
+        v-btn(text color="primary" @click="menu = false") Отмена
+        v-btn(text color="primary" @click="$refs.menu.save(creationDate)") OK
 </template>
 
 <script>
@@ -35,7 +41,7 @@ export default {
     menu: false
   }),
   computed: {
-    creation_date: {
+    creationDate: {
       set (creationDate) {
         this.$store.commit('contragents/SET_CONTRAGENT', { creation_date: creationDate })
       },

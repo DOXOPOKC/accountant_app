@@ -32,14 +32,24 @@ POST_TYPE = [
 ]
 
 
+class Adress(models.Model):
+    state = models.CharField(verbose_name="Область", max_length=255)
+    city = models.CharField(verbose_name="Город", max_length=255)
+    street = models.CharField(verbose_name="Улица", max_length=255)
+    block = models.CharField(verbose_name="Номер дома", max_length=10)
+
+
+class ContragentClass(models.Model):
+    name = models.CharField('Наименование', max_length=255)
+
+
 class Contragent(models.Model):
     """
     Класс Контрагента.
 
     """
-    klass = models.IntegerField('Класс контрагента',
-                                choices=KLASS_TYPES,
-                                default=0)
+    # klass = models.ForeignKey(ContragentClass, on_delete=models.CASCADE)
+    klass = models.IntegerField(choices=KLASS_TYPES, default=0)
     excell_name = models.CharField('Наименование контрагента (из Excell)',
                                    max_length=255)
     dadata_name = models.CharField('Наименование контрагента (из Dadata)',
@@ -68,11 +78,14 @@ class Contragent(models.Model):
                                   default=True)
     okved = models.CharField('ОКВЭД',
                              max_length=255, blank=True, null=True)
+
+    #  TODO REWORK THIS AREA
     physical_address = models.CharField('Физический адресс',
                                         max_length=255)
     legal_address = models.CharField('Юридический адресс',
                                      max_length=255, blank=True, null=True)
-    # TODO СВЯЗАТЬ НОРМАТИВ И ОКВЭД?
+    #  END OF REWORK
+
     norm_value = models.ForeignKey('NormativeCategory',
                                    related_name='normatives',
                                    on_delete=models.CASCADE,
@@ -98,6 +111,23 @@ class Contragent(models.Model):
 
     platform = models.IntegerField('№ площадки',
                                    blank=True, null=True)
+
+    judge_link = models.CharField(verbose_name="", max_length=255,
+                                  blank=True, null=True)
+    fss_link = models.CharField(verbose_name="", max_length=255,
+                                blank=True, null=True)
+
+    personal_number = models.CharField(verbose_name="Лицевой счет",
+                                       max_length=255, blank=True, null=True)
+
+    passport_number = models.CharField(verbose_name="Номер паспорта",
+                                       max_length=15, blank=True, null=True)
+    passport_date = models.DateField(verbose_name="Дата выдачи пасспорта",
+                                     blank=True, null=True)
+    passport_origin = models.CharField(verbose_name="Кем выдан пасспорт",
+                                       max_length=15, blank=True, null=True)
+    snils = models.CharField(verbose_name="СНИЛС",
+                             max_length=15, blank=True, null=True)
 
     def create_package_and_folder(self):
         self.check_and_create_parent_folder()
@@ -141,6 +171,11 @@ class Contragent(models.Model):
     def get_active_package(self):
         res = DocumentsPackage.get_active_package(self)
         return res
+
+    def reset_debt(self):
+        self.debt = 0
+        self.debt_period = 0
+        self.save()
 
     def __str__(self):
         return f'{self.excell_name}'

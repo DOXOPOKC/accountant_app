@@ -11,6 +11,9 @@ export default $axios => resource => ({
   update (payload, id) {
     return $axios.$put(`${resource}/${id}/`, payload)
   },
+  updateContract (payload, id) {
+    return $axios.$put(`${resource}/${id}/contract/`, payload)
+  },
   delete (id) {
     return $axios.$delete(`${resource}/${id}/`)
   }

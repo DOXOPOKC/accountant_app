@@ -21,4 +21,6 @@ urlpatterns = [
          views.CommentaryPackageView.as_view()),
     path('comments/package/<int:package_id>/file/<int:file_id>/',
          views.CommentaryFileView.as_view()),
+    path('contragents/<int:pk>/contract/',
+         views.ContractNumberClassView.as_view()),
 ]

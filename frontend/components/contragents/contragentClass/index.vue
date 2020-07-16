@@ -1,6 +1,7 @@
 <template lang="pug">
   v-col(cols="12")
     v-select(
+      dense
       readonly
       v-model="contragentClass"
       :items="classTypes"

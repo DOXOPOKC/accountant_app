@@ -4,22 +4,23 @@
       ref="menu"
       v-model="menu"
       :close-on-content-click="false"
-      :return-value.sync="current_date"
+      :return-value.sync="currentDate"
       transition="scale-transition"
       offset-y
       min-width="290px"
     )
       template(v-slot:activator="{ on }")
         v-text-field(
-          v-model="current_date"
+          dense
+          v-model="currentDate"
           label="Конечная дата оказания услуг"
           readonly
           v-on="on"
         )
-      v-date-picker(v-model="current_date" no-title scrollable)
+      v-date-picker(v-model="currentDate" no-title scrollable)
         v-spacer
-        v-btn(text color="primary" @click="menu = false") Cancel
-        v-btn(text color="primary" @click="$refs.menu.save(current_date)") OK
+        v-btn(text color="primary" @click="menu = false") Отмена
+        v-btn(text color="primary" @click="$refs.menu.save(currentDate)") OK
 </template>
 
 <script>
@@ -29,7 +30,7 @@ export default {
     menu: false
   }),
   computed: {
-    current_date: {
+    currentDate: {
       set (currentDate) {
         this.$store.commit('contragents/SET_CONTRAGENT', { current_date: currentDate })
       },
