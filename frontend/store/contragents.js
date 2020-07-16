@@ -19,7 +19,19 @@ export const types = {
 export const state = () => ({
   normList: [],
   signUsers: [],
-  list: [],
+  list: [
+    {
+      contragent_class: '',
+      debt: null,
+      debt_period: null,
+      excell_name: '',
+      id: null,
+      inn: null,
+      klass: null,
+      pack: null,
+      physical_address: ''
+    }
+  ],
   detail: {
     is_func: false,
     class: null
