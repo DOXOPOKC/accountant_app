@@ -30,6 +30,7 @@
             show-expand
             single-expand
             :expanded.sync="expanded"
+            @click:row="clicked"
           )
             template(v-slot:top)
               v-toolbar(flat)
@@ -52,13 +53,17 @@
             template(v-slot:expanded-item="{ headers, item }")
               td(:colspan="headers.length" class="pa-0 ma-0")
                 v-card(flat tile)
-                  v-card-title(v-if="Object.keys(item.pack).length" class="font-weight-light") Последний пакет:
-                  v-card-text(v-if="Object.keys(item.pack).length")
+                  v-card-title(v-if="Object.keys(item.pack).length > 0" class="font-weight-light") Последний пакет:
+                  v-card-text(v-if="Object.keys(item.pack).length > 0")
                     v-list-item(three-line)
                       v-list-item-content
                         v-list-item-title(class="font-weight-light") Пакет №{{ item.pack.id }}
-                        v-list-item-subtitle Дата создания: {{ item.pack.creation_date }}
-                        v-list-item-subtitle Статус - {{ item.pack.package_state.name_state }}
+                        v-list-item-subtitle() Дата создания: {{ item.pack.creation_date }}
+                        v-list-item-subtitle() Статус - {{ item.pack.package_state.name_state }}
+                  v-card-title(
+                    v-else
+                    class="font-weight-light"
+                  ) Пакет отсутствует
                   v-card-actions
                     v-spacer
                     v-btn(
@@ -136,6 +141,13 @@ export default {
   },
   methods: {
     ...mapActions([types.FETCH_CONTRAGENTS]),
+    clicked (value) {
+      if (!this.expanded.includes(value)) {
+        this.expanded = [value]
+      } else {
+        this.expanded = []
+      }
+    },
     upload () {
       this.$store.dispatch('contragents/CREATE_CONTRAGENT', {
         vueFileAgent: this.$refs.vueFileAgent,
