@@ -13,7 +13,7 @@
       max-width="600px"
     )
       template(
-        v-if="numberContract"
+        v-if="!numberContract"
         v-slot:activator="{ on }"
       )
         v-btn(
@@ -29,15 +29,12 @@
         v-text-field(
           dense
           readonly
+          class="mt-4"
           v-model="numberContract"
           label="Номер контракта"
+          :append-outer-icon="'mdi-pen'"
+          @click:append-outer="on.click"
         )
-        v-btn(
-          text small outlined rounded block
-          color="primary"
-          class="my-4"
-          v-on="on"
-        ) Изменить номер контракта
       v-card(
         outlined
       )
@@ -80,11 +77,10 @@ export default {
     ...mapActions('contragents', [types.UPDATE_CONTRACT]),
     closeNumberContractDialogState () {
       this.numberContractDialogState = false
-      this.numberContract = ''
     },
     async updateContract () {
       await this.UPDATE_CONTRACT()
-      this.numberContractDialogState = false
+      this.closeNumberContractDialogState()
     }
   }
 }
