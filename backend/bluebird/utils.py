@@ -74,8 +74,8 @@ def parse_from_file(xlsx_file):
                     'physical_address': b,
                     'excell_name': c,
                     'klass': klass,
-                    'debt': float(d),
-                    'debt_period': int(e)
+                    'debt': float(d) if d else 0.0,
+                    'debt_period': int(e) if e else 0
                 }
                 results.append(tmp_obj)
         else:
