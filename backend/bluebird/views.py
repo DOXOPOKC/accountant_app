@@ -184,6 +184,12 @@ class PackagesView(APIView):
                                            is_active=True).exists():
             return Response(status=status.HTTP_409_CONFLICT)
         contragent = get_object(pk, Contragent)
+        if (not contragent.current_contract_date
+                or not contragent.norm_value
+                or not contragent.stat_value
+                or not contragent.signed_user):
+            return Response("Не заполнены обязательные поля.",
+                            status=status.HTTP_400_BAD_REQUEST)
         serializer = PackageShortSerializer(data={'contragent': contragent.pk})
         if serializer.is_valid():
             serializer.save()
