@@ -88,12 +88,15 @@ class ContragentsView(APIView):
             # Если фаил есть
             try:
                 result = parse_from_file(file)
-            except Exception:
+            except Exception as e:
+                print('Error')
+                print(e)
                 return Response('Структура файла не верна.\
                     Пожалуста используйте правильную форму.',
                                 status=status.HTTP_400_BAD_REQUEST)
             if not result:
                 # Если фаил есть но он "пустой"
+                print('Empty')
                 return Response('Выбраный фаил пуст или содержит информацию,\
                     не соотвествующую формату.',
                                 status=status.HTTP_400_BAD_REQUEST)
@@ -129,6 +132,7 @@ class ContragentsView(APIView):
             return Response(group_id, status=status.HTTP_201_CREATED)
         else:
             # Если файла нет
+            print('WTF')
             return Response('В запросе не найден фаил.\
                 Пожалуйста, выберите фаил.',
                             status=status.HTTP_400_BAD_REQUEST)
