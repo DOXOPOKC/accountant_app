@@ -36,7 +36,7 @@ export const state = () => ({
     is_func: false,
     class: null
   },
-  excelTemplateLink: ''
+  excelTemplateLink: 'media/template.xlsx'
 })
 
 export const mutations = {
@@ -45,7 +45,6 @@ export const mutations = {
   },
   [types.SET_CONTRAGENTS] (state, contragents) {
     state.list = contragents
-    state.excelTemplateLink = (contragents.length) ? 'media/template.xlsx' : ''
   },
   [types.SET_NORM_LIST] (state, normList) {
     state.normList = normList

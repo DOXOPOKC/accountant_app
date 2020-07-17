@@ -37,7 +37,6 @@
                 v-toolbar-title(class="headline font-weight-light") Контрагенты
                 v-spacer
                 v-btn(
-                  v-if="!!excelTemplateLink"
                   outlined
                   class="mt-2 mr-2 text-none"
                   color="primary"
