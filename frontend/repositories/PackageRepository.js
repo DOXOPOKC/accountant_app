@@ -21,7 +21,7 @@ export default $axios => resource => ({
   // Статус пакета переводится в закрытый
   delete (contragentId, packageId, payload) {
     return $axios.$delete(`${resource}/${contragentId}/packages/${packageId}/`, {
-      payload
+      data: payload
     })
   },
   // Скачать пакет
