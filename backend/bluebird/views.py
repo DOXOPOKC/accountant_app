@@ -5,7 +5,7 @@ from io import BytesIO
 from django_q.tasks import (
     Task,
     async_task,
-    fetch_group)
+    fetch_group, result)
 from rest_framework import \
     status
 from rest_framework.parsers import (
@@ -34,6 +34,7 @@ from bluebird.models import (
     Commentary,
     State,
     SignUser,
+    ActExam,
     STRATEGIES, STRATEGIES_LIST)
 from bluebird.serializers import (
     ContragentFullSerializer,
@@ -48,7 +49,8 @@ from bluebird.utils import (
     create_unique_id,
     get_data,
     get_object,
-    parse_from_file)
+    parse_from_file,
+    create_act, prepare_act_data)
 
 from .snippets import \
     str_remove_app, str_add_app
@@ -439,3 +441,26 @@ class ContractNumberClassView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ActView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request, pk, package_id):
+        try:
+            package = get_object(package_id, DocumentsPackage)
+            create_act(request, package)
+            return Response({'result': 'ok'}, status=status.HTTP_200_OK)
+        except Exception:
+            return Response({'result': 'error'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+    def patch(self, request, pk, package_id):
+        try:
+            package = get_object(package_id, DocumentsPackage)
+            package.act.delete()
+            create_act(request, package)
+            return Response({'result': 'ok'}, status=status.HTTP_200_OK)
+        except Exception:
+            return Response({'result': 'error'},
+                            status=status.HTTP_400_BAD_REQUEST)

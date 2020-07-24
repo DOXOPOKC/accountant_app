@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title></title>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+		<style type="text/css">
+			body {
+				color:#000000;
+				border-collapse:collapse;
+				margin: 0;
+        		padding: 0;
+			}
+			th {
+				padding: 10px;
+				font-weight: 500;
+			}
+			td {
+				padding: 10px;
+			}
+			p {
+				margin: 0;
+				padding: 0;
+			}
+			.ft10{font-size:30px;font-family:Times;font-weight: bold;}
+			.ft11{font-size:22px;font-family:Times;}
+			.ft12{font-size:22px;font-family:Times;font-weight: bold;}
+			.ft13{font-size:21px;font-family:Times;}
+			.ft14{font-size:23px;font-family:Times;}
+			.ft15{font-size:25px;font-family:Times;}
+			.ft16{font-size:22px;line-height:30px;font-family:Times;}
+			.ft17{font-size:21px;line-height:26px;font-family:Times;}
+			.ft18{font-size:21px;line-height:30px;font-family:Times;}
+
+			table.unstyledTable {
+				font-family: "Times New Roman", Times, serif;
+				border: 0;
+				width: 100%;
+				//text-align: start;
+			}
+			table.unstyledTable td, table.unstyledTable th {
+				border: 0;
+			}
+			table.unstyledTable tbody td {
+				font-size: 14px;
+				color: #000000;
+			}
+			table.unstyledTable table td, table.unstyledTable table th {
+				border: 1px solid #000000;
+			}
+			table.unstyledTable tfoot tr td {
+				border: 0;
+			}
+			table.unstyledTable tr td p {
+				word-break: break-all;
+			}
+		</style>
+	</head>
+	<body>
+		<table class="unstyledTable" cellpadding="0" cellspacing="0" border="0">
+			<tbody>
+				<tr>
+					<td rowspan="2"></td>
+					<td rowspan="2"><p class="ft10"><img style="width: 300px;" src="/app/static/logo/logo.png" alt="ЭКОТЭК"/></p></td>
+					<td colspan="2"><b>Общество с ограниченной ответственностью «Экологические технологии»</b></td>
+					<td rowspan="2"></td>
+				</tr>
+				<tr>
+					<td style="width: 40%;"><p>654079, Россия, Кемеровская область,</p><p>г. Новокузнецк, пр-д Коммунаров, 2</p><p>www.kuzro.ru, info@kuzro.ru,</p><p>тел. 8-800-550-5242</p></td>
+					<td><p>ИНН 4217127183</p> <p>КПП 421701001<p> <p>ОГРН 1104217005892</p></td>
+				</tr>
+				<tr>
+					<td colspan="5" align="center">РЕГИОНАЛЬНЫЙ ОПЕРАТОР ПО ОБРАЩЕНИЮ С ТВЕРДЫМИ КОММУНАЛЬНЫМИ ОТХОДАМИ</td>
+				</tr>
+				<tr>
+					<td colspan="5" bgcolor="green"></td>
+				</tr>
+				<tr>
+					<td rowspan="18">&nbsp&nbsp&nbsp</td>
+					<td colspan="3">
+						<b><i><p>Профессиональное управление</p>
+						<p>отходами<p></i></b>
+						<p>{{ date }}</p>
+						<p>{{ time }}</p>
+					</td>
+					<td rowspan="18"></td>
+				</tr>
+				<tr>
+					<td></td>
+					<td align="left"><p>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbspАКТ</p>
+						<p>осмотра нежилого строения</p>
+						<p>&nbsp&nbsp&nbsp&nbsp№ {{ act_number }}</p>
+					</td>
+					<td></td>
+				</tr>
+				<tr>
+					<td colspan="3">
+						<p>Способ выявления:</p>
+					</td>
+				</tr>
+				<tr>
+					<td colspan="3">
+						<p>{% if by_plan %}[X]{% else %}[&nbsp]{% endif %} - самостоятельно в результате планового обхода;</p>
+					</td>
+				</tr>
+				<tr>
+					<td colspan="3">
+						<p>{% if by_phys %}[X]{% else %}[&nbsp]{% endif %} - обращение физических лиц</p>
+						<p>&nbsp</p>
+						<p>{% if by_phys %}{{ phys_data }}{% else %}___________________________________________________________________________________________________________________________________{% endif %}</p>
+						<p align="center">(ФИО, номер телефона обратившегося)</p>
+					</td>
+				</tr>
+				<tr>
+					<td colspan="3">
+						<p>{% if by_jur %}[X]{% else %}[&nbsp]{% endif %} - обращение юридических лиц</p>
+						<p>&nbsp</p>
+						<p>{% if by_jur %}{{ jur_data }}{% else %}____________________________________________________________________________________________________________________________________{% endif %}</p>
+						<p align="center">(наименование юр. лица, номер телефона обратившегося)</p>
+					</td>
+				</tr>
+				<tr>
+					<td colspan="3">
+						<p>Адрес строения:</p>
+						<p>&nbsp</p>
+						<p>{% if address %}{{ address }}{% else %}______________________________________{% endif %}</p>
+					</td>
+				</tr>
+				<tr>
+					<td colspan="3">
+						<p>Описание:</p>
+						<p>&nbsp</p>
+						<p>{% if exam_descr %}{{ exam_descr }}{% else %}____________________________________________________________________{% endif %}</p>
+					</td>
+				</tr>
+				<tr>
+					<td colspan="3">
+						<p>Наименование фото и видео материалов:</p>
+						<p>&nbsp</p>
+						<p>{% if evidence %}{{ evidence }}{% else %}____________________________________________________________________________{% endif %}</p>
+					</td>
+				</tr>
+				<tr>
+					<td colspan="3">
+						<p>Дополнительная информация:</p>
+						<p>&nbsp</p>
+						<p>{% if add_info %}{{ add_info }}{% else %}________________________________________________________________________________________________________________________________________________________{% endif %}</p>
+					</td>
+				</tr>
+				<tr>
+					<td  colspan="3">
+						<p>В результате проведенного осмотра установлено:</p>
+						<p>&nbsp</p>
+						<p>{% if exam_result %}{{ exam_result }}{% else %}________________________________________________________________________________________________________________________________________________________{% endif %}</p>
+					</td>
+				</tr>
+				<tr>
+					<td colspan="3">
+						<p class="ft14"><b>ПРИЛОЖЕНИЕ:</b></p>
+						{% if photos%}
+							{% for photo in photos %}
+							<p><img src="{{ photo.name }}" style="width: 100%;"/></p>
+							{% endfor %}
+						{% else %}
+						<p>________________________________________________</p>
+						{% endif %}
+					</td>
+				</tr>
+				<tr>
+					<td  colspan="3">
+						<p>&nbsp;</p>
+						<p>{% if consumer.signed_user.sign %}<img src="{{ consumer.signed_user.sign.url }}" style="display: inline;z-index: 1; max-width: 100px; height: auto;"/>{% endif %}, {{ consumer.signed_user.name }}, {{ consumer.signed_user.position }}</p>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	</body>
+</html>

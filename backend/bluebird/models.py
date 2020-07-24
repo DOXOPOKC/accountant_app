@@ -296,6 +296,24 @@ class OtherFile(AbstractFileModel):
         verbose_name_plural = "Прочие файлы"
 
 
+class ActExam(models.Model):
+    file_path = models.CharField('Путь', max_length=255, blank=True, null=True)
+    
+    def initialize_folder(self, path: str):
+        if not os.path.isdir(f'{path}/Акт осмотра/'):
+            os.makedirs(f'{path}/Акт осмотра/')
+
+    def get_files_path(self, package: 'DocumentsPackage'):
+        tmp_path = package.get_save_path()
+        self.initialize_folder(tmp_path)
+        return os.path.join(tmp_path, f'Акт осмотра/')
+
+    def delete(self, using=None, keep_parents=False):
+        if os.path.exists(str_add_app(self.file_path)):
+            os.remove(str_add_app(self.file_path))
+        return super().delete(using=using, keep_parents=keep_parents)
+
+
 class DocumentsPackage(models.Model):
     """ Модель пакета документов.
     contragent - ID контрагента
@@ -353,6 +371,9 @@ class DocumentsPackage(models.Model):
     other_files = GenericRelation(OtherFile)
 
     commentary = GenericRelation(Commentary, related_query_name='package')
+    
+    act = models.ForeignKey(ActExam, on_delete=models.CASCADE,
+                            null=True, blank=True)
 
     def __str__(self):
         return f'Пакет {self.name_uuid}'
