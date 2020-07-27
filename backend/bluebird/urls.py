@@ -13,7 +13,7 @@ urlpatterns = [
      path('contragents/<int:pk>/packages/<int:package_id>/other-files/\
 <int:file_id>/',
           views.OtherFileView.as_view()),
-     path('contragents/<int:pk>/packages/<int:package_id>/act',
+     path('contragents/<int:pk>/packages/<int:package_id>/act/',
           views.ActView.as_view()),
      path('tasks/<str:group_id>/', views.TasksView.as_view()),
      path('norms/', views.NormsView.as_view()),
