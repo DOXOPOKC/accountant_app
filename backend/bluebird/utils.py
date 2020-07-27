@@ -419,7 +419,6 @@ def prepare_act_data(request, package):
     
     data['photos'] = list()
     for f in request.FILES.getlist('photos'):
-        print(f)
         tmp = NamedTemporaryFile(mode='wb')
         for chunk in f.chunks():
             tmp.write(chunk)
