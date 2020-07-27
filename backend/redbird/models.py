@@ -28,10 +28,9 @@ class Journal(models.Model):
 
 class Report(models.Model):
     name = models.CharField(verbose_name='Название отчета', max_length=255)
-    departments = models.ManyToManyField(Department, blank=True, null=True)
+    departments = models.ManyToManyField(Department, blank=True)
     template = models.ForeignKey('ReportTemplate', on_delete=models.CASCADE)
-    users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True,
-                                   null=True)
+    users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True)
 
     def get_report(self):
         pass

@@ -433,16 +433,13 @@ def create_act(request, package):
     act = ActExam.objects.create()
     try:
         data = prepare_act_data(request, package)
-        print(data)
         file_name = f"Акт_№{data['act_number']}.pdf"
         file_path = f'{act.get_files_path(package)}/{file_name}'
-        print(file_path)
         text = render_to_string('/app/templates/Шаблон акта осмотра.html',
                                 context=data)
-        print('no text')
         generate_document(text, file_path)
-        print('no gen')
         act.file_path = file_path
+        act.file_name = file_name
         act.save()
         package.act = act
         package.save()

@@ -298,6 +298,8 @@ class OtherFile(AbstractFileModel):
 
 class ActExam(models.Model):
     file_path = models.CharField('Путь', max_length=255, blank=True, null=True)
+    file_name = models.CharField('Название файла', max_length=255,
+                                 null=True, blank=True)
     
     def initialize_folder(self, path: str):
         if not os.path.isdir(f'{path}/Акт осмотра/'):

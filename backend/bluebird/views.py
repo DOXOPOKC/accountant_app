@@ -242,15 +242,23 @@ class PackageView(APIView):
         docs_single = list(SingleFile.objects.filter(object_id=pack.id))
         docs_other = list(OtherFile.objects.filter(object_id=pack.id))
 
+        founders_docs_path = '/media/Учредительные документы/Учредительные документы.pdf'
+        act = pack.act if pack.act else None
+
+        docs = (docs_pack + docs_single + docs_other)
+        docs = docs + act if act else docs
+
         zip_buffer = BytesIO()
         with zipfile.ZipFile(zip_buffer, "a", zipfile.ZIP_DEFLATED,
                              False) as zip_file:
-            for doc in (docs_pack + docs_single + docs_other):
+            for doc in docs:
                 try:
                     with open(str_add_app(doc.file_path), 'rb') as f:
                         zip_file.writestr(doc.file_name, f.read())
                 except FileNotFoundError:
                     continue
+            with open(str_add_app(founders_docs_path), 'rb') as f:
+                zip_file.writestr('Учредительные документы.pdf', f.read())
 
         zip_buffer.seek(0)
 
