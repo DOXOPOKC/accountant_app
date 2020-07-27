@@ -5,6 +5,7 @@ import createNormRepository from '~/repositories/NormRepository'
 import createSignUsers from '~/repositories/SignUsersRepository'
 import createFiles from '~/repositories/FilesRepository'
 import createComments from '~/repositories/CommentRepository'
+import createAct from '~/repositories/ActRepository'
 
 export default (ctx, inject) => {
   const contragentRepository = createContragentRepository(ctx.$axios)
@@ -14,6 +15,7 @@ export default (ctx, inject) => {
   const signUserRepository = createSignUsers(ctx.$axios)
   const filesRepository = createFiles(ctx.$axios)
   const commentRepository = createComments(ctx.$axios)
+  const ActRepository = createAct(ctx.$axios)
 
   const repositories = {
     contragents: contragentRepository('/contragents'),
@@ -22,7 +24,8 @@ export default (ctx, inject) => {
     norms: normRepository('/norms'),
     signUsers: signUserRepository('/sign_users'),
     files: filesRepository('/contragents'),
-    comments: commentRepository('/comments/package')
+    comments: commentRepository('/comments/package'),
+    act: ActRepository('/contragents')
   }
 
   inject('repositories', repositories)

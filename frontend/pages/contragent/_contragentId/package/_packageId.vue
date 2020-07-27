@@ -77,7 +77,7 @@
                 )
                   span Скачать пакет
                   v-icon(small class="ml-2") mdi-download
-        v-card-title(class="headline font-weight-light px-10")
+        contragent-act
         v-tabs(
           v-model="tab"
           background-color="transparent"
@@ -287,12 +287,15 @@ import { ValidationProvider, ValidationObserver } from 'vee-validate'
 import comments from '~/components/Comments.vue'
 import taxCount from '~/components/packages/packageTaxCount'
 
+import contragentAct from '@/components/contragents/contragentAct'
+
 export default {
   components: {
     ValidationProvider,
     ValidationObserver,
     comments,
-    taxCount
+    taxCount,
+    contragentAct
   },
   async asyncData ({ $axios, store, params }) {
     await store.dispatch('packages/FETCH_PACKAGE', { contragentId: params.contragentId, packageId: params.packageId })
