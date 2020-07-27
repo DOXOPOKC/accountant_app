@@ -10,7 +10,7 @@ export const state = () => ({
     date: '',
     time: '',
     act_number: '',
-    by_plan: '',
+    by_plan: false,
     by_phys: false,
     phys_data: '',
     by_jur: false,
