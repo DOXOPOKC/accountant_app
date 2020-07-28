@@ -77,7 +77,6 @@
                 )
                   span Скачать пакет
                   v-icon(small class="ml-2") mdi-download
-        contragent-act
         v-tabs(
           v-model="tab"
           background-color="transparent"
@@ -269,6 +268,7 @@
             )
               v-card-title
               v-card-text
+                contragent-act
                 tax-count
               v-card-actions
                 v-btn(text @click="update") Сохранить
