@@ -434,13 +434,13 @@ def create_act(request, package):
         data = prepare_act_data(request, package)
         print('ping')
         file_name = f"Акт осмотра №{data['act_number']}.pdf"
-        file_path = str_remove_app(f'{ActExam.get_files_path(package)}{file_name}')
+        file_path = f'{ActExam.get_files_path(package)}{file_name}'
         text = render_to_string('/app/templates/Шаблон акта осмотра.html',
                                 context=data)
         print(file_path)
         generate_document(text, file_path)
         print('pong')
-        return (file_path, file_name)
+        return (str_remove_app(file_path), file_name)
     except Exception as identifier:
         print(identifier)
 
