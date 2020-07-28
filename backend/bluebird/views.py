@@ -257,7 +257,7 @@ class PackageView(APIView):
                 except FileNotFoundError:
                     continue
             if act:
-                with open(act.file_path, 'rb') as f:
+                with open(str_add_app(act.file_path), 'rb') as f:
                     zip_file.writestr(act.file_name, f.read())
             with open(str_add_app(founders_docs_path), 'rb') as f:
                 zip_file.writestr('Учредительные документы.pdf', f.read())

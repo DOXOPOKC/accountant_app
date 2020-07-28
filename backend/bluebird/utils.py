@@ -434,7 +434,7 @@ def create_act(request, package):
         data = prepare_act_data(request, package)
         print('ping')
         file_name = f"Акт осмотра №{data['act_number']}.pdf"
-        file_path = f'{ActExam.get_files_path(package)}{file_name}'
+        file_path = str_remove_app(f'{ActExam.get_files_path(package)}{file_name}')
         text = render_to_string('/app/templates/Шаблон акта осмотра.html',
                                 context=data)
         print(file_path)
