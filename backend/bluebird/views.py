@@ -246,7 +246,6 @@ class PackageView(APIView):
         act = pack.act if pack.act else None
 
         docs = (docs_pack + docs_single + docs_other)
-        docs = docs + act if act else docs
 
         zip_buffer = BytesIO()
         with zipfile.ZipFile(zip_buffer, "a", zipfile.ZIP_DEFLATED,
@@ -257,6 +256,9 @@ class PackageView(APIView):
                         zip_file.writestr(doc.file_name, f.read())
                 except FileNotFoundError:
                     continue
+            if act:
+                with open(act.file_path, 'rb') as f:
+                    zip_file.writestr(act.file_name, f.read())
             with open(str_add_app(founders_docs_path), 'rb') as f:
                 zip_file.writestr('Учредительные документы.pdf', f.read())
 
@@ -456,8 +458,14 @@ class ActView(APIView):
 
     def post(self, request, pk, package_id):
         try:
+            act = ActExam()
             package = get_object(package_id, DocumentsPackage)
-            create_act(request, package)
+            file_path, file_name = create_act(request, package)
+            act.file_path = file_path
+            act.file_name = file_name
+            act.save()
+            package.act = act
+            package.save()
             return Response({'result': 'ok'}, status=status.HTTP_200_OK)
         except Exception:
             return Response({'result': 'error'},
