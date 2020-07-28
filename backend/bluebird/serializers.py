@@ -6,7 +6,7 @@ from .models import (Contragent, DocumentsPackage, OtherFile, PackFile,
                      DocumentFileTemplate,
                      DocumentStateEntity,
                      State,
-                     Event, Commentary, ContractNumberClass)
+                     Event, Commentary, ContractNumberClass, ActExam)
 
 from django_q.models import Task
 from django.core.exceptions import ObjectDoesNotExist
@@ -160,7 +160,13 @@ class OtherFileSerializer(serializers.ModelSerializer):
                   'creation_date', ]
 
 
+class ActExamSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ActExam
+        fields = ['file_path', 'file_name']
+
 class PackageFullSerializer(serializers.ModelSerializer):
+    act = ActExamSerializer()
     package_state = StateSerializer(many=False)
     single_files = SingleFileSerializer(many=True)
     pack_files = serializers.SerializerMethodField()

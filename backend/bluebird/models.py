@@ -10,7 +10,8 @@ from django.contrib.contenttypes.fields import (GenericForeignKey,
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 
-from bluebird.templatetags.template_extra_filters import plur_form
+from bluebird.templatetags.template_extra_filters import (plur_form,
+proper_last_name)
 from bluebird.tasks import calc_create_gen_async
 
 from django_q.tasks import async_task
@@ -200,7 +201,8 @@ class SignUser(models.Model):
                              blank=True, null=True)
 
     def __str__(self):
-        return self.name
+        # return self.name
+        return f"{proper_last_name(self.name)}, {POST_TYPE[self.position][1]}"
 
     def save(self, *args, **kwargs):
         instance = SignUser.objects.get(id=self.id)
@@ -297,18 +299,23 @@ class OtherFile(AbstractFileModel):
 
 
 class ActExam(models.Model):
+    FOLDER = 'Акт осмотра/'
+
     file_path = models.CharField('Путь', max_length=255, blank=True, null=True)
     file_name = models.CharField('Название файла', max_length=255,
                                  null=True, blank=True)
-    
-    def initialize_folder(self, path: str):
-        if not os.path.isdir(f'{path}/Акт осмотра/'):
-            os.makedirs(f'{path}/Акт осмотра/')
 
-    def get_files_path(self, package: 'DocumentsPackage'):
+    @classmethod
+    def initialize_folder(cls, path: str):
+        tmp_path = f'{path}/{cls.FOLDER}'
+        if not os.path.isdir(tmp_path):
+            os.makedirs(tmp_path)
+
+    @classmethod
+    def get_files_path(cls, package: 'DocumentsPackage'):
         tmp_path = package.get_save_path()
-        self.initialize_folder(tmp_path)
-        return os.path.join(tmp_path, f'Акт осмотра/')
+        ActExam.initialize_folder(tmp_path)
+        return os.path.join(tmp_path, cls.FOLDER)
 
     def delete(self, using=None, keep_parents=False):
         if os.path.exists(str_add_app(self.file_path)):

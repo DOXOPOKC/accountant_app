@@ -403,9 +403,9 @@ def generate_docx_file(data: dict, package: DocumentsPackage, total: float,
 
 def prepare_act_data(request, package):
     data = dict()
-    data['date'] = request.data.get('date')
+    data['date'] = request.data.get('date', '')
     data['time'] = request.data.get('time')
-    data['act_number'] = request.data.get('act_number')
+    data['act_number'] = request.data.get('act_number', '')
     data['by_plan'] = request.data.get('by_plan')    
     data['by_phys'] = request.data.get('by_phys')
     data['phys_data'] = request.data.get('phys_data')
@@ -418,7 +418,7 @@ def prepare_act_data(request, package):
     data['exam_result'] = request.data.get('exam_result')
     
     data['photos'] = list()
-    for f in request.FILES.getlist('photos'):
+    for f in request.FILES.getlist('photos[]'):
         tmp = NamedTemporaryFile(mode='wb')
         for chunk in f.chunks():
             tmp.write(chunk)
@@ -429,22 +429,20 @@ def prepare_act_data(request, package):
 
 
 def create_act(request, package):
-    act = ActExam.objects.create()
+    
     try:
         data = prepare_act_data(request, package)
-        file_name = f"Акт_№{data['act_number']}.pdf"
-        file_path = f'{act.get_files_path(package)}/{file_name}'
+        print('ping')
+        file_name = f"Акт осмотра №{data['act_number']}.pdf"
+        file_path = f'{ActExam.get_files_path(package)}{file_name}'
         text = render_to_string('/app/templates/Шаблон акта осмотра.html',
                                 context=data)
+        print(file_path)
         generate_document(text, file_path)
-        act.file_path = file_path
-        act.file_name = file_name
-        act.save()
-        package.act = act
-        package.save()
-        return act
+        print('pong')
+        return (file_path, file_name)
     except Exception as identifier:
-        act.delete()
+        print(identifier)
 
 
 def create_unique_id():

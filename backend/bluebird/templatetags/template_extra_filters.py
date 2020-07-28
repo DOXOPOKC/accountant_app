@@ -118,3 +118,10 @@ def sum_imp(data: dict, field: str = None, start: float = 0.0):
         else:
             start += float(d)
     return start
+
+
+def proper_last_name(name):
+    if bool(name) or name is not None:
+        fio = name.split(' ')
+        return f"{fio[0]} {fio[1][:1]}. {fio[2][:1]}."
+    return f"{name}"
