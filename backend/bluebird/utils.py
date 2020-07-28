@@ -440,7 +440,7 @@ def create_act(request, package):
         print(file_path)
         generate_document(text, file_path)
         print('pong')
-        return (file_path, file_name)
+        return (str_remove_app(file_path), file_name)
     except Exception as identifier:
         print(identifier)
 

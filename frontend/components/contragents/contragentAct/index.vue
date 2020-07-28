@@ -1,5 +1,6 @@
 <template lang="pug">
   v-col(cols="12" align="center")
+    a(v-if="package.act" :href="package.act.file_path") {{ package.act.file_name }}
     v-dialog(
       v-model="actDialogState"
       max-width="600px"
@@ -10,7 +11,7 @@
         v-btn(
           text small outlined rounded block
           color="primary"
-          class="my-4"
+          class=""
           v-on="on"
         ) Заполнить акт
       v-card(
@@ -39,7 +40,7 @@
 </template>
 
 <script>
-import { mapActions } from 'vuex'
+import { mapState, mapActions } from 'vuex'
 
 const types = {
   SET_ACT: 'SET_ACT',
@@ -109,7 +110,10 @@ export default {
       get () {
         return this.$store.state.act.detail
       }
-    }
+    },
+    ...mapState({
+      package: state => state.packages.detail
+    })
   },
   methods: {
     ...mapActions('act', [types.CREATE_ACT]),
