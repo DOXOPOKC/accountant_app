@@ -26,7 +26,6 @@ export const state = () => ({
 
 export const mutations = {
   [types.SET_ACT] (state, act) {
-    console.log(Object.assign({}, state.detail, act), 'act store')
     state.detail = Object.assign({}, state.detail, act)
   }
 }
@@ -41,8 +40,19 @@ export const actions = {
   },
   async [types.CREATE_ACT] ({ dispatch, state }, { contragentId, packageId }) {
     try {
-      await this.$repositories.act.create(contragentId, packageId, state.detail)
-      await dispatch(types.FETCH_ACT, { contragentId, packageId })
+      const detail = state.detail
+      const formData = new FormData()
+      for (const entry of Object.entries(detail)) {
+        if (entry[0] === 'photos') {
+          for (const photo of entry[1]) {
+            formData.append('photos[]', photo.file, photo.name())
+          }
+        } else {
+          formData.append(entry[0], entry[1])
+        }
+      }
+      await this.$repositories.act.create(contragentId, packageId, formData)
+      // await dispatch(types.FETCH_ACT, { contragentId, packageId })
       this.$toast.success('Акт успешно добавлен')
     } catch (error) {
       this.$toast.error(error.message)
