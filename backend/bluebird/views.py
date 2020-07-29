@@ -474,8 +474,11 @@ class ActView(APIView):
     def patch(self, request, pk, package_id):
         try:
             package = get_object(package_id, DocumentsPackage)
-            package.act.delete()
-            create_act(request, package)
+            package.act.clear_file()
+            file_path, file_name = create_act(request, package)
+            package.act.file_path = file_path
+            package.act.file_name = file_name
+            package.act.save()
             return Response({'result': 'ok'}, status=status.HTTP_200_OK)
         except Exception:
             return Response({'result': 'error'},
