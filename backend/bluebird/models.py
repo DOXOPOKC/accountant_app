@@ -317,9 +317,15 @@ class ActExam(models.Model):
         ActExam.initialize_folder(tmp_path)
         return os.path.join(tmp_path, cls.FOLDER)
 
-    def delete(self, using=None, keep_parents=False):
+    def clear_file(self):
         if os.path.exists(str_add_app(self.file_path)):
             os.remove(str_add_app(self.file_path))
+            self.file_path = None
+            self.file_name = None
+            self.save()
+
+    def delete(self, using=None, keep_parents=False):
+        self.clear_file()
         return super().delete(using=using, keep_parents=keep_parents)
 
 
