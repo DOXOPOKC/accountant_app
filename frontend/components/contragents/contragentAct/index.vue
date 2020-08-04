@@ -1,7 +1,7 @@
 <template lang="pug">
   v-col(cols="12" align="center")
     v-btn(
-      v-if="Object.keys(package.act).length"
+      v-if="(package.act && Object.keys(package.act).length)"
       text small outlined rounded block
       target="blank"
       color="primary"
@@ -42,7 +42,6 @@
               act-by-plan
               act-by-phys
               act-by-jur
-              act-address
               act-exam-descr
               act-evidence
               act-add-info
