@@ -24,7 +24,9 @@
           v-card-subtitle {{ contragentClass }}
           v-card-text(class="pa-0")
             v-form
-              v-row(no-gutters)
+              v-row(
+                no-gutters
+              )
                 v-expansion-panels(
                   v-model="panel"
                   accordion
@@ -87,6 +89,7 @@
           v-card-actions(class="px-6 pt-2")
             v-spacer
             v-btn(
+              v-if="(canGenerate && !isActive)"
               text
               tile
               outlined
@@ -192,6 +195,7 @@ export default {
   },
   async asyncData ({ $axios, store, params }) {
     await store.dispatch('contragents/FETCH_CONTRAGENT', params.contragentId)
+    await store.dispatch('packages/FETCH_PACKAGES', params.contragentId)
   },
   data: () => ({
     testComp: [
@@ -234,6 +238,8 @@ export default {
   }),
   computed: {
     ...mapState({
+      canGenerate: state => state.contragents.canGenerate,
+      isActive: state => state.packages.isActive,
       contragent: state => state.contragents.detail
     }),
     contragentClass: {

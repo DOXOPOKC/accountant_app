@@ -46,8 +46,16 @@
           )
         v-card-actions
           v-spacer
-          v-btn(color="blue darken-1" text @click="closeNumberContractDialogState") Закрыть
-          v-btn(color="blue darken-1" text @click="updateContract") Сохранить
+          v-btn(
+            color="blue darken-1"
+            text
+            @click="closeNumberContractDialogState"
+          ) Закрыть
+          v-btn(
+            color="blue darken-1"
+            text
+            @click="updateContract"
+          ) Сохранить
 </template>
 
 <script>

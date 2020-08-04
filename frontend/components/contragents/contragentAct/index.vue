@@ -1,6 +1,13 @@
 <template lang="pug">
   v-col(cols="12" align="center")
-    a(v-if="package.act" :href="package.act.file_path") {{ package.act.file_name }}
+    v-btn(
+      v-if="Object.keys(package.act).length"
+      text small outlined rounded block
+      target="blank"
+      color="primary"
+      class="mb-2"
+      :href="package.act.file_path"
+    ) {{ package.act.file_name }}
     v-dialog(
       v-model="actDialogState"
       max-width="600px"
@@ -9,6 +16,14 @@
         v-slot:activator="{ on }"
       )
         v-btn(
+          v-if="Object.keys(package.act).length"
+          text small outlined rounded block
+          color="primary"
+          class=""
+          v-on="on"
+        ) Перезаполнить акт
+        v-btn(
+          v-else
           text small outlined rounded block
           color="primary"
           class=""
@@ -36,18 +51,13 @@
         v-card-actions
           v-spacer
           v-btn(color="blue darken-1" text @click="closeActDialogState") Закрыть
-          v-btn(color="blue darken-1" text @click="updateAct") Сохранить
+          v-btn(v-if="Object.keys(package.act).length" color="blue darken-1" text @click="updateAct") Сохранить
+          v-btn(v-else color="blue darken-1" text @click="createAct") Сохранить
 </template>
 
 <script>
 import { mapState, mapActions } from 'vuex'
-
-const types = {
-  SET_ACT: 'SET_ACT',
-
-  CREATE_ACT: 'CREATE_ACT',
-  FETCH_ACT: 'FETCH_ACT'
-}
+import { types } from '@/store/act'
 
 // const date
 // const time
@@ -116,12 +126,19 @@ export default {
     })
   },
   methods: {
-    ...mapActions('act', [types.CREATE_ACT]),
+    ...mapActions('act', [types.CREATE_ACT, types.UPDATE_ACT]),
     closeActDialogState () {
       this.actDialogState = false
     },
-    async updateAct () {
+    async createAct () {
       await this.CREATE_ACT({
+        contragentId: this.$route.params.contragentId,
+        packageId: this.$route.params.packageId
+      })
+      this.closeActDialogState()
+    },
+    async updateAct () {
+      await this.UPDATE_ACT({
         contragentId: this.$route.params.contragentId,
         packageId: this.$route.params.packageId
       })
