@@ -15,6 +15,7 @@ from asgiref.sync import async_to_sync
 from django.http import Http404
 from django.template.loader import render_to_string
 from django.core.exceptions import ObjectDoesNotExist
+from django.conf import settings
 
 from docxtpl import DocxTemplate, InlineImage
 from docx.shared import Mm
@@ -353,7 +354,7 @@ def generate_single_files(data: dict, package: DocumentsPackage, total: float,
             for r in res:
                 r.delete()
     except ObjectDoesNotExist:
-        return Http404
+        return None
 
 
 def generate_docx_file(data: dict, package: DocumentsPackage, total: float,
@@ -375,7 +376,10 @@ def generate_docx_file(data: dict, package: DocumentsPackage, total: float,
     context = {'data': data, 'consumer': package.contragent, 'total': total,
                'package': package}
     if package.contragent.signed_user.sign:
-        context['sign'] = InlineImage(doc, package.contragent.signed_user.sign,
+        url = package.contragent.signed_user.sign.url
+        if settings.DEBUG:
+            url = "media/signs/баева.png"
+        context['sign'] = InlineImage(doc, url,
                                       width=Mm(27))
     doc.render(context, jinja_env)
     tmp_name = str(package.contragent.number_contract).replace('/', '-')
@@ -411,7 +415,7 @@ def prepare_act_data(request, package):
     data['phys_data'] = request.data.get('phys_data')
     data['by_jur'] = request.data.get('by_jur')
     data['jur_data'] = request.data.get('jur_data')
-    data['address'] = request.data.get('address')
+    data['address'] = package.contragent.physical_address
     data['exam_descr'] = request.data.get('exam_descr')
     data['evidence'] = request.data.get('evidence')
     data['add_info'] = request.data.get('add_info')
@@ -464,4 +468,4 @@ def get_template(doc_type: DocumentTypeModel, package: DocumentsPackage):
             )
         return template
     except ObjectDoesNotExist:
-        return Http404
+        return None
