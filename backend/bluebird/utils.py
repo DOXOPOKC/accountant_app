@@ -410,17 +410,17 @@ def prepare_act_data(request, package):
     data['date'] = request.data.get('date', '')
     data['time'] = request.data.get('time')
     data['act_number'] = request.data.get('act_number', '')
-    data['by_plan'] = request.data.get('by_plan')    
-    data['by_phys'] = request.data.get('by_phys')
+    data['by_plan'] = json.loads(request.data.get('by_plan', 'false'))
+    data['by_phys'] = json.loads(request.data.get('by_phys', 'false'))
     data['phys_data'] = request.data.get('phys_data')
-    data['by_jur'] = request.data.get('by_jur')
+    data['by_jur'] = json.loads(request.data.get('by_jur', 'false'))
     data['jur_data'] = request.data.get('jur_data')
     data['address'] = package.contragent.physical_address
     data['exam_descr'] = request.data.get('exam_descr')
     data['evidence'] = request.data.get('evidence')
     data['add_info'] = request.data.get('add_info')
     data['exam_result'] = request.data.get('exam_result')
-    print(f"by_plan:{data['by_plan']}", f"by_jur:{data['by_jur']}",
+    print(f"by_plan:{data['by_plan']} type {type(data['by_plan'])}", f"by_jur:{data['by_jur']}",
           f"by_phys:{data['by_phys']}")
     data['photos'] = list()
     for f in request.FILES.getlist('photos[]'):
