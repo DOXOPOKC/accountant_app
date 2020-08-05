@@ -118,13 +118,13 @@ def get_data(id: int):
         if len(sug_d.suggestions):
             for d in sug_d.suggestions:
                 is_result = d.data.state.status == 'ACTIVE'
-                if is_result:
-                    res = result_response_from_suggestion(d)
-                    serializer = ContragentFullSerializer(contragent,
-                                                          data=res)
-                    if serializer.is_valid():
-                        serializer.save()
-                        return {'inn': contragent.inn, 'status': "OK"}
+                res = result_response_from_suggestion(d)
+                res['is_func'] = is_result
+                serializer = ContragentFullSerializer(contragent,
+                                                        data=res)
+                if serializer.is_valid():
+                    serializer.save()
+                    return {'inn': contragent.inn, 'status': "OK"}
             return {'inn': contragent.inn, 'status': "Not OK",
                     'errors': 'Contragent not active.'}
         else:
