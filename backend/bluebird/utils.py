@@ -374,7 +374,7 @@ def generate_docx_file(data: dict, package: DocumentsPackage, total: float,
     context = {'data': data, 'consumer': package.contragent, 'total': total,
                'package': package}
     if package.contragent.signed_user.sign:
-        url = f"../{str_remove_app(package.contragent.signed_user.sign.url)}"
+        url = f"..{str_remove_app(package.contragent.signed_user.sign.url)}"
         if settings.DEBUG:
             url = "media/signs/баева.png"
         context['sign'] = InlineImage(doc, url,
