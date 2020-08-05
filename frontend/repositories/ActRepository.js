@@ -9,6 +9,10 @@ export default $axios => resource => ({
   },
   // Обновление акта
   update (contragentId, packageId, payload) {
-    return $axios.$patch(`${resource}/${contragentId}/packages/${packageId}/act/`, payload)
+    return $axios.$patch(`${resource}/${contragentId}/packages/${packageId}/act/`, payload, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
   }
 })

@@ -13,10 +13,13 @@ export const types = {
   SET_SIGN_USERS_LIST: 'SET_SIGN_USERS_LIST',
   FETCH_SIGN_USERS_LIST: 'FETCH_SIGN_USERS_LIST',
 
-  UPDATE_CONTRACT: 'UPDATE_CONTRACT'
+  UPDATE_CONTRACT: 'UPDATE_CONTRACT',
+
+  SET_GENERATE_FLAG: 'SET_GENERATE_FLAG'
 }
 
 export const state = () => ({
+  canGenerate: false,
   normList: [],
   signUsers: [],
   list: [
@@ -40,6 +43,9 @@ export const state = () => ({
 })
 
 export const mutations = {
+  [types.SET_GENERATE_FLAG] (state, flag) {
+    state.canGenerate = flag
+  },
   [types.SET_CONTRAGENT] (state, contragent) {
     state.detail = Object.assign({}, state.detail, contragent)
   },
@@ -57,9 +63,15 @@ export const mutations = {
 export const actions = {
   async [types.FETCH_CONTRAGENT] ({ commit }, id) {
     const data = await this.$repositories.contragents.getContragent(id)
-    if (data.other_files) {
-      this.commit(types.SET_FILES, data.other_files)
-    }
+    const {
+      stat_value: statValue,
+      signed_user: signedUser,
+      norm_value: normValue,
+      current_contract_date: currentContractDate
+    } = data
+    const canGenerate = (statValue && signedUser && normValue && currentContractDate)
+    if (data.other_files) { this.commit(types.SET_FILES, data.other_files) }
+    if (canGenerate) { commit(types.SET_GENERATE_FLAG, true) }
     commit(types.SET_CONTRAGENT, data)
   },
   async [types.CREATE_CONTRAGENT] ({ dispatch }, { vueFileAgent, filesDataForUpload }) {

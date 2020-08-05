@@ -2,7 +2,7 @@ export const types = {
   SET_ACT: 'SET_ACT',
 
   CREATE_ACT: 'CREATE_ACT',
-  FETCH_ACT: 'FETCH_ACT'
+  UPDATE_ACT: 'UPDATE_ACT'
 }
 
 export const state = () => ({
@@ -31,9 +31,21 @@ export const mutations = {
 }
 
 export const actions = {
-  async [types.FETCH_ACT] ({ dispatch, state }, { contragentId, packageId }) {
+  async [types.UPDATE_ACT] ({ dispatch, state }, { contragentId, packageId }) {
     try {
-      await this.$repositories.act.update(contragentId, packageId, {})
+      const detail = state.detail
+      const formData = new FormData()
+      for (const entry of Object.entries(detail)) {
+        if (entry[0] === 'photos') {
+          for (const photo of entry[1]) {
+            formData.append('photos[]', photo.file, photo.name())
+          }
+        } else {
+          formData.append(entry[0], entry[1])
+        }
+      }
+      await this.$repositories.act.update(contragentId, packageId, formData)
+      this.$toast.success('Акт успешно добавлен')
     } catch (error) {
       this.$toast.error(error.message)
     }
@@ -52,7 +64,6 @@ export const actions = {
         }
       }
       await this.$repositories.act.create(contragentId, packageId, formData)
-      // await dispatch(types.FETCH_ACT, { contragentId, packageId })
       this.$toast.success('Акт успешно добавлен')
     } catch (error) {
       this.$toast.error(error.message)

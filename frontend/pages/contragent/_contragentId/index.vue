@@ -35,8 +35,8 @@
 </template>
 
 <script>
-import { mapState, mapActions } from 'vuex'
-import { types } from '~/store/packages'
+import { mapState } from 'vuex'
+// import { types } from '~/store/packages'
 
 export default {
   data: () => ({
@@ -59,10 +59,10 @@ export default {
     })
   },
   async created () {
-    await this.FETCH_PACKAGES(this.$route.params.contragentId)
+    // await this.FETCH_PACKAGES(this.$route.params.contragentId)
   },
   methods: {
-    ...mapActions('packages', [types.FETCH_PACKAGES])
+    // ...mapActions('packages', [types.FETCH_PACKAGES])
   }
 }
 </script>

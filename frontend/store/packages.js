@@ -10,15 +10,21 @@ export const types = {
   SEND_EVENT: 'SEND_EVENT',
 
   UPDATE_PACKAGE: 'UPDATE_PACKAGE',
-  SET_TAX: 'SET_TAX'
+  SET_TAX: 'SET_TAX',
+
+  SET_ACTIVE_FLAG: 'SET_ACTIVE_FLAG'
 }
 
 export const state = () => ({
+  isActive: null,
   list: [],
   detail: {}
 })
 
 export const mutations = {
+  [types.SET_ACTIVE_FLAG] (state, flag) {
+    state.isActive = flag
+  },
   [types.SET_PACKAGES] (state, contragentPackages) {
     state.list = contragentPackages
   },
@@ -34,6 +40,12 @@ export const actions = {
   // Возвращает список пакетов с документами конкретного контрагента
   async [types.FETCH_PACKAGES] ({ commit }, id) {
     const data = await this.$repositories.packages.get(id)
+    const isActive = data.find(contragentPackage => contragentPackage.is_active === true) || {}
+    if (isActive.is_active) {
+      commit(types.SET_ACTIVE_FLAG, true)
+    } else {
+      commit(types.SET_ACTIVE_FLAG, false)
+    }
     commit(types.SET_PACKAGES, data)
   },
   // // Генерация пакета (создание нового)
