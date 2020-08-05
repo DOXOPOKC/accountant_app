@@ -62,7 +62,6 @@ def parse_from_file(xlsx_file):
     for row in sheet.iter_rows(min_row=3, max_row=42, min_col=2, max_col=7,
                                values_only=True):
         a, b, c, d, e, f = row
-        # print('|', a, '|', b, '|', c, '|', d, '|')
         if a is not None:
             if MIN_INNN_LEN > len(str(a)) or len(str(a)) > MAX_INN_LEN:
                 raise Exception(('200', 'Inn is wrong.'))
@@ -113,7 +112,6 @@ def get_data(id: int):
     """ Функция обработки данных из ДаДаты """
     contragent = get_object(id, Contragent)
     data = async_to_sync(get_dadata_data, True)(contragent.inn)
-    # print(data)
     sug_d = suggestions_response_from_dict(data)
     if sug_d:
         if len(sug_d.suggestions):
@@ -376,7 +374,7 @@ def generate_docx_file(data: dict, package: DocumentsPackage, total: float,
     context = {'data': data, 'consumer': package.contragent, 'total': total,
                'package': package}
     if package.contragent.signed_user.sign:
-        url = package.contragent.signed_user.sign.url
+        url = str_remove_app(package.contragent.signed_user.sign.url)
         if settings.DEBUG:
             url = "media/signs/баева.png"
         context['sign'] = InlineImage(doc, url,
@@ -410,18 +408,16 @@ def prepare_act_data(request, package):
     data['date'] = request.data.get('date', '')
     data['time'] = request.data.get('time')
     data['act_number'] = request.data.get('act_number', '')
-    data['by_plan'] = request.data.get('by_plan')    
-    data['by_phys'] = request.data.get('by_phys')
+    data['by_plan'] = json.loads(request.data.get('by_plan', 'false'))
+    data['by_phys'] = json.loads(request.data.get('by_phys', 'false'))
     data['phys_data'] = request.data.get('phys_data')
-    data['by_jur'] = request.data.get('by_jur')
+    data['by_jur'] = json.loads(request.data.get('by_jur', 'false'))
     data['jur_data'] = request.data.get('jur_data')
     data['address'] = package.contragent.physical_address
     data['exam_descr'] = request.data.get('exam_descr')
     data['evidence'] = request.data.get('evidence')
     data['add_info'] = request.data.get('add_info')
     data['exam_result'] = request.data.get('exam_result')
-    print(f"by_plan:{data['by_plan']}", f"by_jur:{data['by_jur']}",
-          f"by_phys:{data['by_phys']}")
     data['photos'] = list()
     for f in request.FILES.getlist('photos[]'):
         tmp = NamedTemporaryFile(mode='wb')
