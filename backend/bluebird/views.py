@@ -186,7 +186,7 @@ class PackagesView(APIView):
                                            is_active=True).exists():
             return Response(status=status.HTTP_409_CONFLICT)
         contragent = get_object(pk, Contragent)
-        if (not contragent.current_contract_date
+        if (not contragent.current_contract_date or not contragent.is_func
                 or not contragent.norm_value
                 or not contragent.stat_value
                 or not contragent.signed_user):
