@@ -1,6 +1,7 @@
 import json
 import os
 import uuid
+import codecs
 
 import aiohttp
 import datetime
@@ -117,13 +118,13 @@ def get_data(id: int):
         if len(sug_d.suggestions):
             for d in sug_d.suggestions:
                 is_result = d.data.state.status == 'ACTIVE'
-                if is_result:
-                    res = result_response_from_suggestion(d)
-                    serializer = ContragentFullSerializer(contragent,
-                                                          data=res)
-                    if serializer.is_valid():
-                        serializer.save()
-                        return {'inn': contragent.inn, 'status': "OK"}
+                res = result_response_from_suggestion(d)
+                res['is_func'] = is_result
+                serializer = ContragentFullSerializer(contragent,
+                                                        data=res)
+                if serializer.is_valid():
+                    serializer.save()
+                    return {'inn': contragent.inn, 'status': "OK"}
             return {'inn': contragent.inn, 'status': "Not OK",
                     'errors': 'Contragent not active.'}
         else:
@@ -374,9 +375,9 @@ def generate_docx_file(data: dict, package: DocumentsPackage, total: float,
     context = {'data': data, 'consumer': package.contragent, 'total': total,
                'package': package}
     if package.contragent.signed_user.sign:
-        url = f"../{str_remove_app(package.contragent.signed_user.sign.url)}"
+        url = convert_to_cyr(package.contragent.signed_user.sign.url)
         if settings.DEBUG:
-            url = "media/signs/баева.png"
+            url = convert_to_cyr("media/signs/%D0%B7%D0%B0%D0%B9%D1%86%D0%B5%D0%B2%D0%B0.png")
         context['sign'] = InlineImage(doc, url,
                                       width=Mm(27))
     doc.render(context, jinja_env)
@@ -465,3 +466,10 @@ def get_template(doc_type: DocumentTypeModel, package: DocumentsPackage):
         return template
     except ObjectDoesNotExist:
         return None
+
+
+def convert_to_cyr(s: str) -> str:
+    tmp = s[s.rfind('/')+1:s.rfind('.')]
+    c = tmp.replace('%', '').lower()
+    b = codecs.decode(c.encode('utf8'), 'hex').decode('utf8')
+    return s.replace(tmp, b)
